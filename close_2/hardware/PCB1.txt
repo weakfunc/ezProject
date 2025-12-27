@@ -1,0 +1,12 @@
+Board Information Report
+Filename     : D:\Pro_master\a\yfx\hardware\PCB1.PcbDoc
+Date         : 2025/2/25
+Time         : 14:33:53
+Time Elapsed : 00:00:00
+
+Routing Information
+    Routing completion, 100.00%
+    Connections, 154
+    Connections routed, 154
+    Connections remaining, 0
+count : 4
