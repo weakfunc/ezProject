@@ -1,0 +1,12 @@
+Board Information Report
+Filename     : C:\11_pro_develop\ezProject_2026\project_9\hardware\f1_bd_1\project_9.PcbDoc
+Date         : 2026/3/18
+Time         : 12:42:45
+Time Elapsed : 00:00:00
+
+Routing Information
+    Routing completion, 100.00%
+    Connections, 34
+    Connections routed, 34
+    Connections remaining, 0
+count : 4

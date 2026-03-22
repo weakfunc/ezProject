@@ -1,0 +1,20 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPathWin": "C:\\13_pro_appsLib\\esp-idf\\v5.5.3\\esp-idf",
+  "idf.pythonInstallPath": "C:\\21_app_develop\\esp-idf-tools\\tools\\idf-python\\3.11.2\\python.exe",
+  "idf.openOcdConfigs": [
+    "board/esp32c3-builtin.cfg"
+  ],
+  "idf.portWin": "COM3",
+  "idf.toolsPathWin": "C:\\21_app_develop\\esp-idf-tools",
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32c3"
+  },
+  "clangd.path": "C:\\21_app_develop\\esp-idf-tools\\tools\\esp-clang\\esp-19.1.2_20250312\\esp-clang\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=**",
+    "--compile-commands-dir=c:\\11_pro_develop\\ezProject_2026\\std_software\\C3_Sft_1\\build"
+  ],
+  "idf.flashType": "UART"
+}

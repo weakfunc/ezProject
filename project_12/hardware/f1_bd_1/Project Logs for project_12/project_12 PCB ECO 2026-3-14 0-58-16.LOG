@@ -1,0 +1,130 @@
+Removed Pin From Net: NetName=GND Pin=U?-1
+Removed Pin From Net: NetName=GND Pin=U?-2
+Removed Pin From Net: NetName=3V3 Pin=U?-3
+Removed Pin From Net: NetName=NRST Pin=U?-4
+Removed Pin From Net: NetName=PB11 Pin=U?-5
+Removed Pin From Net: NetName=PB10 Pin=U?-6
+Removed Pin From Net: NetName=PB1 Pin=U?-7
+Removed Pin From Net: NetName=PB0 Pin=U?-8
+Removed Pin From Net: NetName=PA7 Pin=U?-9
+Removed Pin From Net: NetName=PA6 Pin=U?-10
+Removed Pin From Net: NetName=PA5 Pin=U?-11
+Removed Pin From Net: NetName=PA4 Pin=U?-12
+Removed Pin From Net: NetName=PA3 Pin=U?-13
+Removed Pin From Net: NetName=PA2 Pin=U?-14
+Removed Pin From Net: NetName=PA1 Pin=U?-15
+Removed Pin From Net: NetName=PA0 Pin=U?-16
+Removed Pin From Net: NetName=PC15 Pin=U?-17
+Removed Pin From Net: NetName=PC14 Pin=U?-18
+Removed Pin From Net: NetName=PC13 Pin=U?-19
+Removed Pin From Net: NetName=VBAT Pin=U?-20
+Removed Pin From Net: NetName=PB12 Pin=U?-21
+Removed Pin From Net: NetName=PB13 Pin=U?-22
+Removed Pin From Net: NetName=PB14 Pin=U?-23
+Removed Pin From Net: NetName=PB15 Pin=U?-24
+Removed Pin From Net: NetName=PA8 Pin=U?-25
+Removed Pin From Net: NetName=PA9 Pin=U?-26
+Removed Pin From Net: NetName=PA10 Pin=U?-27
+Removed Pin From Net: NetName=PA11 Pin=U?-28
+Removed Pin From Net: NetName=PA12 Pin=U?-29
+Removed Pin From Net: NetName=PA15 Pin=U?-30
+Removed Pin From Net: NetName=PB3 Pin=U?-31
+Removed Pin From Net: NetName=PB4 Pin=U?-32
+Removed Pin From Net: NetName=PB5 Pin=U?-33
+Removed Pin From Net: NetName=PB6 Pin=U?-34
+Removed Pin From Net: NetName=PB7 Pin=U?-35
+Removed Pin From Net: NetName=PB8 Pin=U?-36
+Removed Pin From Net: NetName=PB9 Pin=U?-37
+Removed Pin From Net: NetName=5V Pin=U?-38
+Removed Pin From Net: NetName=GND Pin=U?-39
+Removed Pin From Net: NetName=3V3 Pin=U?-40
+Change Component Footprint: Designator=U? Old Footprint=F1_HW_1_GW New Footprint=pow_hw_1
+Change Component Comment : Designator=U? Old Comment=f1_hw_1_gw New Comment=pow_hw_1
+Change Component Designator: OldDesignator=U? NewDesignator=u3
+Added Component: Designator=P1(XH2.54_4P)
+Added Component: Designator=P2(XH2.54_4P)
+Added Component: Designator=P3(XH2.54_3P)
+Added Component: Designator=P4(XH2.54_2P)
+Added Component: Designator=P5(XH2.54_3P)
+Added Component: Designator=U1(C3_HW_1)
+Added Component: Designator=U2(F1_HW_1_GW)
+Added Component: Designator=U4(mod_oled)
+Added Pin To Net: NetName=PA2 Pin=P1-1
+Added Pin To Net: NetName=GND Pin=P1-3
+Added Pin To Net: NetName=5V Pin=P1-4
+Added Pin To Net: NetName=PB11 Pin=P2-1
+Added Pin To Net: NetName=PB10 Pin=P2-2
+Added Pin To Net: NetName=GND Pin=P2-3
+Added Pin To Net: NetName=5V Pin=P2-4
+Added Pin To Net: NetName=GND Pin=P3-1
+Added Pin To Net: NetName=5V Pin=P3-2
+Added Pin To Net: NetName=PA15 Pin=P3-3
+Added Pin To Net: NetName=GND Pin=P5-1
+Added Pin To Net: NetName=5V Pin=P5-2
+Added Pin To Net: NetName=PB3 Pin=P5-3
+Added Pin To Net: NetName=PA9 Pin=U1-2
+Added Pin To Net: NetName=PA10 Pin=U1-3
+Added Pin To Net: NetName=GND Pin=U1-4
+Added Pin To Net: NetName=5V Pin=U1-5
+Added Pin To Net: NetName=GND Pin=U2-1
+Added Pin To Net: NetName=GND Pin=U2-2
+Added Pin To Net: NetName=3V3 Pin=U2-3
+Added Pin To Net: NetName=NRST Pin=U2-4
+Added Pin To Net: NetName=PB11 Pin=U2-5
+Added Pin To Net: NetName=PB10 Pin=U2-6
+Added Pin To Net: NetName=PB1 Pin=U2-7
+Added Pin To Net: NetName=PB0 Pin=U2-8
+Added Pin To Net: NetName=PA7 Pin=U2-9
+Added Pin To Net: NetName=PA6 Pin=U2-10
+Added Pin To Net: NetName=PA5 Pin=U2-11
+Added Pin To Net: NetName=PA4 Pin=U2-12
+Added Pin To Net: NetName=PA3 Pin=U2-13
+Added Pin To Net: NetName=PA2 Pin=U2-14
+Added Pin To Net: NetName=PA1 Pin=U2-15
+Added Pin To Net: NetName=PA0 Pin=U2-16
+Added Pin To Net: NetName=PC15 Pin=U2-17
+Added Pin To Net: NetName=PC14 Pin=U2-18
+Added Pin To Net: NetName=PC13 Pin=U2-19
+Added Pin To Net: NetName=VBAT Pin=U2-20
+Added Pin To Net: NetName=PB12 Pin=U2-21
+Added Pin To Net: NetName=PB13 Pin=U2-22
+Added Pin To Net: NetName=PB14 Pin=U2-23
+Added Pin To Net: NetName=PB15 Pin=U2-24
+Added Pin To Net: NetName=PA8 Pin=U2-25
+Added Pin To Net: NetName=PA9 Pin=U2-26
+Added Pin To Net: NetName=PA10 Pin=U2-27
+Added Pin To Net: NetName=PA11 Pin=U2-28
+Added Pin To Net: NetName=PA12 Pin=U2-29
+Added Pin To Net: NetName=PA15 Pin=U2-30
+Added Pin To Net: NetName=PB3 Pin=U2-31
+Added Pin To Net: NetName=PB4 Pin=U2-32
+Added Pin To Net: NetName=PB5 Pin=U2-33
+Added Pin To Net: NetName=PB6 Pin=U2-34
+Added Pin To Net: NetName=PB7 Pin=U2-35
+Added Pin To Net: NetName=PB8 Pin=U2-36
+Added Pin To Net: NetName=PB9 Pin=U2-37
+Added Pin To Net: NetName=5V Pin=U2-38
+Added Pin To Net: NetName=GND Pin=U2-39
+Added Pin To Net: NetName=3V3 Pin=U2-40
+Added Pin To Net: NetName=GND Pin=u3-0
+Added Pin To Net: NetName=GND Pin=u3-0
+Added Pin To Net: NetName=5V Pin=u3-5
+Added Pin To Net: NetName=5V Pin=u3-5
+Added Pin To Net: NetName=GND Pin=U4-1
+Added Pin To Net: NetName=3V3 Pin=U4-2
+Added Pin To Net: NetName=PB5 Pin=U4-3
+Added Pin To Net: NetName=PB4 Pin=U4-4
+Added Pin To Net: NetName=AO1 Pin=P4-1
+Added Net: Name=AO1
+Added Pin To Net: NetName=AO2 Pin=P4-2
+Added Net: Name=AO2
+Added Pin To Net: NetName=USART2_RX Pin=P1-2
+Added Net: Name=USART2_RX
+Added Member To Class: ClassName=project_12 Member=Component P1 port_uart_4p
+Added Member To Class: ClassName=project_12 Member=Component P2 port_uart_4p
+Added Member To Class: ClassName=project_12 Member=Component P3 port_pwm_3p
+Added Member To Class: ClassName=project_12 Member=Component P4 port_mot_2p
+Added Member To Class: ClassName=project_12 Member=Component P5 port_pwm_3p
+Added Member To Class: ClassName=project_12 Member=Component U1 c3_hw_1
+Added Member To Class: ClassName=project_12 Member=Component U2 f1_hw_1_gw
+Added Member To Class: ClassName=project_12 Member=Component U4 mod_oled

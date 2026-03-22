@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/11_pro_develop/ezProject_2026/std_software/c3_sft_1 -type d -not -path */build/* -not -path */.git/*)",
+      "Bash(grep -E '\\\\.\\(c|h|txt|cmake|md\\)$')",
+      "Bash(grep -vE '\\\\.\\(o|elf|bin|a|hex\\)$')"
+    ]
+  }
+}

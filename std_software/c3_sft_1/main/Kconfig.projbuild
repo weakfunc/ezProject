@@ -1,0 +1,76 @@
+menu "Example Configuration"
+
+    # ============================================================
+    # I/O 能力配置（影响 BLE 配对方式）
+    # BLE_SM_IO_CAP_NO_IO（Just works）：无需用户操作，自动配对，无 MITM 防护
+    # ============================================================
+    choice EXAMPLE_USE_IO_TYPE
+        prompt "I/O Capability"
+        default BLE_SM_IO_CAP_NO_IO
+        help
+            I/O capability of device.
+
+        config BLE_SM_IO_CAP_DISP_ONLY
+            bool "DISPLAY ONLY"
+        config BLE_SM_IO_CAP_DISP_YES_NO
+            bool "DISPLAY YESNO"
+        config BLE_SM_IO_CAP_KEYBOARD_ONLY
+            bool "KEYBOARD ONLY"
+        config BLE_SM_IO_CAP_NO_IO
+            bool "Just works"
+        config BLE_SM_IO_CAP_KEYBOARD_DISP
+            bool "Both KEYBOARD & DISPLAY"
+    endchoice
+
+    # 将 I/O 能力选项转换为整数值，供 C 代码中 sm_io_cap 字段使用
+    config EXAMPLE_IO_TYPE
+        int
+        default 0 if BLE_SM_IO_CAP_DISP_ONLY
+        default 1 if BLE_SM_IO_CAP_DISP_YES_NO
+        default 2 if BLE_SM_IO_CAP_KEYBOARD_ONLY
+        default 3 if BLE_SM_IO_CAP_NO_IO
+        default 4 if BLE_SM_IO_CAP_KEYBOARD_DISP
+
+    # ============================================================
+    # 绑定功能：启用后配对密钥将持久化保存，重连时无需重新配对
+    # ============================================================
+    config EXAMPLE_BONDING
+        bool
+        default n
+        prompt "Use Bonding"
+        help
+            Use this option to enable/disable bonding.
+
+    # ============================================================
+    # MITM 防护：启用中间人攻击防护，要求认证配对（需配合 I/O 能力）
+    # ============================================================
+    config EXAMPLE_MITM
+        bool
+        default n
+        prompt "MITM security"
+        help
+            Use this option to enable/disable MITM security.
+
+    # ============================================================
+    # 安全连接（Secure Connections）：BLE 4.2 特性，使用 ECDH 密钥交换
+    # 需要 NimBLE 安全管理器安全连接支持（BT_NIMBLE_SM_SC）
+    # ============================================================
+    config EXAMPLE_USE_SC
+        bool
+        depends on BT_NIMBLE_SM_SC
+        default n
+        prompt "Use Secure Connection feature"
+        help
+            Use this option to enable/disable Security Manager Secure Connection 4.2 feature.
+
+    # ============================================================
+    # 链路加密：为自定义 GATT 特征添加加密读写权限
+    # 启用后，对端需先建立加密连接才能读写该特征
+    # ============================================================
+    config EXAMPLE_ENCRYPTION
+        bool
+        prompt "Enable Link Encryption"
+        help
+            This adds Encrypted Read and Write permissions in the custom GATT server.
+
+endmenu

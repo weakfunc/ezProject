@@ -1,0 +1,5 @@
+--create .\Objects\f1_lib_1.lib
+.\objects\stdlib_common.o
+.\objects\stdlib_i2c.o
+.\objects\stdlib_tim.o
+.\objects\stdlib_usart.o

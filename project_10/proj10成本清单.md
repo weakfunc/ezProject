@@ -1,0 +1,32 @@
+| 名称                                                         | 链接                                                         | 参数                            | 单价  | 数量 | 备注 |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------- | ----- | ---- | ---- |
+| F1_HW_1                                                      |                                                              |                                 |       |      |      |
+| HX711模块 电子秤架压力传感器套装 称重传感器 电子秤模块5/10KG | [HX711模块 电子秤架压力传感器套装 称重传感器 电子秤模块5/10KG-tmall.com天猫](https://detail.tmall.com/item.htm?ali_refid=a3_430673_1006%3A1309720175%3AH%3Afd1c2kv3mHytuNOmaalhlA%3D%3D%3A0474b59025a338e957e7237251d6fce8&ali_trackid=282_0474b59025a338e957e7237251d6fce8&id=689424092425&loginBonus=1&mi_id=0000yZcjLe0921b867ug5CA6bB5LZDCS56VLOSrDGQnfXbk&mm_sceneid=1_0_1232470108_0&priceTId=2150403317723578160825387e1c28&skuId=4907166376204&spm=a21n57.sem.item.3&utparam={"aplus_abtest"%3A"977b64b7293445a7d43ddc10c0faf3bb"}&xxc=ad_ztc) | 5KG称架成品                     | 15.83 | 1    | 1    |
+| ESP32-C3-PRO/SuperMini开发板 Wi-Fi蓝牙编程学习控制器模块     | [ESP32-C3-PRO/SuperMini开发板 Wi-Fi蓝牙编程学习控制器模块-淘宝网](https://item.taobao.com/item.htm?from=cart&id=965597504812&mi_id=0000_E32nfsGHev8zOCKNmww7tmJyA6ycMybLnITNKgCBjk&skuId=6070989050838&spm=a1z0d.6639537%2F202410.item.d965597504812.3b787484ABG8YB&upStreamPrice=1039) | ESP32-C3-SuperMini开发板_不焊接 | 10.39 | 1    |      |
+| 黄保凯中景园0.96寸OLED显示屏12864 oled液晶屏oled屏 ssd1315   | [黄保凯中景园0.96寸OLED显示屏12864 oled液晶屏oled屏 ssd1315-淘宝网](https://item.taobao.com/item.htm?id=556203716988&pisk=fzcWrhATMgj7qfeRQ2LVffIgTZFBO0OwOwaKS2CPJ7F8vwixJgC89JEvMPUap6JuaJNIDolz44PRrxmZW_lyEW5QZWVpbhRw_4uutWKsCNVfqIUu8BW8y6EEj1YWbhRwOLQYO3tZzhMQDgzQDzC8pWLbMyagvWeRetLbJyS8vunKkfXh3ZWFiqtfp96Bdt86sEHIpja7HKu8DoE28ze764ZXXQlXj8Ztyo1pVga3ykZm6nJjoVk-4rmB1nNnmvnLRmIvY80KhmaS4hs3Yb0rOr0We3guiuggcqO1IcNSARh8hwCEk4rbGrh98OqqGuoKN-LN1JPx_RF-3KxzL7asvbm5R6nO4h5af2HFdZwGOrZwlE6hK2lszE7itEu8er4WbETfq928orZwlE6hK8U0Pq8XlgXh.&skuId=5074913579638&spm=a1z10.1-c-s.w20223525-23284685117.5.36654f54Wrpciz) | 黄蓝双色                        | 3.45  | 1    | 1    |
+| MFRC522 RC522 RFID射频/IC卡感应读写模块 MIFARE读卡器 迷你版  | [MFRC522 RC522 RFID射频/IC卡感应读写模块 MIFARE读卡器 迷你版-淘宝网](https://item.taobao.com/item.htm?id=1001485605946&pisk=f5otMr1SOBAM_cxOzqTHnTIPN4pnBcHw9fk5mSVGlXhKhfNgiPN_Aywansw_1xwbDXGDQ5DX_jnYOxuMQrANH2hZFPcx3dybGjGYiVYHqAka0oOuM3xoQ6wzY3GY5PNCOvyzGsOeWUza0oOkMwjb73Eq60MTI-UBp-24G1Gb1vZQT-ef5jN_R6w43oNjszsWpBB1V0gLC3KBdGnl5qyTWSI09iUEYg4_NCPFDiFTCPLiCWIfcD3Xk-iY1UW3glVZ_Rh24Gr_k4k0HfKOfjHrYXeINnIu1vkorPo64Zz8fWzmfvYR2lGaHzZbJtsjplPsaDZWV6eERA0jbfBAcRoiqrFzJKs4okiuP4GO3LkQf-sP-0m8tTCuw-b6ppQVuPwEz26ii667AfyLZdeOuZzbLJFkppQVuPwUp7vOMZ74lJ5..&skuId=5989195817938&spm=a1z10.3-c-s.w4002-24706531953.17.60b36a4biHEp3Z) | RC522 MINI模块_黑板_套件        | 4.4   | 2    | 1    |
+| 红外开关0-30CM对射 对管分体对射传感器 计数模块 50cm光电开关  | [红外开关0-30CM对射 对管分体对射传感器 计数模块 50cm光电开关-tmall.com天猫](https://detail.tmall.com/item.htm?ali_refid=a3_430673_1006%3A1256430174%3AN%3AdCDIlxJA%2FpYCnRWEXqWtWjVt9Q0NFo%2BR%3A273be99b987a714cd257d101471a6573&ali_trackid=1_273be99b987a714cd257d101471a6573&id=824410520542&loginBonus=1&mi_id=00004ENUFWBcpjZvJlaAP-rJsODf-PICRmgqwZQ3C_zzYIw&mm_sceneid=1_0_666480043_0&priceTId=2147806217723590870752457e1043&spm=a21n57.sem.item.44&utparam={"aplus_abtest"%3A"f42906df716815ac369aa351ec2bb45b"}&xxc=ad_ztc) | 灯孔5mm距离（0-30cm一对）       | 8.64  | 1    | 1    |
+| MG995/996R金属齿轮数字舵机固定翼遥控飞机航模机器人机械臂舵机 | [MG995/996R金属齿轮数字舵机固定翼遥控飞机航模机器人机械臂舵机-淘宝网](https://item.taobao.com/item.htm?from=cart&id=1018423416040&mi_id=0000l2eVuHMyrrGyTffZmbvbZM_mu4W7PP1yuu5FcsOm5Qg&skuId=6026262621140&spm=a1z0d.6639537%2F202410.item.d1018423416040.6d847484YacLZ9&upStreamPrice=1450) | MG995舵机_180度_铁+铜齿轮       | 1     | 1    |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              | **合计：**                      | 44.72 |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+
+**由于快递不能发电池，电池需要自己购买**
+
+| 名称                                                      | 链接                                                         | 参数                                       | 单价 | 数量 | 备注                   |
+| --------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------ | ---- | ---- | ---------------------- |
+| 3.7V4.2V12V三元锂电池充电器XH2.54 PH2.0 SM2.54充电线 8.4V | [3.7V4.2V12V三元锂电池充电器XH2.54 PH2.0 SM2.54充电线 8.4V-淘宝网](https://item.taobao.com/item.htm?id=916655024326&skuId=5949353614816) | 8.4V1A充电器DC头转【XH2.54黑红】【3C认证】 | 16   | 1    | 注意XH接口线序为“黑红” |
+| 3.7v12v7.4v大容量18650锂电池组伏太阳能头灯唱戏机充电池    | [3.7v12v7.4v大容量18650锂电池组伏太阳能头灯唱戏机充电池-淘宝网](https://item.taobao.com/item.htm?ali_refid=a3_430673_1006%3A1678611215%3AH%3A60MQB9Dn41MIkvewnwxO8WKdOD0WwyMA%3A7270f42bcaddcda3091299616164f980&ali_trackid=282_7270f42bcaddcda3091299616164f980&id=997442431960&loginBonus=1&mi_id=0000BMj7F-1SbXZgLbTK9XG7_ysNUNhIM4r3XabSqn9WFeo&mm_sceneid=1_0_3134459460_0&priceTId=2150451117705292092652776e166b&skuId=5981586948957&spm=a21n57.sem.item.4&utparam={"aplus_abtest"%3A"ae9bcaa9dfaa64888b2b469729ad41a0"}&xxc=ad_ztc) | XH黑红【7.4V2800】2节并排带板              | 19.2 | 1    | 注意XH接口线序为“黑红” |
+
+**采购订单截图**
+
+|      |
+| ---- |
+|      |
+|      |
+|      |
+
