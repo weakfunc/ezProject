@@ -6,6 +6,7 @@
 #include "stdlib_usart.h"
 #include "stdlib_tim.h"
 #include "stdlib_i2c.h"
+#include "stdlib_dwt.h"
 
 typedef struct usartInfo{
 	uint8_t rxBuff[64];

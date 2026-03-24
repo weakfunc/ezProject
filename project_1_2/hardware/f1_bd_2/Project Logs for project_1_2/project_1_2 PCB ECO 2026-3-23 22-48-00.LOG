@@ -1,0 +1,22 @@
+Removed Pin From Net: NetName=5V Pin=P1-4
+Removed Pin From Net: NetName=5V Pin=U2-2
+Removed Pin From Net: NetName=GND Pin=u5-2
+Removed Pin From Net: NetName=GND Pin=u5-2
+Removed Pin From Net: NetName=5V Pin=u5-3
+Removed Pin From Net: NetName=5V Pin=u5-3
+Removed Pin From Net: NetName=12V Pin=u5-4
+Removed Pin From Net: NetName=12V Pin=u5-4
+Removed Member From Class: ClassName=project_1_2 Member=u5
+Added Component: Designator=u?(POW_HW_2)
+Added Pin To Net: NetName=3V3 Pin=U2-2
+Added Pin To Net: NetName=12V Pin=u?-3
+Added Pin To Net: NetName=12V Pin=u?-3
+Added Pin To Net: NetName=5V Pin=u?-4
+Added Pin To Net: NetName=5V Pin=u?-4
+Added Pin To Net: NetName=5V_POW Pin=P1-4
+Added Pin To Net: NetName=5V_POW Pin=u?-5
+Added Pin To Net: NetName=5V_POW Pin=u?-5
+Added Net: Name=5V_POW
+Added Member To Class: ClassName=project_1_2 Member=Component U1 f1_hw_2_gw
+Added Member To Class: ClassName=project_1_2 Member=Component u? pow_hw_2
+Added Rule: Name=Schematic Supply Nets_4

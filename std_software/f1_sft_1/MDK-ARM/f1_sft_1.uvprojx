@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;.\userLib;.\userDriver;.\userApp</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;./userLib;./userDriver;./userApp</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -669,6 +669,11 @@
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_ws2812.c</FilePath>
             </File>
+            <File>
+              <FileName>driver_GY615.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userDriver\driver_GY615.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -693,6 +698,11 @@
               <FileName>stdlib_usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userLib\stdlib_usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stdlib_dwt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userLib\stdlib_dwt.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -4,6 +4,7 @@ systemTaskInfo_t systemTaskInfo;
 usartInfo_t usartInfo[3];
 
 void systemTaskInit(){
+	STDLIB_DWT_Init();
 	STDLIB_COMMON_PeriphInit();
 	STDLIB_TIM_PwmInit();
 	STDLIB_USART_Init();
