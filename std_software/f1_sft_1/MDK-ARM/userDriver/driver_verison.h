@@ -15,7 +15,7 @@
 #include "stdlib_usart.h"
 
 /*============================================================================
- * 向下依赖（依赖 stdlib_usart）
+ * 向下依赖宏（driver层向stdlib层索要）
  *============================================================================*/
 /* MAIXCAM默认绑定USART2 */
 #define VERISON_DEP_UART_PORT                       UART_PORT2
@@ -23,32 +23,34 @@
 #define VERISON_DEP_UART_SET_CUSTOM_CB(cb)          STDLIB_USART_SetCustomCb(VERISON_DEP_UART_PORT, (cb))
 
 /*============================================================================
- * 向上提供
+ * 向上提供宏（driver层向task层提供）
  *============================================================================*/
 /* MAIXCAM协议数据段长度 */
 #define VERISON_DATA_LEN                            (10U)
 
-/* MAIXCAM解析结果结构体 */
-typedef struct maixCamInfo{
-  uint8_t ctrl;
-  uint8_t data[VERISON_DATA_LEN];
-  uint8_t crc8;
-  uint8_t cnt;
-  uint32_t crcErrTotalCnt;
-  uint32_t rxTotalCnt;
-}maixCamInfo_t;
-
+/* 解析后数据字段联合体 */
 typedef union {
-    uint8_t  raw[10];        // 原始字节数组
-    struct {
-        int32_t var1;        // [0]~[3]
-        int32_t var2;        // [4]~[7]
-        uint8_t reserved[2]; // [8]~[9] 预留
-    } field;
-} realData_t;
+  uint8_t  raw[10];        /* 原始字节数组 */
+  struct {
+    int32_t var1;          /* [0]~[3] */
+    int32_t var2;          /* [4]~[7] */
+    uint8_t reserved[2];  /* [8]~[9] 预留 */
+  } field;
+} verisonRealData_t;
 
-extern maixCamInfo_t maixCamInfo;
-extern realData_t versionRealData;
+/* MAIXCAM模块信息结构体 */
+typedef struct {
+  uint8_t           ctrl;             /* 控制字段 */
+  uint8_t           data[VERISON_DATA_LEN]; /* 原始数据段 */
+  uint8_t           crc8;             /* CRC8校验值 */
+  uint8_t           cnt;              /* 包计数 */
+  uint32_t          crcErrTotalCnt;   /* CRC错误包总计数 */
+  uint32_t          rxTotalCnt;       /* 接收完整包总计数 */
+  uint8_t           hasNewData;       /* 是否有新数据标志 */
+  verisonRealData_t realData;         /* 解析后数据字段 */
+} verisonInfo_t;
+
+extern verisonInfo_t verisonInfo;
 
 /* 初始化MAIXCAM驱动并注册USART2解析回调 */
 void DRIVER_VERISON_Init(void);

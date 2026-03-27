@@ -1,10 +1,11 @@
 #ifndef __DRIVER_QR_H__
 #define __DRIVER_QR_H__
 
+#include <stdint.h>
 #include "stdlib_usart.h"
 
 /*============================================================================
- * 向下依赖（依赖 stdlib_usart）
+ * 向下依赖宏（driver层向stdlib层索要）
  *============================================================================*/
 /* 二维码模块使用的串口端口 */
 #define QR_DEP_UART_PORT                  UART_PORT2
@@ -12,8 +13,16 @@
 #define QR_DEP_UART_SET_CUSTOM_CB(cb)     STDLIB_USART_SetCustomCb(QR_DEP_UART_PORT, (cb))
 
 /*============================================================================
- * 向上提供
+ * 向上提供宏（driver层向task层提供）
  *============================================================================*/
+
+/* 二维码模块信息结构体 */
+typedef struct {
+  uint32_t data;       /* 最新解析数据（大端序帧第5至第8字节） */
+  uint8_t  hasNewData; /* 是否有新数据标志 */
+} qrInfo_t;
+
+extern qrInfo_t qrInfo;
 
 /* 初始化二维码扫描驱动，绑定 USART2 字节回调 */
 void DRIVER_QR_Init(void);

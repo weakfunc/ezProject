@@ -29,10 +29,8 @@ static qrParseState_e qrParseState = QR_STATE_WAIT_SOF1;
 static uint8_t qrBodyIdx = 0U;
 /* 帧体缓冲区 */
 static uint8_t qrBodyBuf[QR_BODY_LEN];
-/* 最新数据缓存（大端序存储帧第5至第8字节） */
-static uint32_t qrDataCache = 0U;
-/* 新数据到达标志 */
-static uint8_t qrHasNewDataFlag = 0U;
+/* 二维码模块数据 */
+qrInfo_t qrInfo;
 
 /* 将单个 ASCII 十六进制字符转换为 4bit 数值，失败返回 0xFF */
 static uint8_t __DRIVER_QR_AsciiHexToNibble(uint8_t ch){
@@ -84,8 +82,8 @@ static void __DRIVER_QR_UartByteCallback(uint8_t port, uint8_t byte){
     qrBodyBuf[qrBodyIdx++] = byte;
     if(qrBodyIdx >= QR_BODY_LEN){
       /* 帧接收完毕，将第5至第8字节的 ASCII 十六进制字符串解析为整数 */
-      qrDataCache = __DRIVER_QR_ParseHexStr(&qrBodyBuf[QR_BODY_DATA_OFF]);
-      qrHasNewDataFlag = 1U;
+      qrInfo.data = __DRIVER_QR_ParseHexStr(&qrBodyBuf[QR_BODY_DATA_OFF]);
+      qrInfo.hasNewData = 1U;
       qrParseState = QR_STATE_WAIT_SOF1;
     }
     break;
@@ -110,20 +108,20 @@ void DRIVER_QR_Init(void){
 void DRIVER_QR_Reset(void){
   qrParseState     = QR_STATE_WAIT_SOF1;
   qrBodyIdx        = 0U;
-  qrDataCache      = 0U;
-  qrHasNewDataFlag = 0U;
+  qrInfo.data      = 0U;
+  qrInfo.hasNewData = 0U;
 }
 
 /* 返回是否有新数据到达 */
 uint8_t DRIVER_QR_HasNewData(void){
-  return qrHasNewDataFlag;
+  return qrInfo.hasNewData;
 }
 
 /* 获取最新二维码数据，有新数据返回1并清除标志，否则返回0 */
 uint8_t DRIVER_QR_GetData(uint32_t *data){
   if(data == NULL) return 0U;
-  if(qrHasNewDataFlag == 0U) return 0U;
-  *data = qrDataCache;
-  qrHasNewDataFlag = 0U;
+  if(qrInfo.hasNewData == 0U) return 0U;
+  *data = qrInfo.data;
+  qrInfo.hasNewData = 0U;
   return 1U;
 }

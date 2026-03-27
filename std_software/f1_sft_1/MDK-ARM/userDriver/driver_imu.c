@@ -35,7 +35,7 @@ typedef struct {
 } imuParseCtx_t;
 
 /* IMU最新数据缓存 */
-static imuInfo_t imuInfoCache;
+imuInfo_t imuInfo;
 /* IMU协议解析状态 */
 static imuParseCtx_t imuParseCtx;
 
@@ -91,76 +91,76 @@ static int32_t __DRIVER_IMU_ParseInt32(uint8_t byte0, uint8_t byte1, uint8_t byt
 
 /* 将最新帧对应的数据类型标记为有效并更新 */
 static void __DRIVER_IMU_MarkUpdated(uint32_t dataFlag){
-    imuInfoCache.validMask |= dataFlag;
-    imuInfoCache.updateMask |= dataFlag;
-    imuInfoCache.lastUpdateTickMs = IMU_DEP_TICK_MS();
+    imuInfo.validMask |= dataFlag;
+    imuInfo.updateMask |= dataFlag;
+    imuInfo.lastUpdateTickMs = IMU_DEP_TICK_MS();
 }
 
 /* 解析姿态角数据帧 */
 static void __DRIVER_IMU_ParseAngleFrame(const uint8_t *data){
-    imuInfoCache.angle.rawRoll = __DRIVER_IMU_ParseInt16(data[0], data[1]);
-    imuInfoCache.angle.rawPitch = __DRIVER_IMU_ParseInt16(data[2], data[3]);
-    imuInfoCache.angle.rawYaw = __DRIVER_IMU_ParseInt16(data[4], data[5]);
+    imuInfo.angle.rawRoll = __DRIVER_IMU_ParseInt16(data[0], data[1]);
+    imuInfo.angle.rawPitch = __DRIVER_IMU_ParseInt16(data[2], data[3]);
+    imuInfo.angle.rawYaw = __DRIVER_IMU_ParseInt16(data[4], data[5]);
 
-    imuInfoCache.angle.rollDeg = (float)imuInfoCache.angle.rawRoll * IMU_ANGLE_SCALE_DEG;
-    imuInfoCache.angle.pitchDeg = (float)imuInfoCache.angle.rawPitch * IMU_ANGLE_SCALE_DEG;
-    imuInfoCache.angle.yawDeg = (float)imuInfoCache.angle.rawYaw * IMU_ANGLE_SCALE_DEG;
+    imuInfo.angle.rollDeg = (float)imuInfo.angle.rawRoll * IMU_ANGLE_SCALE_DEG;
+    imuInfo.angle.pitchDeg = (float)imuInfo.angle.rawPitch * IMU_ANGLE_SCALE_DEG;
+    imuInfo.angle.yawDeg = (float)imuInfo.angle.rawYaw * IMU_ANGLE_SCALE_DEG;
 
     __DRIVER_IMU_MarkUpdated(IMU_DATA_FLAG_ANGLE);
 }
 
 /* 解析四元数数据帧 */
 static void __DRIVER_IMU_ParseQuaternionFrame(const uint8_t *data){
-    imuInfoCache.quaternion.rawQ0 = __DRIVER_IMU_ParseInt16(data[0], data[1]);
-    imuInfoCache.quaternion.rawQ1 = __DRIVER_IMU_ParseInt16(data[2], data[3]);
-    imuInfoCache.quaternion.rawQ2 = __DRIVER_IMU_ParseInt16(data[4], data[5]);
-    imuInfoCache.quaternion.rawQ3 = __DRIVER_IMU_ParseInt16(data[6], data[7]);
+    imuInfo.quaternion.rawQ0 = __DRIVER_IMU_ParseInt16(data[0], data[1]);
+    imuInfo.quaternion.rawQ1 = __DRIVER_IMU_ParseInt16(data[2], data[3]);
+    imuInfo.quaternion.rawQ2 = __DRIVER_IMU_ParseInt16(data[4], data[5]);
+    imuInfo.quaternion.rawQ3 = __DRIVER_IMU_ParseInt16(data[6], data[7]);
 
-    imuInfoCache.quaternion.q0 = (float)imuInfoCache.quaternion.rawQ0 * IMU_QUATERNION_SCALE;
-    imuInfoCache.quaternion.q1 = (float)imuInfoCache.quaternion.rawQ1 * IMU_QUATERNION_SCALE;
-    imuInfoCache.quaternion.q2 = (float)imuInfoCache.quaternion.rawQ2 * IMU_QUATERNION_SCALE;
-    imuInfoCache.quaternion.q3 = (float)imuInfoCache.quaternion.rawQ3 * IMU_QUATERNION_SCALE;
+    imuInfo.quaternion.q0 = (float)imuInfo.quaternion.rawQ0 * IMU_QUATERNION_SCALE;
+    imuInfo.quaternion.q1 = (float)imuInfo.quaternion.rawQ1 * IMU_QUATERNION_SCALE;
+    imuInfo.quaternion.q2 = (float)imuInfo.quaternion.rawQ2 * IMU_QUATERNION_SCALE;
+    imuInfo.quaternion.q3 = (float)imuInfo.quaternion.rawQ3 * IMU_QUATERNION_SCALE;
 
     __DRIVER_IMU_MarkUpdated(IMU_DATA_FLAG_QUATERNION);
 }
 
 /* 解析加速度计与陀螺仪数据帧 */
 static void __DRIVER_IMU_ParseAccelGyroFrame(const uint8_t *data){
-    imuInfoCache.accel.rawX = __DRIVER_IMU_ParseInt16(data[0], data[1]);
-    imuInfoCache.accel.rawY = __DRIVER_IMU_ParseInt16(data[2], data[3]);
-    imuInfoCache.accel.rawZ = __DRIVER_IMU_ParseInt16(data[4], data[5]);
-    imuInfoCache.gyro.rawX = __DRIVER_IMU_ParseInt16(data[6], data[7]);
-    imuInfoCache.gyro.rawY = __DRIVER_IMU_ParseInt16(data[8], data[9]);
-    imuInfoCache.gyro.rawZ = __DRIVER_IMU_ParseInt16(data[10], data[11]);
+    imuInfo.accel.rawX = __DRIVER_IMU_ParseInt16(data[0], data[1]);
+    imuInfo.accel.rawY = __DRIVER_IMU_ParseInt16(data[2], data[3]);
+    imuInfo.accel.rawZ = __DRIVER_IMU_ParseInt16(data[4], data[5]);
+    imuInfo.gyro.rawX = __DRIVER_IMU_ParseInt16(data[6], data[7]);
+    imuInfo.gyro.rawY = __DRIVER_IMU_ParseInt16(data[8], data[9]);
+    imuInfo.gyro.rawZ = __DRIVER_IMU_ParseInt16(data[10], data[11]);
 
-    imuInfoCache.accel.xG = ((float)imuInfoCache.accel.rawX / 32768.0f) * IMU_CFG_ACC_FSR_G;
-    imuInfoCache.accel.yG = ((float)imuInfoCache.accel.rawY / 32768.0f) * IMU_CFG_ACC_FSR_G;
-    imuInfoCache.accel.zG = ((float)imuInfoCache.accel.rawZ / 32768.0f) * IMU_CFG_ACC_FSR_G;
+    imuInfo.accel.xG = ((float)imuInfo.accel.rawX / 32768.0f) * IMU_CFG_ACC_FSR_G;
+    imuInfo.accel.yG = ((float)imuInfo.accel.rawY / 32768.0f) * IMU_CFG_ACC_FSR_G;
+    imuInfo.accel.zG = ((float)imuInfo.accel.rawZ / 32768.0f) * IMU_CFG_ACC_FSR_G;
 
-    imuInfoCache.gyro.xDps = ((float)imuInfoCache.gyro.rawX / 32768.0f) * IMU_CFG_GYRO_FSR_DPS;
-    imuInfoCache.gyro.yDps = ((float)imuInfoCache.gyro.rawY / 32768.0f) * IMU_CFG_GYRO_FSR_DPS;
-    imuInfoCache.gyro.zDps = ((float)imuInfoCache.gyro.rawZ / 32768.0f) * IMU_CFG_GYRO_FSR_DPS;
+    imuInfo.gyro.xDps = ((float)imuInfo.gyro.rawX / 32768.0f) * IMU_CFG_GYRO_FSR_DPS;
+    imuInfo.gyro.yDps = ((float)imuInfo.gyro.rawY / 32768.0f) * IMU_CFG_GYRO_FSR_DPS;
+    imuInfo.gyro.zDps = ((float)imuInfo.gyro.rawZ / 32768.0f) * IMU_CFG_GYRO_FSR_DPS;
 
     __DRIVER_IMU_MarkUpdated(IMU_DATA_FLAG_ACCEL_GYRO);
 }
 
 /* 解析磁力计数据帧 */
 static void __DRIVER_IMU_ParseMagFrame(const uint8_t *data){
-    imuInfoCache.mag.rawX = __DRIVER_IMU_ParseInt16(data[0], data[1]);
-    imuInfoCache.mag.rawY = __DRIVER_IMU_ParseInt16(data[2], data[3]);
-    imuInfoCache.mag.rawZ = __DRIVER_IMU_ParseInt16(data[4], data[5]);
-    imuInfoCache.mag.rawTemp = __DRIVER_IMU_ParseInt16(data[6], data[7]);
-    imuInfoCache.mag.temperatureDegC = (float)imuInfoCache.mag.rawTemp / 100.0f;
+    imuInfo.mag.rawX = __DRIVER_IMU_ParseInt16(data[0], data[1]);
+    imuInfo.mag.rawY = __DRIVER_IMU_ParseInt16(data[2], data[3]);
+    imuInfo.mag.rawZ = __DRIVER_IMU_ParseInt16(data[4], data[5]);
+    imuInfo.mag.rawTemp = __DRIVER_IMU_ParseInt16(data[6], data[7]);
+    imuInfo.mag.temperatureDegC = (float)imuInfo.mag.rawTemp / 100.0f;
 
     __DRIVER_IMU_MarkUpdated(IMU_DATA_FLAG_MAG);
 }
 
 /* 解析高度计/气压计数据帧 */
 static void __DRIVER_IMU_ParseAltimeterFrame(const uint8_t *data){
-    imuInfoCache.altimeter.pressurePa = __DRIVER_IMU_ParseInt32(data[0], data[1], data[2], data[3]);
-    imuInfoCache.altimeter.altitudeCm = __DRIVER_IMU_ParseInt32(data[4], data[5], data[6], data[7]);
-    imuInfoCache.altimeter.rawTemp = __DRIVER_IMU_ParseInt16(data[8], data[9]);
-    imuInfoCache.altimeter.temperatureDegC = (float)imuInfoCache.altimeter.rawTemp / 100.0f;
+    imuInfo.altimeter.pressurePa = __DRIVER_IMU_ParseInt32(data[0], data[1], data[2], data[3]);
+    imuInfo.altimeter.altitudeCm = __DRIVER_IMU_ParseInt32(data[4], data[5], data[6], data[7]);
+    imuInfo.altimeter.rawTemp = __DRIVER_IMU_ParseInt16(data[8], data[9]);
+    imuInfo.altimeter.temperatureDegC = (float)imuInfo.altimeter.rawTemp / 100.0f;
 
     __DRIVER_IMU_MarkUpdated(IMU_DATA_FLAG_ALTIMETER);
 }
@@ -278,7 +278,7 @@ void DRIVER_IMU_Init(void){
 void DRIVER_IMU_Reset(void){
     uint32_t primask = __DRIVER_IMU_EnterCritical();
 
-    memset(&imuInfoCache, 0, sizeof(imuInfoCache));
+    memset(&imuInfo, 0, sizeof(imuInfo));
     __DRIVER_IMU_ResetParser();
 
     __DRIVER_IMU_ExitCritical(primask);
@@ -289,7 +289,7 @@ uint8_t DRIVER_IMU_HasNewData(void){
     uint8_t hasNewData;
     uint32_t primask = __DRIVER_IMU_EnterCritical();
 
-    hasNewData = (imuInfoCache.updateMask != 0U) ? 1U : 0U;
+    hasNewData = (imuInfo.updateMask != 0U) ? 1U : 0U;
 
     __DRIVER_IMU_ExitCritical(primask);
     return hasNewData;
@@ -300,7 +300,7 @@ uint32_t DRIVER_IMU_GetUpdateMask(void){
     uint32_t updateMask;
     uint32_t primask = __DRIVER_IMU_EnterCritical();
 
-    updateMask = imuInfoCache.updateMask;
+    updateMask = imuInfo.updateMask;
 
     __DRIVER_IMU_ExitCritical(primask);
     return updateMask;
@@ -314,10 +314,10 @@ uint8_t DRIVER_IMU_GetInfo(imuInfo_t *info){
     if(info == NULL) return 0U;
 
     primask = __DRIVER_IMU_EnterCritical();
-    hasValidData = (imuInfoCache.validMask != 0U) ? 1U : 0U;
+    hasValidData = (imuInfo.validMask != 0U) ? 1U : 0U;
     if(hasValidData != 0U){
-        *info = imuInfoCache;
-        imuInfoCache.updateMask = 0U;
+        *info = imuInfo;
+        imuInfo.updateMask = 0U;
     }
     __DRIVER_IMU_ExitCritical(primask);
 
@@ -332,9 +332,9 @@ uint8_t DRIVER_IMU_GetAngle(imuAngleData_t *angle){
     if(angle == NULL) return 0U;
 
     primask = __DRIVER_IMU_EnterCritical();
-    hasAngle = ((imuInfoCache.validMask & IMU_DATA_FLAG_ANGLE) != 0U) ? 1U : 0U;
+    hasAngle = ((imuInfo.validMask & IMU_DATA_FLAG_ANGLE) != 0U) ? 1U : 0U;
     if(hasAngle != 0U){
-        *angle = imuInfoCache.angle;
+        *angle = imuInfo.angle;
     }
     __DRIVER_IMU_ExitCritical(primask);
 
@@ -349,9 +349,9 @@ uint8_t DRIVER_IMU_GetGyro(imuGyroData_t *gyro){
     if(gyro == NULL) return 0U;
 
     primask = __DRIVER_IMU_EnterCritical();
-    hasGyro = ((imuInfoCache.validMask & IMU_DATA_FLAG_ACCEL_GYRO) != 0U) ? 1U : 0U;
+    hasGyro = ((imuInfo.validMask & IMU_DATA_FLAG_ACCEL_GYRO) != 0U) ? 1U : 0U;
     if(hasGyro != 0U){
-        *gyro = imuInfoCache.gyro;
+        *gyro = imuInfo.gyro;
     }
     __DRIVER_IMU_ExitCritical(primask);
 
@@ -366,9 +366,9 @@ uint8_t DRIVER_IMU_GetAccel(imuAccelData_t *accel){
     if(accel == NULL) return 0U;
 
     primask = __DRIVER_IMU_EnterCritical();
-    hasAccel = ((imuInfoCache.validMask & IMU_DATA_FLAG_ACCEL_GYRO) != 0U) ? 1U : 0U;
+    hasAccel = ((imuInfo.validMask & IMU_DATA_FLAG_ACCEL_GYRO) != 0U) ? 1U : 0U;
     if(hasAccel != 0U){
-        *accel = imuInfoCache.accel;
+        *accel = imuInfo.accel;
     }
     __DRIVER_IMU_ExitCritical(primask);
 
@@ -383,9 +383,9 @@ uint8_t DRIVER_IMU_GetAltimeter(imuAltimeterData_t *altimeter){
     if(altimeter == NULL) return 0U;
 
     primask = __DRIVER_IMU_EnterCritical();
-    hasAltimeter = ((imuInfoCache.validMask & IMU_DATA_FLAG_ALTIMETER) != 0U) ? 1U : 0U;
+    hasAltimeter = ((imuInfo.validMask & IMU_DATA_FLAG_ALTIMETER) != 0U) ? 1U : 0U;
     if(hasAltimeter != 0U){
-        *altimeter = imuInfoCache.altimeter;
+        *altimeter = imuInfo.altimeter;
     }
     __DRIVER_IMU_ExitCritical(primask);
 
@@ -400,9 +400,9 @@ uint8_t DRIVER_IMU_GetQuaternion(imuQuaternionData_t *quaternion){
     if(quaternion == NULL) return 0U;
 
     primask = __DRIVER_IMU_EnterCritical();
-    hasQuaternion = ((imuInfoCache.validMask & IMU_DATA_FLAG_QUATERNION) != 0U) ? 1U : 0U;
+    hasQuaternion = ((imuInfo.validMask & IMU_DATA_FLAG_QUATERNION) != 0U) ? 1U : 0U;
     if(hasQuaternion != 0U){
-        *quaternion = imuInfoCache.quaternion;
+        *quaternion = imuInfo.quaternion;
     }
     __DRIVER_IMU_ExitCritical(primask);
 

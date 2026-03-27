@@ -40,6 +40,8 @@ typedef struct {
     uint8_t hasCourse;
 } gpsInfo_t;
 
+extern gpsInfo_t gpsInfo;
+
 /* 初始化GPS驱动并绑定USART3字节回调 */
 void DRIVER_GPS_Init(void);
 

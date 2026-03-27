@@ -100,6 +100,8 @@ typedef struct {
     uint32_t lastUpdateTickMs;
 } imuInfo_t;
 
+extern imuInfo_t imuInfo;
+
 /* 初始化IMU驱动并注册USART3字节回调 */
 void DRIVER_IMU_Init(void);
 

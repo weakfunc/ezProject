@@ -7,7 +7,7 @@
  *============================================================================*/
 
 /* GPS最新数据缓存 */
-static gpsInfo_t gpsInfoCache;
+gpsInfo_t gpsInfo;
 /* GPS数据更新标志 */
 static uint8_t gpsHasNewDataFlag = 0U;
 /* NMEA单行缓冲区 */
@@ -205,32 +205,32 @@ static void __DRIVER_GPS_ParseRmc(char *fields[], uint8_t fieldCount){
 
     if((fields == NULL) || (fieldCount < 10U)) return;
 
-    gpsInfoCache.fixValid = (fields[2][0] == 'A') ? 1U : 0U;
-    if(gpsInfoCache.fixValid == 0U){
-        gpsInfoCache.hasLocation = 0U;
+    gpsInfo.fixValid = (fields[2][0] == 'A') ? 1U : 0U;
+    if(gpsInfo.fixValid == 0U){
+        gpsInfo.hasLocation = 0U;
     }
 
-    if(__DRIVER_GPS_ParseUtcTimeField(fields[1], &gpsInfoCache.utc) != 0U){
-        gpsInfoCache.hasTime = 1U;
+    if(__DRIVER_GPS_ParseUtcTimeField(fields[1], &gpsInfo.utc) != 0U){
+        gpsInfo.hasTime = 1U;
     }
-    if(__DRIVER_GPS_ParseUtcDateField(fields[9], &gpsInfoCache.utc) != 0U){
-        gpsInfoCache.hasTime = 1U;
+    if(__DRIVER_GPS_ParseUtcDateField(fields[9], &gpsInfo.utc) != 0U){
+        gpsInfo.hasTime = 1U;
     }
 
-    if((gpsInfoCache.fixValid != 0U) &&
-       (__DRIVER_GPS_ParseCoordinateField(fields[3], fields[4][0], &gpsInfoCache.latitudeDeg) != 0U) &&
-       (__DRIVER_GPS_ParseCoordinateField(fields[5], fields[6][0], &gpsInfoCache.longitudeDeg) != 0U)){
-        gpsInfoCache.hasLocation = 1U;
+    if((gpsInfo.fixValid != 0U) &&
+       (__DRIVER_GPS_ParseCoordinateField(fields[3], fields[4][0], &gpsInfo.latitudeDeg) != 0U) &&
+       (__DRIVER_GPS_ParseCoordinateField(fields[5], fields[6][0], &gpsInfo.longitudeDeg) != 0U)){
+        gpsInfo.hasLocation = 1U;
     }
 
     if(__DRIVER_GPS_ParseFloat(fields[7], &value) != 0U){
-        gpsInfoCache.speedKnots = value;
-        gpsInfoCache.speedKmh = value * 1.852f;
+        gpsInfo.speedKnots = value;
+        gpsInfo.speedKmh = value * 1.852f;
     }
 
     if(__DRIVER_GPS_ParseFloat(fields[8], &value) != 0U){
-        gpsInfoCache.courseDeg = value;
-        gpsInfoCache.hasCourse = 1U;
+        gpsInfo.courseDeg = value;
+        gpsInfo.hasCourse = 1U;
     }
 
     gpsHasNewDataFlag = 1U;
@@ -243,16 +243,16 @@ static void __DRIVER_GPS_ParseVtg(char *fields[], uint8_t fieldCount){
     if((fields == NULL) || (fieldCount < 8U)) return;
 
     if(__DRIVER_GPS_ParseFloat(fields[1], &value) != 0U){
-        gpsInfoCache.courseDeg = value;
-        gpsInfoCache.hasCourse = 1U;
+        gpsInfo.courseDeg = value;
+        gpsInfo.hasCourse = 1U;
     }
 
     if(__DRIVER_GPS_ParseFloat(fields[5], &value) != 0U){
-        gpsInfoCache.speedKnots = value;
+        gpsInfo.speedKnots = value;
     }
 
     if(__DRIVER_GPS_ParseFloat(fields[7], &value) != 0U){
-        gpsInfoCache.speedKmh = value;
+        gpsInfo.speedKmh = value;
     }
 
     gpsHasNewDataFlag = 1U;
@@ -335,7 +335,7 @@ void DRIVER_GPS_Init(void){
 
 /* 清空缓存与解析状态 */
 void DRIVER_GPS_Reset(void){
-    memset(&gpsInfoCache, 0, sizeof(gpsInfoCache));
+    memset(&gpsInfo, 0, sizeof(gpsInfo));
     memset(gpsNmeaLineBuf, 0, sizeof(gpsNmeaLineBuf));
     gpsHasNewDataFlag = 0U;
     gpsNmeaLineIdx = 0U;
@@ -350,41 +350,41 @@ uint8_t DRIVER_GPS_HasNewData(void){
 /* 获取GPS完整信息快照 */
 uint8_t DRIVER_GPS_GetInfo(gpsInfo_t *info){
     if(info == NULL) return 0U;
-    if((gpsInfoCache.hasLocation == 0U) &&
-       (gpsInfoCache.hasTime == 0U) &&
-       (gpsInfoCache.hasCourse == 0U)){
+    if((gpsInfo.hasLocation == 0U) &&
+       (gpsInfo.hasTime == 0U) &&
+       (gpsInfo.hasCourse == 0U)){
         return 0U;
     }
 
-    *info = gpsInfoCache;
+    *info = gpsInfo;
     gpsHasNewDataFlag = 0U;
     return 1U;
 }
 
 /* 获取纬度数据 */
 uint8_t DRIVER_GPS_GetLatitudeDeg(float *latitudeDeg){
-    if((latitudeDeg == NULL) || (gpsInfoCache.hasLocation == 0U)) return 0U;
-    *latitudeDeg = gpsInfoCache.latitudeDeg;
+    if((latitudeDeg == NULL) || (gpsInfo.hasLocation == 0U)) return 0U;
+    *latitudeDeg = gpsInfo.latitudeDeg;
     return 1U;
 }
 
 /* 获取经度数据 */
 uint8_t DRIVER_GPS_GetLongitudeDeg(float *longitudeDeg){
-    if((longitudeDeg == NULL) || (gpsInfoCache.hasLocation == 0U)) return 0U;
-    *longitudeDeg = gpsInfoCache.longitudeDeg;
+    if((longitudeDeg == NULL) || (gpsInfo.hasLocation == 0U)) return 0U;
+    *longitudeDeg = gpsInfo.longitudeDeg;
     return 1U;
 }
 
 /* 获取UTC时间数据 */
 uint8_t DRIVER_GPS_GetUtcTime(gpsUtcTime_t *utcTime){
-    if((utcTime == NULL) || (gpsInfoCache.hasTime == 0U)) return 0U;
-    *utcTime = gpsInfoCache.utc;
+    if((utcTime == NULL) || (gpsInfo.hasTime == 0U)) return 0U;
+    *utcTime = gpsInfo.utc;
     return 1U;
 }
 
 /* 获取航向角数据 */
 uint8_t DRIVER_GPS_GetCourseDeg(float *courseDeg){
-    if((courseDeg == NULL) || (gpsInfoCache.hasCourse == 0U)) return 0U;
-    *courseDeg = gpsInfoCache.courseDeg;
+    if((courseDeg == NULL) || (gpsInfo.hasCourse == 0U)) return 0U;
+    *courseDeg = gpsInfo.courseDeg;
     return 1U;
 }

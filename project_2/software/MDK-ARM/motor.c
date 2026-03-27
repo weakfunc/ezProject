@@ -3,7 +3,7 @@
 
 motorConfig_t motorConfig = {
 	.axisXref = 15,					//距目标左右偏移
-	.axisYref = 100,				//距目标前后间距		
+	.axisYref = 80,				//距目标前后间距		
 };
 
 void motorTaskInit(){
@@ -24,8 +24,8 @@ void motorTaskInit(){
 	SET_MOTOR_E_SPEED(100);
 	pid_init(&k210Pid[0], 2, 0.5 , 0, 120, 30, 150);	//x轴pid
 	pid_init(&k210Pid[1], 8, 0.2 , 0, 150, 50, 200);		//y轴pid
-	pid_init(&motorPid[4], 10, 0.2, 0, 350, 50, 400);
-	motorConfig.speedRef[4] = 20;
+	pid_init(&motorPid[4], 15, 0.5, 0, 350, 50, 400);
+	motorConfig.speedRef[4] = 30;
 }
 
 void chassicControl(float vx, float vy, float vz){
@@ -105,7 +105,7 @@ void autoFind(){
 		case 0:{
 			motorConfig.vx = 0;
 			motorConfig.vy = 0;
-			motorConfig.vz = 1000;
+			motorConfig.vz = 2000;
 			chassicControl(motorConfig.vx, motorConfig.vy, motorConfig.vz);
 			time++;
 			if(time > 1500){
@@ -115,15 +115,15 @@ void autoFind(){
 			break;
 		}
 		
-		case 1:{
-			avoidance();
-			time++;
-			if(time > 2000){
-				time = 0;
-				step++;
-			}
-			break;
-		}		
+//		case 1:{
+//			avoidance();
+//			time++;
+//			if(time > 2000){
+//				time = 0;
+//				step++;
+//			}
+//			break;
+//		}		
 		default:{
 			step = 0;
 			break;
@@ -132,8 +132,8 @@ void autoFind(){
 	chassicControl(motorConfig.vx, motorConfig.vy, motorConfig.vz);
 }
 void getPingPang(){
-	if(motorConfig.getRubbishTime > 3000){				
-		motorConfig.getPingPangFlag = 0;
+	if(motorConfig.getRubbishTime > 3500){				
+		motorConfig.getWangqiuFlag = 0;
 		motorConfig.getRubbishTime = 0;	
 		motorConfig.vx = 0;
 		motorConfig.vy = 0;
@@ -141,7 +141,7 @@ void getPingPang(){
 		motorConfig.getRubbishTime++;
 		chassicControl(motorConfig.vx, motorConfig.vy, motorConfig.vz);
 	}else{
-		motorConfig.vx = 100;
+		motorConfig.vx = 160;
 		motorConfig.vy = 0;
 		motorConfig.vz = 0;
 		motorConfig.getRubbishTime++;
@@ -175,8 +175,8 @@ void motorTaskUpdata(void *argument){
 			chassicControl(motorConfig.vx, motorConfig.vy, motorConfig.vz);
 		}
 		
-		if(sysConfig.button2_push == 1){
-			if(motorConfig.getPingPangFlag == 1){
+//		if(sysConfig.button2_push == 1){
+			if(motorConfig.getWangqiuFlag == 1){
 				getPingPang();
 			}else if(sysConfig.isConnect){
 				pid_calc(&k210Pid[0], motorConfig.axisXref, k210RevPack.dx);			
@@ -203,7 +203,7 @@ void motorTaskUpdata(void *argument){
 				autoFind();
 			}
 			
-		}
+//		}
 		gunlunControl();
 		if(motorConfig.motorTaskCnt%50 == 0){
 			getSpeed();

@@ -49,7 +49,7 @@ typedef struct {
 } gy615Ctx_t;
 
 /* GY615 模块静态上下文实例 */
-gy615Ctx_t gy615Ctx;
+static gy615Ctx_t gy615Ctx;
 
 /* 复位解析状态机 */
 static void __DRIVER_GY615_ResetParser(void){
