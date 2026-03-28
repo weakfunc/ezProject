@@ -2,7 +2,8 @@
 # SRCS    —— 参与编译的源文件列表
 # INCLUDE_DIRS —— 头文件搜索目录（"." 表示 main/ 目录自身）
 set(srcs "main.c"
-         "gatt_svr.c")
+         "driver_ble.c"
+         "driver_stm32.c")
 
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS ".")

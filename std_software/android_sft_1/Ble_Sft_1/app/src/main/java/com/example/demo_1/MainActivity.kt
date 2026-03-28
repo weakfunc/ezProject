@@ -507,7 +507,6 @@ fun HomeScreen(
     val connectedDevice = BleConnectionManager.connectedDeviceInfo
     val discoveredServices = BleConnectionManager.discoveredServices
     val mcuTimeSeconds = UserConfig.mcu_time
-    var txWriteStatus by remember { mutableStateOf("等待发送") }
     if (!UserConfig.DEVELOPER_MODE && connectedDevice != null) {
         LaunchedEffect(
             connectedDevice.address,
@@ -595,128 +594,6 @@ fun HomeScreen(
             }
         }
 
-        HomeSection(title = "更多功能") {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "TX写入验证",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "tx_data_stream_1 -> 服务1特征1，tx_data_stream_2/3/4 -> 服务2特征1/2/3",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Button(
-                    onClick = {
-                        val random = Random(System.currentTimeMillis())
-                        UserConfig.tx_data_stream_1 = ByteArray(16).also { bytes ->
-                            random.nextBytes(bytes)
-                        }
-                        UserConfig.tx_data_stream_2 = IntArray(4) { random.nextInt(0, 100_000) }
-                        UserConfig.tx_data_stream_3 = IntArray(4) { random.nextInt(0, 100_000) }
-                        UserConfig.tx_data_stream_4 = IntArray(4) { random.nextInt(0, 100_000) }
-                        txWriteStatus = "已随机填充测试数据"
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "填充测试数据")
-                }
-
-                Text(
-                    text = "TX1: ${UserConfig.tx_data_stream_1.toHexString()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "TX2: ${UserConfig.tx_data_stream_2.joinToString()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "TX3: ${UserConfig.tx_data_stream_3.joinToString()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "TX4: ${UserConfig.tx_data_stream_4.joinToString()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Button(
-                    onClick = {
-                        txWriteStatus = writeTxStream(
-                            label = "TX1",
-                            serviceUuid = UserConfig.esp32_service_1_uuid,
-                            characteristicUuid = UserConfig.esp32_service_1_characteristic_1_uuid,
-                            payload = UserConfig.tx_data_stream_1.copyOf(16)
-                        )
-                    },
-                    enabled = connectedDevice != null,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "发送 tx_data_stream_1")
-                }
-
-                Button(
-                    onClick = {
-                        txWriteStatus = writeTxStream(
-                            label = "TX2",
-                            serviceUuid = UserConfig.esp32_service_2_uuid,
-                            characteristicUuid = UserConfig.esp32_service_2_characteristic_1_uuid,
-                            payload = UserConfig.tx_data_stream_2.toBigEndianByteArray()
-                        )
-                    },
-                    enabled = connectedDevice != null,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "发送 tx_data_stream_2")
-                }
-
-                Button(
-                    onClick = {
-                        txWriteStatus = writeTxStream(
-                            label = "TX3",
-                            serviceUuid = UserConfig.esp32_service_2_uuid,
-                            characteristicUuid = UserConfig.esp32_service_2_characteristic_2_uuid,
-                            payload = UserConfig.tx_data_stream_3.toBigEndianByteArray()
-                        )
-                    },
-                    enabled = connectedDevice != null,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "发送 tx_data_stream_3")
-                }
-
-                Button(
-                    onClick = {
-                        txWriteStatus = writeTxStream(
-                            label = "TX4",
-                            serviceUuid = UserConfig.esp32_service_2_uuid,
-                            characteristicUuid = UserConfig.esp32_service_2_characteristic_3_uuid,
-                            payload = UserConfig.tx_data_stream_4.toBigEndianByteArray()
-                        )
-                    },
-                    enabled = connectedDevice != null,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "发送 tx_data_stream_4")
-                }
-
-                Text(
-                    text = "发送状态：$txWriteStatus",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
     }
 
@@ -735,55 +612,6 @@ fun HomeScreen(
     }
 }
 
-private fun writeTxStream(
-    label: String,
-    serviceUuid: String,
-    characteristicUuid: String?,
-    payload: ByteArray
-): String {
-    val serviceUuidValue = serviceUuid.trim()
-    val characteristicUuidValue = characteristicUuid?.trim().orEmpty()
-    if (serviceUuidValue.isEmpty() || characteristicUuidValue.isEmpty()) {
-        return "$label 发送失败：UUID 未配置"
-    }
-    val sent = BleConnectionManager.writeCharacteristic(
-        serviceUuid = serviceUuidValue,
-        characteristicUuid = characteristicUuidValue,
-        value = payload
-    )
-    return if (sent) {
-        BleConnectionManager.recordOutgoingMessage(
-            characteristicUuid = characteristicUuidValue,
-            value = payload
-        )
-        "$label 发送成功（${payload.size}字节）"
-    } else {
-        "$label 发送失败"
-    }
-}
-
-private fun IntArray.toBigEndianByteArray(): ByteArray {
-    val source = IntArray(4)
-    repeat(4) { index ->
-        source[index] = this.getOrNull(index) ?: 0
-    }
-    val payload = ByteArray(16)
-    source.forEachIndexed { index, value ->
-        val offset = index * 4
-        payload[offset] = ((value ushr 24) and 0xFF).toByte()
-        payload[offset + 1] = ((value ushr 16) and 0xFF).toByte()
-        payload[offset + 2] = ((value ushr 8) and 0xFF).toByte()
-        payload[offset + 3] = (value and 0xFF).toByte()
-    }
-    return payload
-}
-
-private fun ByteArray.toHexString(): String {
-    if (isEmpty()) return ""
-    return joinToString(separator = " ") { byte ->
-        "%02X".format(Locale.US, byte)
-    }
-}
 
 @Composable
 private fun HomeSection(

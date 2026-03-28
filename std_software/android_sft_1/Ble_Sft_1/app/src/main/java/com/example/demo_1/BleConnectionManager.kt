@@ -487,10 +487,8 @@ object BleConnectionManager {
         if (value.size < 16) return
 
         when {
-            isConfiguredUuidMatch(serviceUuid, UserConfig.esp32_service_1_uuid) &&
-                isConfiguredUuidMatch(characteristicUuid, UserConfig.esp32_service_1_characteristic_1_uuid) -> {
-                UserConfig.mcu_time = parseUInt32BigEndian(value, 0)
-                UserConfig.service_1_characteristic_1_flags = value.copyOfRange(4, 16)
+            BleProtocol.isBound(serviceUuid, characteristicUuid) -> {
+                BleProtocol.parseRxFrame(value)
             }
 
             isConfiguredUuidMatch(serviceUuid, UserConfig.esp32_service_2_uuid) &&

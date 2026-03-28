@@ -11,13 +11,13 @@ data class KnownBleServiceUuidConfig(
 
 object UserConfig {
     // Developer mode macro: can only be changed in code.
-    const val DEVELOPER_MODE = false
+    const val DEVELOPER_MODE = true
 
     var project_name by mutableStateOf("啦啦啦")
     var author_name by mutableStateOf("designed by：qhy")
     var ble_scan_page_title by mutableStateOf("BLE 搜索")
     var settings_page_title by mutableStateOf("设置")
-    var esp32_device_name by mutableStateOf("esp32_s3")
+    var esp32_device_name by mutableStateOf("ESP32C3_FINDME")
     var esp32_device_mac by mutableStateOf<String?>("24:EC:4A:10:74:DA")
     var auto_filter_my_ble_devices by mutableStateOf(true)
     var auto_connect_my_ble_device by mutableStateOf(true)
@@ -35,41 +35,34 @@ object UserConfig {
     var tx_data_stream_4 by mutableStateOf(IntArray(4))
 
     // ESP32 known BLE UUIDs. Update these when firmware UUIDs change.
-/*
-svc uuid: 59462f12-9543-9999-12c8-58b459a2712d
-chr uuid: 33333333-2222-2222-1111-111100000000
-*/
-    var esp32_service_1_uuid by mutableStateOf("59462f12-9543-9999-12c8-58b459a2712d")
-    var esp32_service_1_characteristic_1_uuid by mutableStateOf("33333333-2222-2222-1111-111100000000")
 
-/*
-svc uuid: 12345678-1234-5678-1234-56789ABC0000
-ch1 uuid: 12345678-1234-5678-1234-56789ABC0001
-ch2 uuid: 12345678-1234-5678-1234-56789ABC0002
-ch3 uuid: 12345678-1234-5678-1234-56789ABC0003
-*/
-    var esp32_service_2_uuid by mutableStateOf("12345678-1234-5678-1234-56789ABC0000")
-    var esp32_service_2_characteristic_1_uuid by mutableStateOf("12345678-1234-5678-1234-56789ABC0001")
-    var esp32_service_2_characteristic_2_uuid by mutableStateOf("12345678-1234-5678-1234-56789ABC0002")
+    var esp32_service_1_uuid by mutableStateOf("EE260001-EE26-EE26-EE26-EE26EE26EE26")
+    var esp32_service_1_characteristic_1_uuid by mutableStateOf("EE260101-EE26-EE26-EE26-EE26EE26EE26")
+
+    var esp32_service_2_uuid by mutableStateOf<String?>(null)
+    var esp32_service_2_characteristic_1_uuid by mutableStateOf<String?>(null)
+    var esp32_service_2_characteristic_2_uuid by mutableStateOf<String?>(null)
     var esp32_service_2_characteristic_3_uuid by mutableStateOf<String?>(null)
 
     val esp32_known_service_configs: List<KnownBleServiceUuidConfig>
-        get() = listOf(
+        get() = listOfNotNull(
             KnownBleServiceUuidConfig(
                 serviceUuid = esp32_service_1_uuid,
                 characteristicUuids = listOf(esp32_service_1_characteristic_1_uuid)
                     .map { it.trim() }
                     .filter { it.isNotEmpty() }
             ),
-            KnownBleServiceUuidConfig(
-                serviceUuid = esp32_service_2_uuid,
-                characteristicUuids = listOf(
-                    esp32_service_2_characteristic_1_uuid,
-                    esp32_service_2_characteristic_2_uuid,
-                    esp32_service_2_characteristic_3_uuid
+            esp32_service_2_uuid?.let { svcUuid ->
+                KnownBleServiceUuidConfig(
+                    serviceUuid = svcUuid,
+                    characteristicUuids = listOf(
+                        esp32_service_2_characteristic_1_uuid,
+                        esp32_service_2_characteristic_2_uuid,
+                        esp32_service_2_characteristic_3_uuid
+                    )
+                        .mapNotNull { it?.trim() }
+                        .filter { it.isNotEmpty() }
                 )
-                    .mapNotNull { it?.trim() }
-                    .filter { it.isNotEmpty() }
-            )
+            }
         )
 }

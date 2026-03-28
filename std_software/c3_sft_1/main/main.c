@@ -27,14 +27,30 @@
  *   5. 启动 NimBLE FreeRTOS 后台任务
  * ============================================================ */
 
+#include "freertos/FreeRTOS.h"                /* FreeRTOS 基础定义 */
+#include "freertos/task.h"                    /* xTaskCreate 等任务接口 */
 #include "esp_log.h"                          /* ESP-IDF 日志接口 */
+#include "esp_timer.h"                        /* esp_timer_get_time（微秒级系统时间）*/
+#include <inttypes.h>                         /* PRIu32 等格式化宏 */
 #include "nvs_flash.h"                        /* NVS 非易失性存储接口 */
 #include "nimble/nimble_port.h"               /* NimBLE 协议栈端口层 */
 #include "nimble/nimble_port_freertos.h"      /* NimBLE FreeRTOS 适配层 */
 #include "host/ble_hs.h"                      /* NimBLE 主机层 */
 #include "host/util/util.h"                   /* NimBLE 主机层工具函数（print_addr 等） */
 #include "services/gap/ble_svc_gap.h"         /* GAP 标准服务 */
-#include "bleprph.h"                          /* 本工程头文件（UUID、函数声明） */
+#include "driver_ble.h"                       /* BLE 驱动模块（GATT 服务、UUID、函数声明） */
+#include "driver_stm32.h"                     /* STM32 串口驱动模块 */
+
+/* ============================================================
+ * systemConfig_t — 系统全局配置结构体
+ * ============================================================ */
+typedef struct {
+    uint32_t sys_time_s;    /* 系统运行时间（秒），自上电起累计 */
+} systemConfig_t;
+
+systemConfig_t systemConfig = {
+    .sys_time_s = 0,
+};
 
 /* 日志标签，用于 ESP_LOG 输出前缀 */
 static const char *tag = "NimBLE_BLE_PRPH";
@@ -168,6 +184,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
             rc = ble_gap_conn_find(event->connect.conn_handle, &desc);
             assert(rc == 0);
             bleprph_print_conn_desc(&desc);
+            driver_ble_on_connect(event->connect.conn_handle);
         }
         MODLOG_DFLT(INFO, "\n");
 
@@ -183,6 +200,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
         bleprph_print_conn_desc(&event->disconnect.conn);
         MODLOG_DFLT(INFO, "\n");
 
+        driver_ble_on_disconnect();
         /* 连接已断开，重新开始广播 */
         bleprph_advertise();
         return 0;
@@ -231,10 +249,12 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
                     event->subscribe.conn_handle,
                     event->subscribe.attr_handle,
                     event->subscribe.reason,
-                    event->subscribe.prev_notify,   /* 变更前的通知订阅状态 */
-                    event->subscribe.cur_notify,    /* 变更后的通知订阅状态 */
-                    event->subscribe.prev_indicate, /* 变更前的指示订阅状态 */
-                    event->subscribe.cur_indicate); /* 变更后的指示订阅状态 */
+                    event->subscribe.prev_notify,
+                    event->subscribe.cur_notify,
+                    event->subscribe.prev_indicate,
+                    event->subscribe.cur_indicate);
+        driver_ble_on_subscribe(event->subscribe.attr_handle,
+                                (bool)event->subscribe.cur_notify);
         return 0;
 
     case BLE_GAP_EVENT_MTU:
@@ -345,6 +365,20 @@ void bleprph_host_task(void *param)
 }
 
 /* ============================================================
+ * 函数：system_time_task
+ * 说明：每秒更新并打印系统运行时间（自上电起的秒数）。
+ * ============================================================ */
+static void system_time_task(void *arg)
+{
+    (void)arg;
+    while (1) {
+        systemConfig.sys_time_s = (uint32_t)(esp_timer_get_time() / 1000000ULL);
+        ESP_LOGI(tag, "sys_time: %" PRIu32 " s", systemConfig.sys_time_s);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+/* ============================================================
  * 函数：app_main
  * 说明：ESP-IDF 应用程序入口，完成所有初始化并启动 BLE 服务。
  *       初始化顺序：NVS → NimBLE → GATT 服务 → 设备名称 → 持久化存储 → 启动任务
@@ -407,13 +441,20 @@ app_main(void)
 
 #if CONFIG_BT_NIMBLE_GAP_SERVICE
     /* ---- 6. 设置 BLE 设备名称（将出现在广播包中，供扫描方识别）---- */
-    rc = ble_svc_gap_device_name_set("nimble-bleprph");
+    rc = ble_svc_gap_device_name_set("ESP32C3_FINDME");
     assert(rc == 0);
 #endif
 
     /* ---- 7. 初始化 BLE 持久化存储（用于保存绑定密钥等信息）---- */
     ble_store_config_init();
 
-    /* ---- 8. 启动 NimBLE FreeRTOS 任务，在独立任务中运行协议栈事件循环 ---- */
+    /* ---- 8. 初始化 STM32 串口驱动，并启动串口接收任务 ---- */
+    driver_stm32_init();
+    xTaskCreate(driver_stm32_rx_task, "stm32_rx", 2048, NULL, 5, NULL);
+
+    /* ---- 9. 启动系统时间打印任务 ---- */
+    xTaskCreate(system_time_task, "sys_time", 2048, NULL, 4, NULL);
+
+    /* ---- 10. 启动 NimBLE FreeRTOS 任务，在独立任务中运行协议栈事件循环 ---- */
     nimble_port_freertos_init(bleprph_host_task);
 }

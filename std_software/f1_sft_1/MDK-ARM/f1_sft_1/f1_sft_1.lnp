@@ -49,7 +49,6 @@
 "f1_sft_1\driver_senser.o"
 "f1_sft_1\driver_steer.o"
 "f1_sft_1\driver_tb6612.o"
-"f1_sft_1\driver_uartlcd.o"
 "f1_sft_1\driver_ws2812.o"
 "f1_sft_1\driver_gy615.o"
 "f1_sft_1\driver_mp3.o"

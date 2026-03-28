@@ -45,7 +45,7 @@ private const val EXTRA_FROM_TAB = "extra_from_tab"
 
 private fun bottomNavTabs(): List<AppTab> {
     return if (UserConfig.DEVELOPER_MODE) {
-        listOf(AppTab.Home, AppTab.BleScan, AppTab.Settings)
+        listOf(AppTab.Home, AppTab.BleScan, AppTab.Settings, AppTab.Debug)
     } else {
         listOf(AppTab.Home)
     }

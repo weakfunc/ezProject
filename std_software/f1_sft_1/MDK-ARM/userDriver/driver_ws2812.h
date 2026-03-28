@@ -16,8 +16,8 @@
 #define WS2812_DEP_GPIO_WRITE(gpioId, level)                STDLIB_COMMON_GpioWrite((gpioId), (level))
 #define WS2812_DEP_CRITICAL_ENTER()                         STDLIB_COMMON_EnterCritical()
 #define WS2812_DEP_CRITICAL_EXIT(primask)                   STDLIB_COMMON_ExitCritical((primask))
-#define WS2812_DEP_DWT_GET_CYC()                            __STDLIB_DWT_GetCyc()
-#define WS2812_DEP_DWT_WAIT_CYC(startCyc, cycles)          __STDLIB_DWT_WaitCyc((startCyc), (cycles))
+#define WS2812_DEP_DWT_GET_CYC()                            STDLIB_DWT_GetCyc()
+#define WS2812_DEP_DWT_WAIT_CYC(startCyc, cycles)           __STDLIB_DWT_WaitCyc((startCyc), (cycles))
 
 /*============================================================================
  * 向上提供宏（driver层向task层提供）

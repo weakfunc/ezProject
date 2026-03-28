@@ -2,63 +2,59 @@
 #include <string.h>
 
 /*============================================================================
- * 内部配置（仅driver_ble模块内部使用）
+ * 私有变量
  *============================================================================*/
 
-/* BLE模块数据 */
+/* BLE 模块信息（公有，供上层直接访问）。 */
 bleInfo_t bleInfo;
 
 /*============================================================================
  * API接口
  *============================================================================*/
 
-/* 初始化BLE驱动 */
+/* 初始化 BLE 驱动。UART_PORT1 已配置为内置标准协议，无需注册字节回调。 */
 void DRIVER_BLE_Init(void){
   DRIVER_BLE_Reset();
 }
 
-/* 清空BLE接收缓存 */
+/* 清空接收缓存与帧就绪标志。 */
 void DRIVER_BLE_Reset(void){
-  memset(&bleInfo.rxInfo, 0, sizeof(bleInfo.rxInfo));
-  bleInfo.hasNewData = 0U;
+  memset(&bleInfo, 0, sizeof(bleInfo));
+  BLE_DEP_UART_INFO.frame_ready = false;
 }
 
-/* 按发送结构体内容打包并发送一帧数据 */
-void DRIVER_BLE_Send(const bleTxInfo_t *txInfo){
-  if(txInfo == NULL) return;
-  if(txInfo->dataLen > BLE_DATA_MAX_LEN) return;
+/* 打包并通过 UART_PORT1 向 ESP32 发送一帧 BLE 数据。
+ * cmd    : 控制字段（应在 BLE_CMD_TX_MIN~BLE_CMD_TX_MAX 范围内）
+ * data   : 数据字节流，NULL 时数据段全填 0x00
+ * dataLen: 有效数据字节数（超出 BLE_FRAME_DATA_LEN 截断，不足补 0x00）
+ */
+void DRIVER_BLE_SendFrame(uint8_t cmd, const uint8_t *data, uint8_t dataLen){
+  uint8_t copyLen;
 
-  BLE_DEP_UART_SEND_FRAME(txInfo->cmd, (uint8_t *)txInfo->data.bytes, txInfo->dataLen);
-}
-
-/* 从USART1标准协议缓存中提取一帧BLE数据 */
-void DRIVER_BLE_Updata(void){
-  uint8_t rxCmd;
-  uint8_t rxLen;
-  uint8_t rxData[BLE_DATA_MAX_LEN];
-
-  if(BLE_DEP_UART_GET_FRAME(&rxCmd, rxData, &rxLen) == 0U) return;
-
-  memset(&bleInfo.rxInfo, 0, sizeof(bleInfo.rxInfo));
-  bleInfo.rxInfo.cmd = rxCmd;
-  bleInfo.rxInfo.dataLen = rxLen;
-  if(rxLen != 0U){
-    memcpy(bleInfo.rxInfo.data.bytes, rxData, rxLen);
+  memset(BLE_DEP_UART_INFO.standardTxFrame.raw, 0x00U, STM32_DATA_LEN);
+  if(data != NULL){
+    copyLen = (dataLen > BLE_FRAME_DATA_LEN) ? BLE_FRAME_DATA_LEN : dataLen;
+    memcpy(BLE_DEP_UART_INFO.standardTxFrame.raw, data, copyLen);
   }
-  bleInfo.hasNewData = 1U;
+  BLE_DEP_UART_SEND_FRAME(cmd);
 }
 
-/* 查询是否存在新的BLE接收数据 */
+/* 查询是否有新帧到达。 */
 uint8_t DRIVER_BLE_HasNewData(void){
-  return bleInfo.hasNewData;
+  return (BLE_DEP_UART_INFO.frame_ready) ? 1U : 0U;
 }
 
-/* 读取最近一次接收数据，并清除更新标志 */
-uint8_t DRIVER_BLE_GetRxInfo(bleRxInfo_t *rxInfo){
-  if(rxInfo == NULL) return 0U;
-  if(bleInfo.hasNewData == 0U) return 0U;
+/* 读取最近一次接收帧，并清除更新标志。 */
+uint8_t DRIVER_BLE_GetRxFrame(bleFrame_t *frame){
+  if(frame == NULL) return 0U;
+  if(!BLE_DEP_UART_INFO.frame_ready) return 0U;
 
-  *rxInfo = bleInfo.rxInfo;
+  frame->cmd = BLE_DEP_UART_INFO.cmd;
+  memcpy(frame->data, BLE_DEP_UART_INFO.standardRxFrame.raw, BLE_FRAME_DATA_LEN);
+
+  bleInfo.rxFrame    = *frame;
   bleInfo.hasNewData = 0U;
+  BLE_DEP_UART_INFO.frame_ready = false;
+
   return 1U;
 }

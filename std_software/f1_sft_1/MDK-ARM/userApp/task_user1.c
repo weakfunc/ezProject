@@ -8,18 +8,12 @@
 #include "driver_GY615.h"
 #include "driver_ws2812.h"
 #include "driver_mp3.h"
+#include "driver_ble.h"
 
 user1TaskInfo_t user1TaskInfo;
 
 void user1TaskInit(){
-	DRIVER_WS2812_Init();
-	DRIVER_WS2812_Clear(WS2812_CH_0);
-	DRIVER_WS2812_Clear(WS2812_CH_1);
-	DRIVER_WS2812_Refresh(WS2812_CH_0, 16);
-	DRIVER_WS2812_Refresh(WS2812_CH_1, 16);
-	
-	DRIVER_MP3_Init();
-	DRIVER_MP3_Play();
+	DRIVER_BLE_Init();
 }
 
 void user1TaskUpdata(void *argument){
@@ -28,7 +22,7 @@ void user1TaskUpdata(void *argument){
 		user1TaskInfo.user1TaskCnt++;
 		
 		if(user1TaskInfo.user1TaskCnt % 50 == 0){
-				
+			DRIVER_BLE_SendFrame(0x09, "lalala", 6);
 		}
 
 		osDelay(10);

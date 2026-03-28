@@ -660,11 +660,6 @@
               <FilePath>.\userDriver\driver_tb6612.c</FilePath>
             </File>
             <File>
-              <FileName>driver_uartlcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_uartlcd.c</FilePath>
-            </File>
-            <File>
               <FileName>driver_ws2812.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_ws2812.c</FilePath>

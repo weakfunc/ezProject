@@ -917,96 +917,9 @@ private fun ConnectedGattSection(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        TerminalOutputWindow(
-            entries = terminalEntries,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = outgoingText,
-                onValueChange = { outgoingText = it },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                label = { Text(text = "\u8f93\u5165\u53d1\u9001\u5185\u5bb9") }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                onClick = { onSendRequested(outgoingText) },
-                enabled = outgoingText.isNotBlank()
-            ) {
-                Text(text = "\u53d1\u9001")
-            }
-        }
     }
 }
 
-@Composable
-private fun TerminalOutputWindow(
-    entries: List<BleTerminalEntryUi>,
-    modifier: Modifier = Modifier
-) {
-    val listState = rememberLazyListState()
-    LaunchedEffect(entries.size) {
-        if (entries.isNotEmpty()) {
-            listState.scrollToItem(index = entries.lastIndex)
-        }
-    }
-
-    Card(modifier = modifier) {
-        if (entries.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp)
-            ) {
-                Text(
-                    text = "Terminal output: sent data and notify data will appear here.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                state = listState,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                items(
-                    items = entries,
-                    key = { it.id }
-                ) { entry ->
-                    val shortUuid = entry.characteristicUuid.take(16)
-                    val lineText = buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = Color(0xFF1565C0))) {
-                            append(entry.direction)
-                        }
-                        append("  ")
-                        withStyle(style = SpanStyle(color = Color(0xFF2E7D32))) {
-                            append(shortUuid)
-                        }
-                        append("  ")
-                        withStyle(style = SpanStyle(color = Color(0xFF6D4C41))) {
-                            append(entry.payloadText)
-                        }
-                    }
-                    Text(
-                        text = lineText,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun ServiceItemCard(

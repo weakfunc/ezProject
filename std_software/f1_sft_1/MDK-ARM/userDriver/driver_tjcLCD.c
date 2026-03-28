@@ -116,7 +116,7 @@ void DRIVER_TJCLCD_Reset(void){
 
 /* 按帧格式打包并通过USART3发送一帧数据 */
 void DRIVER_TJCLCD_Send(const tjcLcdFrame_t *frame){
-  uint8_t txBuf[TJCLCD_FRAME_LEN];
+  static uint8_t txBuf[TJCLCD_FRAME_LEN];
 
   if(frame == NULL) return;
 
