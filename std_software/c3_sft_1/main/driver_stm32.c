@@ -31,14 +31,16 @@ stm32Info_t stm32Info = {
     .stm32TxFrame  = {.raw = {0}},
     .frame_ready   = false,
     .stm32CmdFrameArr = {
+        /* [0..3] STM32→ESP32 (RX): CMD 0x09~0x0C */
         [0] = { .cmd = 0x09, .payload = {.raw = {0}} },
         [1] = { .cmd = 0x0A, .payload = {.raw = {0}} },
         [2] = { .cmd = 0x0B, .payload = {.raw = {0}} },
         [3] = { .cmd = 0x0C, .payload = {.raw = {0}} },
-        [4] = { .cmd = 0x0D, .payload = {.raw = {0}} },
-        [5] = { .cmd = 0x0E, .payload = {.raw = {0}} },
-        [6] = { .cmd = 0x0F, .payload = {.raw = {0}} },
-        [7] = { .cmd = 0x10, .payload = {.raw = {0}} },
+        /* [4..7] ESP32→STM32 (TX): CMD 0x13~0x16 */
+        [4] = { .cmd = 0x13, .payload = {.raw = {0}} },
+        [5] = { .cmd = 0x14, .payload = {.raw = {0}} },
+        [6] = { .cmd = 0x15, .payload = {.raw = {0}} },
+        [7] = { .cmd = 0x16, .payload = {.raw = {0}} },
     },
 };
 
@@ -268,4 +270,25 @@ int driver_stm32_send(uint8_t ctrl, const uint8_t *data, uint8_t len)
         ESP_LOGE(TAG, "send failed: sent=%d", sent);
     }
     return sent;
+}
+
+/* ============================================================
+ * 函数：driver_stm32_send_all
+ * 说明：遍历 stm32CmdFrameArr 中所有 ESP32→STM32 槽（索引 4 ~ 7），
+ *       依次封包并通过 UART 发送给 STM32。
+ * 返回：发送总字节数；负值表示出错
+ * ============================================================ */
+int driver_stm32_send_all(void)
+{
+    int total = 0;
+    for (uint8_t i = STM32_CMD_RX_CNT; i < STM32_CMD_FRAME_CNT; i++) {
+        int sent = driver_stm32_send(stm32Info.stm32CmdFrameArr[i].cmd,
+                                     stm32Info.stm32CmdFrameArr[i].payload.raw,
+                                     STM32_DATA_LEN);
+        if (sent < 0) {
+            return sent;
+        }
+        total += sent;
+    }
+    return total;
 }

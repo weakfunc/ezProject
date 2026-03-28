@@ -95,6 +95,14 @@ class BleScanActivity : ComponentActivity() {
     private val autoConfigureSkippedKeys = mutableSetOf<String>()
     private val uiHandler = Handler(Looper.getMainLooper())
     private val stopPullRefreshRunnable = Runnable { isPullRefreshing = false }
+    private var autoConnectBestRssi = Int.MIN_VALUE
+    private var autoConnectBestDevice: BleDeviceUi? = null
+    private val autoConnectRunnable = Runnable {
+        val target = autoConnectBestDevice ?: return@Runnable
+        if (BleConnectionManager.connectedDeviceInfo != null) return@Runnable
+        if (BleConnectionManager.deviceStates.values.any { it == BleDeviceConnectionStatus.Connecting }) return@Runnable
+        connectToScannedDevice(target)
+    }
     private val autoConfigureRetryRunnable = Runnable {
         val connectedDeviceInfo = BleConnectionManager.connectedDeviceInfo ?: return@Runnable
         maybeAutoConfigureBleDevice(
@@ -195,6 +203,7 @@ class BleScanActivity : ComponentActivity() {
     override fun onStop() {
         uiHandler.removeCallbacks(stopPullRefreshRunnable)
         uiHandler.removeCallbacks(autoConfigureRetryRunnable)
+        uiHandler.removeCallbacks(autoConnectRunnable)
         isPullRefreshing = false
         stopScan()
         super.onStop()
@@ -271,6 +280,9 @@ class BleScanActivity : ComponentActivity() {
             return
         }
         scannedDevices.clear()
+        autoConnectBestRssi = Int.MIN_VALUE
+        autoConnectBestDevice = null
+        uiHandler.removeCallbacks(autoConnectRunnable)
         scanner.startScan(scanCallback)
         isScanning = true
         statusText = "Scanning..."
@@ -404,6 +416,9 @@ class BleScanActivity : ComponentActivity() {
         autoConfigureRetryCounts.clear()
         autoConfigureSkippedKeys.clear()
         uiHandler.removeCallbacks(autoConfigureRetryRunnable)
+        autoConnectBestRssi = Int.MIN_VALUE
+        autoConnectBestDevice = null
+        uiHandler.removeCallbacks(autoConnectRunnable)
         stopScan()
         BleConnectionManager.connect(
             context = this,
@@ -414,21 +429,21 @@ class BleScanActivity : ComponentActivity() {
         statusText = "Connecting to $address..."
     }
 
-    @SuppressLint("MissingPermission")
     private fun maybeAutoConnectConfiguredDevice(device: BleDeviceUi): Boolean {
         if (!UserConfig.auto_connect_my_ble_device) return false
-        val targetMac = normalizeMacAddress(UserConfig.esp32_device_mac) ?: return false
-        val foundMac = normalizeMacAddress(device.address) ?: return false
-        if (targetMac != foundMac) return false
+        val targetName = UserConfig.esp32_device_name.trim()
+        if (targetName.isEmpty()) return false
+        if (!device.name.equals(targetName, ignoreCase = true)) return false
+        if (BleConnectionManager.connectedDeviceInfo != null) return false
 
-        connectToScannedDevice(device)
+        // 多个同名设备时，保留 RSSI 最强（值最大）的候选，延迟 600 ms 后连接
+        if (device.rssi > autoConnectBestRssi) {
+            autoConnectBestRssi = device.rssi
+            autoConnectBestDevice = device
+            uiHandler.removeCallbacks(autoConnectRunnable)
+            uiHandler.postDelayed(autoConnectRunnable, 600L)
+        }
         return true
-    }
-
-    private fun normalizeMacAddress(mac: String?): String? {
-        val trimmed = mac?.trim().orEmpty()
-        if (trimmed.isEmpty()) return null
-        return trimmed.replace("-", ":").uppercase(Locale.US)
     }
 
     private fun disconnectCurrentDevice() {

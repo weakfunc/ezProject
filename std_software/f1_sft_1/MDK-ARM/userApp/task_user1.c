@@ -9,23 +9,23 @@
 #include "driver_ws2812.h"
 #include "driver_mp3.h"
 #include "driver_ble.h"
+#include "func_appcom.h"
 
 user1TaskInfo_t user1TaskInfo;
 
 void user1TaskInit(){
 	DRIVER_BLE_Init();
+	FUNC_APPCOM_Init();
 }
 
 void user1TaskUpdata(void *argument){
-	user1TaskInit();	
+	user1TaskInit();
 	for(;;){
 		user1TaskInfo.user1TaskCnt++;
-		
-		if(user1TaskInfo.user1TaskCnt % 50 == 0){
-			DRIVER_BLE_SendStm32SysInfo(user1TaskInfo.user1TaskCnt);
-		}
 
-		osDelay(10);
+		FUNC_APPCOM_TxUpdate();
+		FUNC_APPCOM_RxUpdate();
+
+		osDelay(5);
 	}
 }
-

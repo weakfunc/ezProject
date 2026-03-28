@@ -50,6 +50,11 @@ import androidx.compose.ui.unit.dp
 import com.example.demo_1.ui.theme.Demo_1Theme
 import java.util.Locale
 
+private enum class TerminalDirectionFilter(val direction: String) {
+    Tx("TX"),
+    Rx("RX")
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 class ThirdActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,6 +97,11 @@ fun ThirdPage(modifier: Modifier = Modifier) {
     var tx1b2Text   by remember { mutableStateOf("00") }
     var txStatus    by remember { mutableStateOf("等待发送") }
     var rawSendText by remember { mutableStateOf("") }
+    var terminalDirectionFilter by remember { mutableStateOf(TerminalDirectionFilter.Tx) }
+
+    val filteredTerminalEntries = BleConnectionManager.terminalEntries.filter { entry ->
+        entry.direction == terminalDirectionFilter.direction
+    }
 
     Column(
         modifier = modifier
@@ -312,11 +322,39 @@ fun ThirdPage(modifier: Modifier = Modifier) {
             }
         }
 
-        // ── 数据终端（仅显示 TX）─────────────────────────────────────────────
-        DebugSection(title = "数据终端  (TX)") {
+        // ── 数据终端（支持 RX/TX 切换）──────────────────────────────────────
+        DebugSection(title = "数据终端 (${terminalDirectionFilter.direction})") {
             Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TerminalDirectionFilter.values().forEach { filter ->
+                        val selected = terminalDirectionFilter == filter
+                        Button(
+                            onClick = { terminalDirectionFilter = filter },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                },
+                                contentColor = if (selected) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        ) {
+                            Text(filter.direction)
+                        }
+                    }
+                }
                 TerminalOutputWindow(
-                    entries = BleConnectionManager.terminalEntries,
+                    entries = filteredTerminalEntries,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
@@ -449,7 +487,7 @@ private fun TerminalOutputWindow(
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
-    LaunchedEffect(entries.size) {
+    LaunchedEffect(entries.lastOrNull()?.id) {
         if (entries.isNotEmpty()) {
             listState.scrollToItem(index = entries.lastIndex)
         }
@@ -462,7 +500,7 @@ private fun TerminalOutputWindow(
                     .padding(12.dp)
             ) {
                 Text(
-                    text = "暂无数据，发送数据后将在此显示。",
+                    text = "暂无匹配报文，切换 RX/TX 或等待新数据。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

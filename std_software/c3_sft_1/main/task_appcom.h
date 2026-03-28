@@ -44,6 +44,12 @@ extern appcomInfo_t appcomInfo;
  */
 void appcom_task(void *arg);
 
+/**
+ * @brief 调试：遍历打印 APP→ESP32 的所有接收帧（CMD 0x21~0x24）
+ *        通过 ESP_LOGI 输出每帧的 cmd 及 payload 各字段。
+ */
+void appcom_dbg_print_rx(void);
+
 #ifdef __cplusplus
 }
 #endif

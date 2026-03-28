@@ -433,7 +433,13 @@ object BleConnectionManager {
             characteristicUuid = characteristicUuid,
             value = value
         )
-        // RX 报文不写入终端，终端仅显示 TX
+        if (fromNotify) {
+            addTerminalEntry(
+                direction = "RX",
+                characteristicUuid = characteristicUuid,
+                payloadText = formatPayloadText(value)
+            )
+        }
         refreshDiscoveredServices(currentGatt)
     }
 

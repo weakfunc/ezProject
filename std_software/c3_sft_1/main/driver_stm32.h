@@ -71,7 +71,11 @@ typedef struct {
     stm32DataPayload_t payload;
 } stm32CmdFrame_t;
 
-#define STM32_CMD_FRAME_CNT  8U   /* CMD 帧缓存数组大小 */
+#define STM32_CMD_FRAME_CNT  8U   /* CMD 帧缓存数组总大小（RX 4 + TX 4） */
+#define STM32_CMD_RX_CNT     4U   /* STM32→ESP32 接收槽数量（CMD 0x09~0x0C） */
+#define STM32_CMD_TX_CNT     4U   /* ESP32→STM32 发送槽数量（CMD 0x13~0x16） */
+#define STM32_CMD_RX_BASE    0x09U /* STM32→ESP32 控制字段起始值 */
+#define STM32_CMD_TX_BASE    0x13U /* ESP32→STM32 控制字段起始值 */
 
 /* ============================================================
  * stm32Info_t — driver_stm32 模块公有管理结构体
@@ -92,7 +96,7 @@ typedef struct {
     stm32DataPayload_t stm32TxFrame;           /* 10 字节数据段，支持具名字段访问 */
     bool               frame_ready;            /* 新帧就绪标志；读取后应清零 */
 
-    /* --- CMD 帧缓存（STM32→ESP32，CMD 0x09~0x10）--- */
+    /* --- CMD 帧缓存：[0..3] STM32→ESP32 RX (0x09~0x0C)；[4..7] ESP32→STM32 TX (0x13~0x16) --- */
     stm32CmdFrame_t    stm32CmdFrameArr[STM32_CMD_FRAME_CNT];
 } stm32Info_t;
 
@@ -128,6 +132,12 @@ void driver_stm32_rx_task(void *arg);
  * @return      实际发送的字节数（16 表示成功），负值表示出错
  */
 int driver_stm32_send(uint8_t ctrl, const uint8_t *data, uint8_t len);
+
+/**
+ * @brief 遍历发送所有 ESP32→STM32 帧（CMD 0x13~0x16，共 STM32_CMD_TX_CNT 帧）
+ * @return 发送总字节数；负值表示出错
+ */
+int driver_stm32_send_all(void);
 
 #ifdef __cplusplus
 }

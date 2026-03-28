@@ -48,6 +48,9 @@
 #include "driver_ble.h"
 #include "services/ans/ble_svc_ans.h"
 
+#undef MODLOG_DFLT
+#define MODLOG_DFLT(...) ((void)0)
+
 /* ============================================================
  * 模块公有实例
  * ============================================================ */
@@ -214,6 +217,7 @@ gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg)
 {
     (void)arg;
     char buf[BLE_UUID_STR_LEN];
+    (void)buf;
 
     switch (ctxt->op) {
     case BLE_GATT_REGISTER_OP_SVC:

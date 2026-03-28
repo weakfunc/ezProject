@@ -19,8 +19,8 @@
 #define PORT_MAX        3U
 
 /* 各串口收发模式配置：1 = DMA，0 = 中断。 */
-#define USART1_RX_DMA   1
-#define USART1_TX_DMA   1
+#define USART1_RX_DMA   0
+#define USART1_TX_DMA   0
 #define USART2_RX_DMA   1
 #define USART2_TX_DMA   1
 #define USART3_RX_DMA   0

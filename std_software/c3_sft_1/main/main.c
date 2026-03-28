@@ -51,7 +51,33 @@ systemConfig_t systemConfig = {
 /* 日志标签，用于 ESP_LOG 输出前缀 */
 static const char *tag = "NimBLE_BLE_PRPH";
 
+#define NIMBLE_TERMINAL_LOG_ENABLED 0
+
+#if NIMBLE_TERMINAL_LOG_ENABLED
+#define NIMBLE_MODLOG(...) MODLOG_DFLT(__VA_ARGS__)
+#define NIMBLE_ESP_LOGI(...) ESP_LOGI(__VA_ARGS__)
+#define NIMBLE_ESP_LOGE(...) ESP_LOGE(__VA_ARGS__)
+static inline void nimble_print_addr(const uint8_t *addr)
+{
+    print_addr(addr);
+}
+#else
+#define NIMBLE_MODLOG(...) ((void)0)
+#define NIMBLE_ESP_LOGI(...) ((void)0)
+#define NIMBLE_ESP_LOGE(...) ((void)0)
+static inline void nimble_print_addr(const uint8_t *addr)
+{
+    (void)addr;
+}
+#endif
+
 /* GAP 事件回调函数前向声明 */
+#undef MODLOG_DFLT
+#define MODLOG_DFLT(...) NIMBLE_MODLOG(__VA_ARGS__)
+
+#undef print_addr
+#define print_addr(...) nimble_print_addr(__VA_ARGS__)
+
 static int bleprph_gap_event(struct ble_gap_event *event, void *arg);
 
 /* 广播时使用的本机地址类型（公共地址或随机地址），由 ble_hs_id_infer_auto() 推断 */
@@ -273,7 +299,7 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
     case BLE_GAP_EVENT_PASSKEY_ACTION:
         /* ---- 配对密钥交互事件：安全管理器需要处理密钥输入/显示 ----
          * 本工程仅支持"显示固定密钥"方式，其他 I/O 能力不处理 */
-        ESP_LOGI(tag, "PASSKEY_ACTION_EVENT started");
+        NIMBLE_ESP_LOGI(tag, "PASSKEY_ACTION_EVENT started");
         {
             struct ble_sm_io pkey = {0};
 
@@ -281,9 +307,9 @@ bleprph_gap_event(struct ble_gap_event *event, void *arg)
                 /* 设备显示固定配对码，对端用户在手机 APP 输入此码 */
                 pkey.action = event->passkey.params.action;
                 pkey.passkey = 123456;  /* 固定配对码：123456 */
-                ESP_LOGI(tag, "Enter passkey %" PRIu32 " on the peer side", pkey.passkey);
+                NIMBLE_ESP_LOGI(tag, "Enter passkey %" PRIu32 " on the peer side", pkey.passkey);
                 rc = ble_sm_inject_io(event->passkey.conn_handle, &pkey);
-                ESP_LOGI(tag, "ble_sm_inject_io result: %d", rc);
+                NIMBLE_ESP_LOGI(tag, "ble_sm_inject_io result: %d", rc);
             }
         }
         return 0;
@@ -352,7 +378,7 @@ bleprph_on_sync(void)
  * ============================================================ */
 void bleprph_host_task(void *param)
 {
-    ESP_LOGI(tag, "BLE Host Task Started");
+    NIMBLE_ESP_LOGI(tag, "BLE Host Task Started");
     /* 运行 NimBLE 事件循环（阻塞直到协议栈停止） */
     nimble_port_run();
 
@@ -372,6 +398,7 @@ static void system_time_task(void *arg)
         uint32_t stm32_time = stm32Info.stm32CmdFrameArr[0].payload.var_4b_1;
         ESP_LOGI(tag, "sys_time: %" PRIu32 " s | stm32_time: %" PRIu32 " s",
                  systemConfig.sys_time_s, stm32_time);
+        appcom_dbg_print_rx();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -398,7 +425,7 @@ app_main(void)
     /* ---- 2. 初始化 NimBLE 协议栈端口层 ---- */
     ret = nimble_port_init();
     if (ret != ESP_OK) {
-        ESP_LOGE(tag, "Failed to init nimble %d ", ret);
+        NIMBLE_ESP_LOGE(tag, "Failed to init nimble %d ", ret);
         return;
     }
 

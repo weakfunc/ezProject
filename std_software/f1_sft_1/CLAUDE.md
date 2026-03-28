@@ -15,58 +15,90 @@
  - 已安装python的pypdf插件用于读取pdf文件
 
 ## 任务
+新建userFunc文件夹，在其中新建func_appcom模块，用于管理来自ESP32和发送给ESP32的数据流。我的最终目标是，把来自ESP32的数据通过appcom接口映射,保存到stm32的本地变量，同时，能够把stm32的本地变量通过APPCOM的接口映射发送给esp32. 关于发送的底层API已经由driver_ble模块实现
 
-- 修改stdlib_usart模块，把模块内置的标准协议改为如下标准协议，删去原标准协议中的可变长度模式：
- 固定 **16 字节**帧结构：
+为实现上述功能，你需要在其中新建结构体数组，数组元素个数为8，每一个CMD字段管理一个结构体实例
 
-| 字节位置     | 值         | 说明                                                         |
-| ------------ | ---------- | ------------------------------------------------------------ |
-| `[0]`        | `0x55`     | 包头 1                                                       |
-| `[1]`        | `0xAA`     | 包头 2                                                       |
-| `[2]`        | `0x01`     | 控制字段                                                     |
-| `[3] ~ [12]` | 二维码内容 | UTF-8 编码，最多 **10 字节**，不足补 `0x00`                  |
-| `[13]`       | CRC8       | 对 `[0]~[12]` 共 13 字节的 CRC8 校验值；`ENABLE_CRC=False` 时固定为 `0x00` |
-| `[14]`       | CNT        | 包计数，`0x00~0xFF` 循环递增                                 |
-| `[15]`       | `0xFF`     | 包尾                                                         |
+    0x09~0x12：STM32向ESP32发送数据包
 
-控制字段说明：
+    0x13~0x16：EPS32向STM32发送数据包
 
-0x00：STM32下位机向模块发送数据包
+并参考如下ESP32->APP的代码，完成STM32->ESP32的发送与接收代码。并封装为func_appcom模块API，集成在usertask。对于stm32发送，等号右侧是应该我手动配置的变量，对于stm32接收，等号左侧是应该我手动配置的变量。手动配置变量默认值给0
+void appcom_task(void *arg)
+{
+    (void)arg;
+    appcomInfo.active = true;
 
-0x01~0x04：摄像头模块向STM32发送数据包
+    while (1) {
+        /* ================================================================
+         * ESP32→APP 数据装填（手动逐字段赋值）
+         * 格式：bleInfo.bleCmdFrameArr[CMD - 0x17].payload.varXXX = <来源>;
+         * ================================================================ */
 
-0x05~0x08:   串口屏模块向STM32发送数据包 
+        /* ---- CMD 0x17 ← STM32 CMD 0x09 ---- */
+        bleInfo.bleCmdFrameArr[0].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[0].payload.var_4b_1;
+        bleInfo.bleCmdFrameArr[0].payload.var_4b_2 = systemConfig.sys_time_s;
+        bleInfo.bleCmdFrameArr[0].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[0].payload.var_1b_1;
+        bleInfo.bleCmdFrameArr[0].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[0].payload.var_1b_2;
 
-0x09~0x12：STM32向ESP32发送数据包
+        /* ---- CMD 0x18 ← STM32 CMD 0x0A ---- */
+        bleInfo.bleCmdFrameArr[1].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[1].payload.var_4b_1;
+        bleInfo.bleCmdFrameArr[1].payload.var_4b_2 = stm32Info.stm32CmdFrameArr[1].payload.var_4b_2;
+        bleInfo.bleCmdFrameArr[1].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[1].payload.var_1b_1;
+        bleInfo.bleCmdFrameArr[1].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[1].payload.var_1b_2;
 
-0x13~0x16：EPS32向STM32发送数据包
+        /* ---- CMD 0x19 ← STM32 CMD 0x0B ---- */
+        bleInfo.bleCmdFrameArr[2].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[2].payload.var_4b_1;
+        bleInfo.bleCmdFrameArr[2].payload.var_4b_2 = stm32Info.stm32CmdFrameArr[2].payload.var_4b_2;
+        bleInfo.bleCmdFrameArr[2].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[2].payload.var_1b_1;
+        bleInfo.bleCmdFrameArr[2].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[2].payload.var_1b_2;
 
-0x17~0x20：ESP32向APP发送数据包
+        /* ---- CMD 0x1A ← STM32 CMD 0x0C ---- */
+        bleInfo.bleCmdFrameArr[3].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[3].payload.var_4b_1;
+        bleInfo.bleCmdFrameArr[3].payload.var_4b_2 = stm32Info.stm32CmdFrameArr[3].payload.var_4b_2;
+        bleInfo.bleCmdFrameArr[3].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[3].payload.var_1b_1;
+        bleInfo.bleCmdFrameArr[3].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[3].payload.var_1b_2;
 
-0x21~0x24：APP向ESP32发送数据包
+        /* ---- 发送所有 ESP32→APP 帧 ---- */
+        driver_ble_send_all();
 
-通过数据格式也可以看到，每帧数据最多包含2个4字节变量，2个1字节变量。并且在stdlib_usart模块中留出最终解析数据的接口：CMD，4byteVar_1，4byteVar_2，1byteVar_1，1byteVar_2
+        /* ================================================================
+         * APP→ESP32→STM32 数据装填（手动逐字段赋值）
+         * 格式：stm32Info.stm32CmdFrameArr[4 + (CMD-0x13)].payload.varXXX = <来源>;
+         * ================================================================ */
 
-typedef union {
-    uint8_t raw[STM32_DATA_LEN];
-    struct __attribute__((packed)) {
-        uint32_t var_4b_1;
-        uint32_t var_4b_2;
-        uint8_t  var_1b_1;
-        uint8_t  var_1b_2;
-    };
-} standardFrame_t;
+        /* ---- CMD 0x13 ← APP CMD 0x21 ---- */
+        stm32Info.stm32CmdFrameArr[4].payload.var_4b_1 = bleInfo.bleCmdFrameArr[4].payload.var_4b_1;
+        stm32Info.stm32CmdFrameArr[4].payload.var_4b_2 = bleInfo.bleCmdFrameArr[4].payload.var_4b_2;
+        stm32Info.stm32CmdFrameArr[4].payload.var_1b_1 = bleInfo.bleCmdFrameArr[4].payload.var_1b_1;
+        stm32Info.stm32CmdFrameArr[4].payload.var_1b_2 = bleInfo.bleCmdFrameArr[4].payload.var_1b_2;
 
-typedef struct {
-    /* --- 发送状态 --- */
-    uint8_t            tx_cnt;       /* 发送帧计数器，0x00~0xFF 循环 */
+        /* ---- CMD 0x14 ← APP CMD 0x22 ---- */
+        stm32Info.stm32CmdFrameArr[5].payload.var_4b_1 = bleInfo.bleCmdFrameArr[5].payload.var_4b_1;
+        stm32Info.stm32CmdFrameArr[5].payload.var_4b_2 = bleInfo.bleCmdFrameArr[5].payload.var_4b_2;
+        stm32Info.stm32CmdFrameArr[5].payload.var_1b_1 = bleInfo.bleCmdFrameArr[5].payload.var_1b_1;
+        stm32Info.stm32CmdFrameArr[5].payload.var_1b_2 = bleInfo.bleCmdFrameArr[5].payload.var_1b_2;
 
-    /* --- 接收状态 --- */
-    uint8_t            cmd;                    /* 最近一帧的控制字段（ctrl byte[2]） */
-    standardFrame_t standardRxFrame;           /* 10 字节数据段，支持具名字段访问 */
-    standardFrame_t standardTxFrame;           /* 10 字节数据段，支持具名字段访问 */
-    bool               frame_ready;            /* 新帧就绪标志；读取后应清零 */
-} usartInfo_t;
+        /* ---- CMD 0x15 ← APP CMD 0x23 ---- */
+        stm32Info.stm32CmdFrameArr[6].payload.var_4b_1 = bleInfo.bleCmdFrameArr[6].payload.var_4b_1;
+        stm32Info.stm32CmdFrameArr[6].payload.var_4b_2 = bleInfo.bleCmdFrameArr[6].payload.var_4b_2;
+        stm32Info.stm32CmdFrameArr[6].payload.var_1b_1 = bleInfo.bleCmdFrameArr[6].payload.var_1b_1;
+        stm32Info.stm32CmdFrameArr[6].payload.var_1b_2 = bleInfo.bleCmdFrameArr[6].payload.var_1b_2;
+
+        /* ---- CMD 0x16 ← APP CMD 0x24 ---- */
+        stm32Info.stm32CmdFrameArr[7].payload.var_4b_1 = bleInfo.bleCmdFrameArr[7].payload.var_4b_1;
+        stm32Info.stm32CmdFrameArr[7].payload.var_4b_2 = bleInfo.bleCmdFrameArr[7].payload.var_4b_2;
+        stm32Info.stm32CmdFrameArr[7].payload.var_1b_1 = bleInfo.bleCmdFrameArr[7].payload.var_1b_1;
+        stm32Info.stm32CmdFrameArr[7].payload.var_1b_2 = bleInfo.bleCmdFrameArr[7].payload.var_1b_2;
+
+        /* ---- 发送所有 ESP32→STM32 帧 ---- */
+        driver_stm32_send_all();
+
+        vTaskDelay(pdMS_TO_TICKS(appcomInfo.cycle_ms));
+    }
+}
+
+
 
 
 
