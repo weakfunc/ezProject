@@ -60,6 +60,18 @@ bleInfo_t bleInfo = {
     .bleRxFrame  = {.raw = {0}},
     .bleTxFrame  = {.raw = {0}},
     .frame_ready = false,
+    .bleCmdFrameArr = {
+        /* [0..3] ESP32→APP (TX): CMD 0x17~0x1A */
+        [0] = { .cmd = 0x17, .payload = {.raw = {0}} },
+        [1] = { .cmd = 0x18, .payload = {.raw = {0}} },
+        [2] = { .cmd = 0x19, .payload = {.raw = {0}} },
+        [3] = { .cmd = 0x1A, .payload = {.raw = {0}} },
+        /* [4..7] APP→ESP32 (RX): CMD 0x21~0x24 */
+        [4] = { .cmd = 0x21, .payload = {.raw = {0}} },
+        [5] = { .cmd = 0x22, .payload = {.raw = {0}} },
+        [6] = { .cmd = 0x23, .payload = {.raw = {0}} },
+        [7] = { .cmd = 0x24, .payload = {.raw = {0}} },
+    },
 };
 
 /* ============================================================
@@ -141,6 +153,15 @@ static void frame_parse(const uint8_t *buf)
     bleInfo.cmd = buf[2];
     memcpy(bleInfo.bleRxFrame.raw, &buf[3], BLE_DATA_LEN);
     bleInfo.frame_ready = true;
+
+    /* 按 CMD 更新帧缓存数组 */
+    for (uint8_t i = 0; i < BLE_CMD_FRAME_CNT; i++) {
+        if (bleInfo.bleCmdFrameArr[i].cmd == buf[2]) {
+            memcpy(bleInfo.bleCmdFrameArr[i].payload.raw,
+                   &buf[3], BLE_DATA_LEN);
+            break;
+        }
+    }
 }
 
 /* ============================================================
@@ -274,6 +295,40 @@ int driver_ble_send(uint8_t ctrl, const uint8_t *data, uint8_t len)
     gatt_chr1_val_len = BLE_FRAME_LEN;
     ble_gatts_chr_updated(gatt_chr1_val_handle);
 
+    return 0;
+}
+
+/* ============================================================
+ * 函数：driver_ble_send_esp32_sysinfo
+ * 说明：将 ESP32 系统时间装填至 bleTxFrame.var_4b_1，
+ *       以 CMD 0x17 封包并通过 Chr1 Notify 推送给 APP。
+ * 参数：sys_time_s —— ESP32 系统运行时间（秒）
+ * 返回：0 成功；-1 未连接或未订阅
+ * ============================================================ */
+int driver_ble_send_esp32_sysinfo(uint32_t sys_time_s)
+{
+    bleInfo.bleCmdFrameArr[0].payload.var_4b_1 = sys_time_s;
+    return driver_ble_send(bleInfo.bleCmdFrameArr[0].cmd,
+                           bleInfo.bleCmdFrameArr[0].payload.raw,
+                           BLE_DATA_LEN);
+}
+
+/* ============================================================
+ * 函数：driver_ble_send_all
+ * 说明：遍历 bleCmdFrameArr 中所有 ESP32→APP 槽（索引 0 ~ BLE_CMD_TX_CNT-1），
+ *       依次封包并通过 Chr1 Notify 推送给 APP。
+ * 返回：0 成功（已全部发送）；-1 未连接或未订阅
+ * ============================================================ */
+int driver_ble_send_all(void)
+{
+    if (!bleInfo.connected || !bleInfo.subscribed) {
+        return -1;
+    }
+    for (uint8_t i = 0; i < BLE_CMD_TX_CNT; i++) {
+        driver_ble_send(bleInfo.bleCmdFrameArr[i].cmd,
+                        bleInfo.bleCmdFrameArr[i].payload.raw,
+                        BLE_DATA_LEN);
+    }
     return 0;
 }
 

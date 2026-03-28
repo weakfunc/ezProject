@@ -30,6 +30,16 @@ stm32Info_t stm32Info = {
     .stm32RxFrame  = {.raw = {0}},
     .stm32TxFrame  = {.raw = {0}},
     .frame_ready   = false,
+    .stm32CmdFrameArr = {
+        [0] = { .cmd = 0x09, .payload = {.raw = {0}} },
+        [1] = { .cmd = 0x0A, .payload = {.raw = {0}} },
+        [2] = { .cmd = 0x0B, .payload = {.raw = {0}} },
+        [3] = { .cmd = 0x0C, .payload = {.raw = {0}} },
+        [4] = { .cmd = 0x0D, .payload = {.raw = {0}} },
+        [5] = { .cmd = 0x0E, .payload = {.raw = {0}} },
+        [6] = { .cmd = 0x0F, .payload = {.raw = {0}} },
+        [7] = { .cmd = 0x10, .payload = {.raw = {0}} },
+    },
 };
 
 /* ---- UART 事件队列句柄 ---- */
@@ -92,6 +102,15 @@ static bool frame_parse(const uint8_t *buf)
     stm32Info.cmd = ctrl;
     memcpy(stm32Info.stm32RxFrame.raw, &buf[3], STM32_DATA_LEN);
     stm32Info.frame_ready = true;
+
+    /* 5. 按 CMD 更新帧缓存数组 */
+    for (uint8_t i = 0; i < STM32_CMD_FRAME_CNT; i++) {
+        if (stm32Info.stm32CmdFrameArr[i].cmd == ctrl) {
+            memcpy(stm32Info.stm32CmdFrameArr[i].payload.raw,
+                   &buf[3], STM32_DATA_LEN);
+            break;
+        }
+    }
 
     return true;
 }

@@ -44,6 +44,15 @@ uint8_t DRIVER_BLE_HasNewData(void){
   return (BLE_DEP_UART_INFO.frame_ready) ? 1U : 0U;
 }
 
+/* 发送 STM32 系统信息帧（CMD=0x09）。
+ * taskCnt：系统任务计数，装填至 standardTxFrame.var_4b_1，其余字段填 0x00。
+ */
+void DRIVER_BLE_SendStm32SysInfo(uint32_t taskCnt){
+  memset(BLE_DEP_UART_INFO.standardTxFrame.raw, 0x00U, STM32_DATA_LEN);
+  BLE_DEP_UART_INFO.standardTxFrame.var_4b_1 = taskCnt;
+  BLE_DEP_UART_SEND_FRAME(BLE_CMD_STM32_SYS_INFO);
+}
+
 /* 读取最近一次接收帧，并清除更新标志。 */
 uint8_t DRIVER_BLE_GetRxFrame(bleFrame_t *frame){
   if(frame == NULL) return 0U;

@@ -49,6 +49,9 @@
 /* 自定义协议字节回调类型，每收到一字节触发一次。 */
 typedef void (*uartCustomParseCb_t)(uint8_t port, uint8_t byte);
 
+/* 启用匿名结构体支持（ARMCC 默认关闭）。 */
+#pragma anon_unions
+
 /* 10 字节数据段联合体，支持按原始字节或具名字段访问。 */
 typedef union {
   uint8_t raw[STM32_DATA_LEN];

@@ -1,11 +1,40 @@
+/* ============================================================
+ * 文件说明：
+ *   task_appcom 模块实现
+ *   将 STM32→ESP32 的数据包按索引映射至 ESP32→APP 的 BLE 发送槽，
+ *   并周期性通过 driver_ble_send_all() 推送给上位机 APP。
+ * ============================================================ */
 
-## 项目概述
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver_stm32.h"
+#include "driver_ble.h"
+#include "task_appcom.h"
+#include "main.h"
 
-Android BLE 上位机工程，配套下位机：**ESP32-C3 + ESP-IDF 5.5.3 + NimBLE**。
+/* ---- 模块公有实例 ---- */
+appcomInfo_t appcomInfo = {
+    .cycle_ms = 100,
+    .active   = false,
+};
 
-实现功能：BLE 扫描、连接、GATT 服务发现、特征订阅(Notify/Indicate)、特征读写、RSSI 实时刷新、BLE 终端日志。
+/* ============================================================
+ * 函数：appcom_task
+ * 说明：FreeRTOS 任务主体。
+ *       每 appcomInfo.cycle_ms ms 执行一次：
+ *       1. 将 stm32CmdFrameArr[i].payload 复制到 bleCmdFrameArr[i].payload
+ *       2. 调用 driver_ble_send_all() 遍历发送所有 ESP32→APP 帧
+ * ============================================================ */
+void appcom_task(void *arg)
+{
+    (void)arg;
+    appcomInfo.active = true;
 
-## 任务
+    while (1) {
+        /* ================================================================
+         * ESP32→APP 数据装填（手动逐字段赋值）
+         * 格式：bleInfo.bleCmdFrameArr[CMD - 0x17].payload.varXXX = <来源>;
+         * ================================================================ */
 
         /* ---- CMD 0x17 ← STM32 CMD 0x09 ---- */
         bleInfo.bleCmdFrameArr[0].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[0].payload.var_4b_1;
@@ -31,4 +60,9 @@ Android BLE 上位机工程，配套下位机：**ESP32-C3 + ESP-IDF 5.5.3 + Nim
         bleInfo.bleCmdFrameArr[3].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[3].payload.var_1b_1;
         bleInfo.bleCmdFrameArr[3].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[3].payload.var_1b_2;
 
-        这是esp32向APP发送的代码。周期100ms。现在需要把0x17~0x20：ESP32向APP发送数据包中每一个控制字段的数据都显示在调试页面上
+        /* ---- 发送所有 ESP32→APP 帧 ---- */
+        driver_ble_send_all();
+
+        vTaskDelay(pdMS_TO_TICKS(appcomInfo.cycle_ms));
+    }
+}

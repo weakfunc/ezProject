@@ -82,6 +82,21 @@ typedef union {
 } bleDataPayload_t;
 
 /* ============================================================
+ * bleCmdFrame_t — 单个 CMD 对应的帧缓存
+ *   cmd     对应的控制字段值
+ *   payload 该 CMD 最近一次收到的 10 字节数据
+ * ============================================================ */
+typedef struct {
+    uint8_t          cmd;
+    bleDataPayload_t payload;
+} bleCmdFrame_t;
+
+#define BLE_CMD_FRAME_CNT  8U   /* CMD 帧缓存数组总大小（TX 4 + RX 4） */
+#define BLE_CMD_TX_CNT     4U   /* ESP32→APP 发送槽数量（CMD 0x17~0x1A） */
+#define BLE_CMD_TX_BASE    0x17U /* ESP32→APP 控制字段起始值 */
+#define BLE_CMD_RX_BASE    0x21U /* APP→ESP32 控制字段起始值 */
+
+/* ============================================================
  * bleInfo_t — driver_ble 模块公有管理结构体
  * ============================================================ */
 typedef struct {
@@ -93,6 +108,9 @@ typedef struct {
     bleDataPayload_t bleRxFrame;   /* 10 字节数据段，支持具名字段访问 */
     bleDataPayload_t bleTxFrame;   /* 10 字节数据段，支持具名字段访问 */
     bool             frame_ready;  /* 新帧就绪标志；读取后应清零 */
+
+    /* --- CMD 帧缓存：[0..3] ESP32→APP (0x17~0x1A)；[4..7] APP→ESP32 (0x21~0x24) --- */
+    bleCmdFrame_t    bleCmdFrameArr[BLE_CMD_FRAME_CNT];
 } bleInfo_t;
 
 extern bleInfo_t bleInfo;
@@ -110,6 +128,24 @@ int  gatt_svr_init(void);
  * 参数：ctrl —— 控制字段；data —— 数据指针（可 NULL）；len —— 有效字节数
  * ============================================================ */
 int driver_ble_send(uint8_t ctrl, const uint8_t *data, uint8_t len);
+
+/* ============================================================
+ * ESP32 → APP 业务发送接口
+ * ============================================================ */
+
+/**
+ * @brief 发送 ESP32 系统信息（CMD 0x17）
+ *        将 sys_time_s 写入 bleTxFrame.var_4b_1 后封包推送给 APP。
+ * @param sys_time_s  ESP32 系统运行时间（秒）
+ * @return 0 成功；-1 未连接或未订阅
+ */
+int driver_ble_send_esp32_sysinfo(uint32_t sys_time_s);
+
+/**
+ * @brief 遍历发送所有 ESP32→APP 帧（CMD 0x17~0x1A，共 BLE_CMD_TX_CNT 帧）
+ * @return 0 成功；-1 未连接或未订阅
+ */
+int driver_ble_send_all(void);
 
 /* ============================================================
  * GAP 状态钩子（由 main.c 的 GAP 事件回调调用）

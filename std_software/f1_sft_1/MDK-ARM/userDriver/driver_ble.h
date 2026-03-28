@@ -25,6 +25,9 @@
 #define BLE_CMD_TX_MIN          (0x09U)
 #define BLE_CMD_TX_MAX          (0x12U)
 
+/* STM32 系统信息帧 CMD。 */
+#define BLE_CMD_STM32_SYS_INFO  (0x09U)
+
 /* ESP32 发往 STM32 的 CMD 范围。 */
 #define BLE_CMD_RX_MIN          (0x13U)
 #define BLE_CMD_RX_MAX          (0x16U)
@@ -57,5 +60,8 @@ uint8_t DRIVER_BLE_HasNewData(void);
 
 /* 获取最近一次接收帧，并清除更新标志。 */
 uint8_t DRIVER_BLE_GetRxFrame(bleFrame_t *frame);
+
+/* 发送 STM32 系统信息帧（CMD=0x09），taskCnt 装填至 var_4b_1。 */
+void DRIVER_BLE_SendStm32SysInfo(uint32_t taskCnt);
 
 #endif

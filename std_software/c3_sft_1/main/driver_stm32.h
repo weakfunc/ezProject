@@ -62,6 +62,18 @@ typedef union {
 } stm32DataPayload_t;
 
 /* ============================================================
+ * stm32CmdFrame_t — 单个 CMD 对应的帧缓存
+ *   cmd     对应的控制字段值
+ *   payload 该 CMD 最近一次收到的 10 字节数据
+ * ============================================================ */
+typedef struct {
+    uint8_t            cmd;
+    stm32DataPayload_t payload;
+} stm32CmdFrame_t;
+
+#define STM32_CMD_FRAME_CNT  8U   /* CMD 帧缓存数组大小 */
+
+/* ============================================================
  * stm32Info_t — driver_stm32 模块公有管理结构体
  * ============================================================ */
 typedef struct {
@@ -79,6 +91,9 @@ typedef struct {
     stm32DataPayload_t stm32RxFrame;           /* 10 字节数据段，支持具名字段访问 */
     stm32DataPayload_t stm32TxFrame;           /* 10 字节数据段，支持具名字段访问 */
     bool               frame_ready;            /* 新帧就绪标志；读取后应清零 */
+
+    /* --- CMD 帧缓存（STM32→ESP32，CMD 0x09~0x10）--- */
+    stm32CmdFrame_t    stm32CmdFrameArr[STM32_CMD_FRAME_CNT];
 } stm32Info_t;
 
 /* 模块公有实例（在 driver_stm32.c 中定义） */

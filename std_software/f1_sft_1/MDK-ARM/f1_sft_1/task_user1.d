@@ -52,6 +52,7 @@ f1_sft_1\task_user1.o: ./userLib/stdlib_tim.h
 f1_sft_1\task_user1.o: ./userDriver/driver_tb6612.h
 f1_sft_1\task_user1.o: ./userDriver/driver_QR.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_usart.h
+f1_sft_1\task_user1.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
 f1_sft_1\task_user1.o: ./userDriver/driver_board.h
 f1_sft_1\task_user1.o: ./userDriver/driver_verison.h
 f1_sft_1\task_user1.o: ./userDriver/driver_GY615.h

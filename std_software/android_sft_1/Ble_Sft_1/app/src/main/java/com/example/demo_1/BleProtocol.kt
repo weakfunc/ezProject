@@ -1,8 +1,18 @@
 package com.example.demo_1
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+
+/** 每个 RX CMD 帧的解析结果 */
+data class BleRxFrame(
+    val var4b1: Int = 0,
+    val var4b2: Int = 0,
+    val var1b1: Int = 0,
+    val var1b2: Int = 0,
+    val cnt:    Int = 0
+)
 
 /**
  * BLE 帧协议解析与构建
@@ -43,13 +53,9 @@ object BleProtocol {
     const val CMD_TX_MIN = 0x21
     const val CMD_TX_MAX = 0x24
 
-    // ── RX 解析结果（Compose State，收到有效 Notify 帧后自动更新）────────────
-    var rx_cmd        by mutableStateOf(0); private set
-    var rx_4byteVar_1 by mutableStateOf(0); private set
-    var rx_4byteVar_2 by mutableStateOf(0); private set
-    var rx_1byteVar_1 by mutableStateOf(0); private set
-    var rx_1byteVar_2 by mutableStateOf(0); private set
-    var rx_cnt        by mutableStateOf(0); private set
+    // ── RX 解析结果：按 CMD 独立存储（Compose State，收到有效 Notify 帧后自动更新）
+    // key = CMD 值(0x17~0x20)，value = 该 CMD 最新一帧数据
+    val rxFrames = mutableStateMapOf<Int, BleRxFrame>()
 
     private var txCnt = 0
 
@@ -74,12 +80,13 @@ object BleProtocol {
         val cmd = data[2].toInt() and 0xFF
         if (cmd < CMD_RX_MIN || cmd > CMD_RX_MAX) return false
 
-        rx_cmd        = cmd
-        rx_4byteVar_1 = parseInt32BE(data, 3)
-        rx_4byteVar_2 = parseInt32BE(data, 7)
-        rx_1byteVar_1 = data[11].toInt() and 0xFF
-        rx_1byteVar_2 = data[12].toInt() and 0xFF
-        rx_cnt        = data[14].toInt() and 0xFF
+        rxFrames[cmd] = BleRxFrame(
+            var4b1 = parseInt32BE(data, 3),
+            var4b2 = parseInt32BE(data, 7),
+            var1b1 = data[11].toInt() and 0xFF,
+            var1b2 = data[12].toInt() and 0xFF,
+            cnt    = (rxFrames[cmd]?.cnt ?: 0) + 1
+        )
         return true
     }
 

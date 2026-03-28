@@ -40,14 +40,10 @@
 #include "services/gap/ble_svc_gap.h"         /* GAP 标准服务 */
 #include "driver_ble.h"                       /* BLE 驱动模块（GATT 服务、UUID、函数声明） */
 #include "driver_stm32.h"                     /* STM32 串口驱动模块 */
+#include "task_appcom.h"                      /* APP 通信数据流映射任务 */
+#include "main.h"                             /* systemConfig_t 公共声明 */
 
-/* ============================================================
- * systemConfig_t — 系统全局配置结构体
- * ============================================================ */
-typedef struct {
-    uint32_t sys_time_s;    /* 系统运行时间（秒），自上电起累计 */
-} systemConfig_t;
-
+/* systemConfig_t 定义见 main.h */
 systemConfig_t systemConfig = {
     .sys_time_s = 0,
 };
@@ -373,7 +369,9 @@ static void system_time_task(void *arg)
     (void)arg;
     while (1) {
         systemConfig.sys_time_s = (uint32_t)(esp_timer_get_time() / 1000000ULL);
-        ESP_LOGI(tag, "sys_time: %" PRIu32 " s", systemConfig.sys_time_s);
+        uint32_t stm32_time = stm32Info.stm32CmdFrameArr[0].payload.var_4b_1;
+        ESP_LOGI(tag, "sys_time: %" PRIu32 " s | stm32_time: %" PRIu32 " s",
+                 systemConfig.sys_time_s, stm32_time);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -455,6 +453,9 @@ app_main(void)
     /* ---- 9. 启动系统时间打印任务 ---- */
     xTaskCreate(system_time_task, "sys_time", 2048, NULL, 4, NULL);
 
-    /* ---- 10. 启动 NimBLE FreeRTOS 任务，在独立任务中运行协议栈事件循环 ---- */
+    /* ---- 10. 启动 APP 通信数据流映射任务 ---- */
+    xTaskCreate(appcom_task, "appcom", 2048, NULL, 4, NULL);
+
+    /* ---- 11. 启动 NimBLE FreeRTOS 任务，在独立任务中运行协议栈事件循环 ---- */
     nimble_port_freertos_init(bleprph_host_task);
 }

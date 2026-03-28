@@ -22,7 +22,7 @@ void user1TaskUpdata(void *argument){
 		user1TaskInfo.user1TaskCnt++;
 		
 		if(user1TaskInfo.user1TaskCnt % 50 == 0){
-			DRIVER_BLE_SendFrame(0x09, "lalala", 6);
+			DRIVER_BLE_SendStm32SysInfo(user1TaskInfo.user1TaskCnt);
 		}
 
 		osDelay(10);

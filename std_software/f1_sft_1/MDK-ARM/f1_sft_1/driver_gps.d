@@ -35,5 +35,6 @@ f1_sft_1\driver_gps.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.
 f1_sft_1\driver_gps.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 f1_sft_1\driver_gps.o: ./userLib/stdlib_common.h
 f1_sft_1\driver_gps.o: ../Core/Inc/main.h
+f1_sft_1\driver_gps.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
 f1_sft_1\driver_gps.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h
 f1_sft_1\driver_gps.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdlib.h

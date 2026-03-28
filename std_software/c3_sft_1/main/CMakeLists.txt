@@ -3,7 +3,8 @@
 # INCLUDE_DIRS —— 头文件搜索目录（"." 表示 main/ 目录自身）
 set(srcs "main.c"
          "driver_ble.c"
-         "driver_stm32.c")
+         "driver_stm32.c"
+         "task_appcom.c")
 
 idf_component_register(SRCS "${srcs}"
                        INCLUDE_DIRS ".")
