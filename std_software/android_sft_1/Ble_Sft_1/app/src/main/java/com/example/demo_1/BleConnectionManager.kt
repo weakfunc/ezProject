@@ -67,6 +67,9 @@ object BleConnectionManager {
     private const val MAX_TERMINAL_ENTRIES = 200
     private val CCCD_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
+    private const val AUTO_SUBSCRIBE_RETRY_DELAY_MS = 300L
+    private const val AUTO_SUBSCRIBE_MAX_RETRY = 6
+
     private val mainHandler = Handler(Looper.getMainLooper())
     private var currentGatt: BluetoothGatt? = null
     private var currentAddress: String? = null
@@ -75,6 +78,12 @@ object BleConnectionManager {
 
     private val characteristicSubscriptionStates = mutableMapOf<String, Boolean>()
     private val characteristicLastReadValues = mutableMapOf<String, String>()
+
+    // 自动订阅状态（连接时自动启用 Notify/Indicate）
+    private val autoSubscribedKeys   = mutableSetOf<String>()
+    private val autoSubscribeRetries = mutableMapOf<String, Int>()
+    private val autoSubscribeSkipped = mutableSetOf<String>()
+    private val autoSubscribeRetryRunnable = Runnable { triggerAutoSubscribe() }
 
     val deviceStates = mutableStateMapOf<String, BleDeviceConnectionStatus>()
 
@@ -145,6 +154,7 @@ object BleConnectionManager {
                 mainHandler.post {
                     if (status == BluetoothGatt.GATT_SUCCESS) {
                         refreshDiscoveredServices(gatt)
+                        triggerAutoSubscribe()
                     } else {
                         discoveredServices = emptyList()
                     }
@@ -339,6 +349,7 @@ object BleConnectionManager {
     @SuppressLint("MissingPermission")
     private fun disconnectCurrentInternal() {
         stopRssiPolling()
+        clearAutoSubscribeState()
         val address = currentAddress
         if (address != null) {
             deviceStates[address] = BleDeviceConnectionStatus.Disconnected
@@ -388,9 +399,80 @@ object BleConnectionManager {
         rssiPollingRunnable = null
     }
 
+    /**
+     * 服务发现完成后自动启用所有目标特征的 Notify/Indicate 订阅。
+     * 支持重试，最多 [AUTO_SUBSCRIBE_MAX_RETRY] 次，订阅成功后继续处理下一个目标。
+     */
+    @SuppressLint("MissingPermission")
+    private fun triggerAutoSubscribe() {
+        if (!UserConfig.auto_config_ble_device) return
+        val gatt = currentGatt ?: return
+        val info = connectedDeviceInfo ?: return
+
+        val targetPairs = UserConfig.esp32_known_service_configs
+            .flatMap { svcConfig ->
+                val svcUuid = svcConfig.serviceUuid.trim()
+                if (svcUuid.isEmpty()) emptyList()
+                else svcConfig.characteristicUuids
+                    .map { it.trim() }.filter { it.isNotEmpty() }
+                    .map { svcUuid to it }
+            }
+        if (targetPairs.isEmpty()) return
+
+        val pending = targetPairs.mapNotNull { (svcUuid, chrUuid) ->
+            val key = "${info.address.lowercase()}|${svcUuid.lowercase()}|${chrUuid.lowercase()}"
+            if (key in autoSubscribedKeys || key in autoSubscribeSkipped) return@mapNotNull null
+
+            val chr = gatt.services.orEmpty()
+                .firstOrNull { it.uuid.toString().equals(svcUuid, ignoreCase = true) }
+                ?.characteristics?.firstOrNull { it.uuid.toString().equals(chrUuid, ignoreCase = true) }
+                ?: return@mapNotNull null
+
+            val stateKey = characteristicKey(svcUuid, chrUuid)
+            if (characteristicSubscriptionStates[stateKey] == true) {
+                autoSubscribedKeys.add(key)
+                return@mapNotNull null
+            }
+            if (!characteristicCanSubscribe(chr.properties)) return@mapNotNull null
+
+            Triple(svcUuid, chrUuid, key)
+        }
+        if (pending.isEmpty()) return
+
+        val (svcUuid, chrUuid, key) = pending.first()
+        when (toggleCharacteristicSubscription(svcUuid, chrUuid)) {
+            BleSubscriptionToggleResult.Enabled -> {
+                autoSubscribedKeys.add(key)
+                autoSubscribeRetries.remove(key)
+                autoSubscribeSkipped.remove(key)
+                if (pending.size > 1) {
+                    mainHandler.postDelayed(autoSubscribeRetryRunnable, AUTO_SUBSCRIBE_RETRY_DELAY_MS)
+                }
+            }
+            BleSubscriptionToggleResult.Disabled,
+            BleSubscriptionToggleResult.Failed -> {
+                val retries = (autoSubscribeRetries[key] ?: 0) + 1
+                autoSubscribeRetries[key] = retries
+                if (retries >= AUTO_SUBSCRIBE_MAX_RETRY) {
+                    autoSubscribeSkipped.add(key)
+                } else {
+                    mainHandler.postDelayed(autoSubscribeRetryRunnable, AUTO_SUBSCRIBE_RETRY_DELAY_MS)
+                }
+            }
+        }
+    }
+
+    private fun clearAutoSubscribeState() {
+        mainHandler.removeCallbacks(autoSubscribeRetryRunnable)
+        autoSubscribedKeys.clear()
+        autoSubscribeRetries.clear()
+        autoSubscribeSkipped.clear()
+    }
+
     private fun handleDisconnected(address: String?, callbackGatt: BluetoothGatt) {
         val disconnectedAddress = address ?: callbackGatt.device.address
         stopRssiPolling()
+        clearAutoSubscribeState()
         deviceStates[disconnectedAddress] = BleDeviceConnectionStatus.Disconnected
         if (connectedDeviceInfo?.address == disconnectedAddress) {
             connectedDeviceInfo = null

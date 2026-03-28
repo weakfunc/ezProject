@@ -96,8 +96,8 @@ void appcom_task(void *arg)
 
          
         /* ---- CMD 0x17 ← STM32 CMD 0x09 ---- */
-        bleInfo.bleCmdFrameArr[0].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[0].payload.var_4b_1;
-        bleInfo.bleCmdFrameArr[0].payload.var_4b_2 = systemConfig.sys_time_s;
+        bleInfo.bleCmdFrameArr[0].payload.var_4b_1 = systemConfig.sys_time_s;
+        bleInfo.bleCmdFrameArr[0].payload.var_4b_2 = stm32Info.stm32CmdFrameArr[0].payload.var_4b_1;
         bleInfo.bleCmdFrameArr[0].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[0].payload.var_1b_1;
         bleInfo.bleCmdFrameArr[0].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[0].payload.var_1b_2;
 

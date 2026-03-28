@@ -68,25 +68,25 @@ void FUNC_APPCOM_TxUpdate(void){
    * ================================================================ */
 
   /* ---- CMD 0x09 ---- */
-  appcomInfo.appCmdFrameArr[0].payload.var_4b_1 = systemTaskInfo.systemTaskCnt;
-  appcomInfo.appCmdFrameArr[0].payload.var_4b_2 = 0;
+  appcomInfo.appCmdFrameArr[0].payload.var_4b_1 = 0;
+  appcomInfo.appCmdFrameArr[0].payload.var_4b_2 = systemTaskInfo.systemTaskCnt;
   appcomInfo.appCmdFrameArr[0].payload.var_1b_1 = 0;
   appcomInfo.appCmdFrameArr[0].payload.var_1b_2 = 0;
 
   /* ---- CMD 0x0A ---- */
-  appcomInfo.appCmdFrameArr[1].payload.var_4b_1 = systemTaskInfo.systemTaskCnt;
+  appcomInfo.appCmdFrameArr[1].payload.var_4b_1 = 0;
   appcomInfo.appCmdFrameArr[1].payload.var_4b_2 = 0;
   appcomInfo.appCmdFrameArr[1].payload.var_1b_1 = 0;
   appcomInfo.appCmdFrameArr[1].payload.var_1b_2 = 0;
 
   /* ---- CMD 0x0B ---- */
-  appcomInfo.appCmdFrameArr[2].payload.var_4b_1 = systemTaskInfo.systemTaskCnt;
+  appcomInfo.appCmdFrameArr[2].payload.var_4b_1 = 0;
   appcomInfo.appCmdFrameArr[2].payload.var_4b_2 = 0;
   appcomInfo.appCmdFrameArr[2].payload.var_1b_1 = 0;
   appcomInfo.appCmdFrameArr[2].payload.var_1b_2 = 0;
 
   /* ---- CMD 0x0C ---- */
-  appcomInfo.appCmdFrameArr[3].payload.var_4b_1 = systemTaskInfo.systemTaskCnt;
+  appcomInfo.appCmdFrameArr[3].payload.var_4b_1 = 0;
   appcomInfo.appCmdFrameArr[3].payload.var_4b_2 = 0;
   appcomInfo.appCmdFrameArr[3].payload.var_1b_1 = 0;
   appcomInfo.appCmdFrameArr[3].payload.var_1b_2 = 0;
