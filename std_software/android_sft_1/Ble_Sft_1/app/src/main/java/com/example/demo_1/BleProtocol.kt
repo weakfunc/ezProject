@@ -81,8 +81,8 @@ object BleProtocol {
         if (cmd < CMD_RX_MIN || cmd > CMD_RX_MAX) return false
 
         rxFrames[cmd] = BleRxFrame(
-            var4b1 = parseInt32BE(data, 3),
-            var4b2 = parseInt32BE(data, 7),
+            var4b1 = parseInt32LE(data, 3),
+            var4b2 = parseInt32LE(data, 7),
             var1b1 = data[11].toInt() and 0xFF,
             var1b2 = data[12].toInt() and 0xFF,
             cnt    = (rxFrames[cmd]?.cnt ?: 0) + 1
@@ -124,9 +124,9 @@ object BleProtocol {
 
     // ── 私有工具 ──────────────────────────────────────────────────────────────
 
-    private fun parseInt32BE(bytes: ByteArray, offset: Int): Int =
-        ((bytes[offset    ].toInt() and 0xFF) shl 24) or
-        ((bytes[offset + 1].toInt() and 0xFF) shl 16) or
-        ((bytes[offset + 2].toInt() and 0xFF) shl  8) or
-         (bytes[offset + 3].toInt() and 0xFF)
+    private fun parseInt32LE(bytes: ByteArray, offset: Int): Int =
+         (bytes[offset    ].toInt() and 0xFF)        or
+        ((bytes[offset + 1].toInt() and 0xFF) shl  8) or
+        ((bytes[offset + 2].toInt() and 0xFF) shl 16) or
+        ((bytes[offset + 3].toInt() and 0xFF) shl 24)
 }

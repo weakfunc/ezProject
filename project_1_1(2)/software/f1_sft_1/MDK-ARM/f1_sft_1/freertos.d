@@ -46,6 +46,8 @@ f1_sft_1\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cm
 f1_sft_1\freertos.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 f1_sft_1\freertos.o: .\userApp\task_system.h
 f1_sft_1\freertos.o: .\userLib\stdlib_usart.h
+f1_sft_1\freertos.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
 f1_sft_1\freertos.o: .\userLib\stdlib_tim.h
 f1_sft_1\freertos.o: .\userLib\stdlib_i2c.h
+f1_sft_1\freertos.o: .\userDriver\func_appcom.h
 f1_sft_1\freertos.o: .\userApp\task_user1.h

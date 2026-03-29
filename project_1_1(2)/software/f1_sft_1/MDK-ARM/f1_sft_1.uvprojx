@@ -639,6 +639,11 @@
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_tb6612.c</FilePath>
             </File>
+            <File>
+              <FileName>func_appcom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userDriver\func_appcom.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

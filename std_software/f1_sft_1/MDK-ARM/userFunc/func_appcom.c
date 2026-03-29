@@ -5,26 +5,6 @@
 #include "task_user1.h"
 #include "task_system.h"
 
-/*============================================================================
- * 私有变量
- *============================================================================*/
-
-/* ============================================================
- * 手动配置区域 —— RX 接收目标变量（CMD 0x13~0x16，默认 0）
- * 使用时将下方变量替换为目标模块的实际变量引用。
- * ============================================================ */
-/* CMD 0x13 接收目标 */
-static uint32_t rx13_4b1 = 0U, rx13_4b2 = 0U;
-static uint8_t  rx13_1b1 = 0U, rx13_1b2 = 0U;
-/* CMD 0x14 接收目标 */
-static uint32_t rx14_4b1 = 0U, rx14_4b2 = 0U;
-static uint8_t  rx14_1b1 = 0U, rx14_1b2 = 0U;
-/* CMD 0x15 接收目标 */
-static uint32_t rx15_4b1 = 0U, rx15_4b2 = 0U;
-static uint8_t  rx15_1b1 = 0U, rx15_1b2 = 0U;
-/* CMD 0x16 接收目标 */
-static uint32_t rx16_4b1 = 0U, rx16_4b2 = 0U;
-static uint8_t  rx16_1b1 = 0U, rx16_1b2 = 0U;
 
 /*============================================================================
  * 公有变量
@@ -32,6 +12,8 @@ static uint8_t  rx16_1b1 = 0U, rx16_1b2 = 0U;
 
 /* APPCOM 模块信息（公有，供上层直接访问）。 */
 appcomInfo_t appcomInfo;
+
+remoteInfo_t remoteInfo;
 
 /* task 层变量引用（手动配置区域使用）。 */
 extern user1TaskInfo_t   user1TaskInfo;
@@ -68,28 +50,28 @@ void FUNC_APPCOM_TxUpdate(void){
    * ================================================================ */
 
   /* ---- CMD 0x09 ---- */
-  appcomInfo.appCmdFrameArr[0].payload.var_4b_1 = 0;
+  appcomInfo.appCmdFrameArr[0].payload.var_4b_1 = remoteInfo.null;
   appcomInfo.appCmdFrameArr[0].payload.var_4b_2 = systemTaskInfo.systemTaskCnt;
-  appcomInfo.appCmdFrameArr[0].payload.var_1b_1 = 0;
-  appcomInfo.appCmdFrameArr[0].payload.var_1b_2 = 0;
+  appcomInfo.appCmdFrameArr[0].payload.var_1b_1 = remoteInfo.key1;
+  appcomInfo.appCmdFrameArr[0].payload.var_1b_2 = remoteInfo.key2;
 
   /* ---- CMD 0x0A ---- */
-  appcomInfo.appCmdFrameArr[1].payload.var_4b_1 = 0;
-  appcomInfo.appCmdFrameArr[1].payload.var_4b_2 = 0;
-  appcomInfo.appCmdFrameArr[1].payload.var_1b_1 = 0;
-  appcomInfo.appCmdFrameArr[1].payload.var_1b_2 = 0;
+  appcomInfo.appCmdFrameArr[1].payload.var_4b_1 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[1].payload.var_4b_2 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[1].payload.var_1b_1 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[1].payload.var_1b_2 = remoteInfo.null;
 
   /* ---- CMD 0x0B ---- */
-  appcomInfo.appCmdFrameArr[2].payload.var_4b_1 = 0;
-  appcomInfo.appCmdFrameArr[2].payload.var_4b_2 = 0;
-  appcomInfo.appCmdFrameArr[2].payload.var_1b_1 = 0;
-  appcomInfo.appCmdFrameArr[2].payload.var_1b_2 = 0;
+  appcomInfo.appCmdFrameArr[2].payload.var_4b_1 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[2].payload.var_4b_2 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[2].payload.var_1b_1 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[2].payload.var_1b_2 = remoteInfo.null;
 
   /* ---- CMD 0x0C ---- */
-  appcomInfo.appCmdFrameArr[3].payload.var_4b_1 = 0;
-  appcomInfo.appCmdFrameArr[3].payload.var_4b_2 = 0;
-  appcomInfo.appCmdFrameArr[3].payload.var_1b_1 = 0;
-  appcomInfo.appCmdFrameArr[3].payload.var_1b_2 = 0;
+  appcomInfo.appCmdFrameArr[3].payload.var_4b_1 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[3].payload.var_4b_2 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[3].payload.var_1b_1 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[3].payload.var_1b_2 = remoteInfo.null;
 
   /* 发送所有 STM32→ESP32 帧 */
   for(i = 0U; i < APPCOM_TX_COUNT; i++){
@@ -127,26 +109,32 @@ void FUNC_APPCOM_RxUpdate(void){
    * ================================================================ */
 
   /* ---- CMD 0x13 ---- */
-  rx13_4b1 = appcomInfo.appCmdFrameArr[4].payload.var_4b_1;
-  rx13_4b2 = appcomInfo.appCmdFrameArr[4].payload.var_4b_2;
-  rx13_1b1 = appcomInfo.appCmdFrameArr[4].payload.var_1b_1;
-  rx13_1b2 = appcomInfo.appCmdFrameArr[4].payload.var_1b_2;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[4].payload.var_4b_1;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[4].payload.var_4b_2;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[4].payload.var_1b_1;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[4].payload.var_1b_2;
 
   /* ---- CMD 0x14 ---- */
-  rx14_4b1 = appcomInfo.appCmdFrameArr[5].payload.var_4b_1;
-  rx14_4b2 = appcomInfo.appCmdFrameArr[5].payload.var_4b_2;
-  rx14_1b1 = appcomInfo.appCmdFrameArr[5].payload.var_1b_1;
-  rx14_1b2 = appcomInfo.appCmdFrameArr[5].payload.var_1b_2;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[5].payload.var_4b_1;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[5].payload.var_4b_2;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[5].payload.var_1b_1;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[5].payload.var_1b_2;
 
   /* ---- CMD 0x15 ---- */
-  rx15_4b1 = appcomInfo.appCmdFrameArr[6].payload.var_4b_1;
-  rx15_4b2 = appcomInfo.appCmdFrameArr[6].payload.var_4b_2;
-  rx15_1b1 = appcomInfo.appCmdFrameArr[6].payload.var_1b_1;
-  rx15_1b2 = appcomInfo.appCmdFrameArr[6].payload.var_1b_2;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[6].payload.var_4b_1;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[6].payload.var_4b_2;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[6].payload.var_1b_1;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[6].payload.var_1b_2;
 
   /* ---- CMD 0x16 ---- */
-  rx16_4b1 = appcomInfo.appCmdFrameArr[7].payload.var_4b_1;
-  rx16_4b2 = appcomInfo.appCmdFrameArr[7].payload.var_4b_2;
-  rx16_1b1 = appcomInfo.appCmdFrameArr[7].payload.var_1b_1;
-  rx16_1b2 = appcomInfo.appCmdFrameArr[7].payload.var_1b_2;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[7].payload.var_4b_1;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[7].payload.var_4b_2;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[7].payload.var_1b_1;
+  remoteInfo.null = appcomInfo.appCmdFrameArr[7].payload.var_1b_2;
+}
+
+
+void FUNC_APPCOM_UPDATA(void){
+  FUNC_APPCOM_RxUpdate();
+  FUNC_APPCOM_TxUpdate();
 }

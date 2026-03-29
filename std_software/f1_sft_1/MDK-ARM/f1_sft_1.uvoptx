@@ -168,7 +168,7 @@
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>uartRawInfo</ItemText>
+          <ItemText>uartRawInfo,0x10</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
@@ -189,6 +189,11 @@
           <count>6</count>
           <WinNumber>1</WinNumber>
           <ItemText>appcomInfo</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>verisonInfo,0x0A</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>
@@ -765,7 +770,7 @@
 
   <Group>
     <GroupName>userDriver</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

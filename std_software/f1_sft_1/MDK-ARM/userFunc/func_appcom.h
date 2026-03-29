@@ -32,7 +32,19 @@ typedef struct {
   appCmdFrame_t appCmdFrameArr[APPCOM_FRAME_COUNT];
 } appcomInfo_t;
 
+typedef struct{
+  uint8_t null;
+  //TX
+
+  //RX
+  uint8_t key1;
+  uint8_t key2;
+  uint8_t key3;
+}remoteInfo_t;
+
 extern appcomInfo_t appcomInfo;
+
+extern remoteInfo_t remoteInfo;
 
 /* 初始化 APPCOM 模块，清零数据并设置各帧 CMD 字段。 */
 void FUNC_APPCOM_Init(void);
@@ -46,5 +58,7 @@ void FUNC_APPCOM_TxUpdate(void);
  * 并将各字段提取到接收目标变量。
  */
 void FUNC_APPCOM_RxUpdate(void);
+
+void FUNC_APPCOM_UPDATA(void);
 
 #endif

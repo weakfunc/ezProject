@@ -9,7 +9,11 @@
 #include "stdlib_dwt.h"
 
 typedef struct systemTaskInfo{
-	uint32_t systemTaskCnt;					
+	uint32_t systemTaskCnt;
+	
+	uint8_t key1Press;
+	uint8_t key2Press;
+	uint8_t key3Press;
 	
 }systemTaskInfo_t;
 

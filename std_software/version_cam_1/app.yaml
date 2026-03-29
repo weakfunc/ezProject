@@ -1,0 +1,8 @@
+id: userversionapp
+name: userVersionApp
+version: 1.0.0
+author: lalala
+icon: ''
+desc: 二维码识别
+files:
+  - QRScan.py

@@ -15,17 +15,15 @@ user1TaskInfo_t user1TaskInfo;
 
 void user1TaskInit(){
 	DRIVER_BLE_Init();
-	FUNC_APPCOM_Init();
+	DRIVER_VERISON_Init();
 }
 
 void user1TaskUpdata(void *argument){
 	user1TaskInit();
 	for(;;){
 		user1TaskInfo.user1TaskCnt++;
+		DRIVER_VERISON_GetMaixCamInfo();
 
-		FUNC_APPCOM_TxUpdate();
-		FUNC_APPCOM_RxUpdate();
-
-		osDelay(5);
+		osDelay(2);
 	}
 }

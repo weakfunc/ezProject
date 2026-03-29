@@ -7,13 +7,6 @@
 #include "stdlib_tim.h"
 #include "stdlib_i2c.h"
 
-typedef struct usartInfo{
-	uint8_t rxBuff[64];
-	uint8_t txBuff[64];
-	
-	uint8_t cmd;
-	uint8_t len;
-}usartInfo_t;
 
 typedef struct systemTaskInfo{
 	uint32_t systemTaskCnt;					

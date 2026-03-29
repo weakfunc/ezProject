@@ -620,11 +620,6 @@
               <FilePath>.\userDriver\driver_board.c</FilePath>
             </File>
             <File>
-              <FileName>driver_k210.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_k210.c</FilePath>
-            </File>
-            <File>
               <FileName>driver_oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_oled.c</FilePath>
@@ -643,6 +638,11 @@
               <FileName>driver_verison.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_verison.c</FilePath>
+            </File>
+            <File>
+              <FileName>func_appcom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userDriver\func_appcom.c</FilePath>
             </File>
           </Files>
         </Group>

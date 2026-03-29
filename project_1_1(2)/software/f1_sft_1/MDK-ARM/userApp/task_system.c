@@ -2,7 +2,7 @@
 #include "driver_board.h"
 
 systemTaskInfo_t systemTaskInfo;
-usartInfo_t usartInfo[3];
+
 
 uint8_t key1;
 
@@ -11,6 +11,7 @@ void systemTaskInit(){
 	STDLIB_TIM_PwmInit();
 	STDLIB_USART_Init();
 	STDLIB_I2C_Init();
+	FUNC_APPCOM_Init();
 }
 
 void systemTaskUpdata(void *argument){
@@ -25,10 +26,9 @@ void systemTaskUpdata(void *argument){
 		
 		}
 		
-		if(systemTaskInfo.systemTaskCnt % 100 == 0){
-			
-		}
+		FUNC_APPCOM_TxUpdate();
+		FUNC_APPCOM_RxUpdate();
 		
-    osDelay(10);
+    osDelay(100);
   }
 }

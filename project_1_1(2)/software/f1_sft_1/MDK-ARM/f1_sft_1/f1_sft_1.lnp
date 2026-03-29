@@ -45,6 +45,7 @@
 "f1_sft_1\driver_oled.o"
 "f1_sft_1\driver_steer.o"
 "f1_sft_1\driver_tb6612.o"
+"f1_sft_1\func_appcom.o"
 "f1_sft_1\stdlib_common.o"
 "f1_sft_1\stdlib_i2c.o"
 "f1_sft_1\stdlib_tim.o"

@@ -4,7 +4,7 @@
 #include "driver_tb6612.h"
 #include "driver_board.h"
 #include "driver_k210.h"
-
+#include "task_system.h"
 /*============================================================================
  * 私有宏定义
  *============================================================================*/
@@ -159,6 +159,37 @@ static void servoControl(void){
   }
 }
 
+void oledControl(){
+	DRIVER_OLED_Refresh();
+	DRIVER_OLED_ShowString(5,5," PACKAGE SORT SYSTEM ");
+	DRIVER_OLED_ShowString(5,15,"system time:");
+	DRIVER_OLED_ShowNum(80, 15, systemTaskInfo.systemTaskCnt/10, 3);
+	DRIVER_OLED_DrawPoint(100,20,1);					//小数点
+	DRIVER_OLED_ShowNum(102, 15, systemTaskInfo.systemTaskCnt%10, 1);
+	DRIVER_OLED_ShowString(110,15,"s");
+	
+	DRIVER_OLED_ShowString(5,25,"----Packge Info----");
+//	DRIVER_OLED_ShowNum(100, 35, QRcodePack.id, 1, 24, 1);			//包裹编号
+	
+	DRIVER_OLED_ShowString(5,35,"NUM:");
+	DRIVER_OLED_ShowNum(35,35, sysCtrl.packNum, 1);
+	
+	DRIVER_OLED_ShowString(5,45,"system enable:");
+	DRIVER_OLED_ShowNum(100 ,45, key1, 1);
+//	switch(packList.source){
+//		case 0x01: OLED_ShowString(50,35,"E",8,1); break;
+//		case 0x02: OLED_ShowString(50,35,"F",8,1); break;
+//		case 0x03: OLED_ShowString(50,35,"G",8,1); break;
+//	}
+//	OLED_ShowString(5,45,"aim:",8,1);
+//	switch(packList.aim){
+//		case 0x01: OLED_ShowString(30,45,"A",8,1); break;
+//		case 0x02: OLED_ShowString(30,45,"B",8,1); break;
+//		case 0x03: OLED_ShowString(30,45,"C",8,1); break;
+//	}
+
+}
+
 /*============================================================================
  * 任务入口
  *============================================================================*/
@@ -187,10 +218,9 @@ void user1TaskUpdata(void *argument){
 
     /* OLED每100ms刷新一次，避免高频I2C传输拖慢控制循环 */
     if(sysCtrl.taskCnt % 100U == 0U){
-      DRIVER_OLED_ShowString(10,10,"1234");
-      DRIVER_OLED_Refresh();
+			oledControl();
     }
 
-    osDelay(1);
+    osDelay(2);
   }
 }

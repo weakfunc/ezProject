@@ -3,32 +3,33 @@
 
 Android BLE 上位机工程，配套下位机：**ESP32-C3 + ESP-IDF 5.5.3 + NimBLE**。
 
-实现功能：BLE 扫描、连接、GATT 服务发现、特征订阅(Notify/Indicate)、特征读写、RSSI 实时刷新、BLE 终端日志。
+已实现功能：BLE 扫描、连接、GATT 服务发现、特征订阅(Notify/Indicate)、特征读写、RSSI 实时刷新、BLE 终端日志。
 
 ## 任务
 
-        /* ---- CMD 0x17 ← STM32 CMD 0x09 ---- */
-        bleInfo.bleCmdFrameArr[0].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[0].payload.var_4b_1;
-        bleInfo.bleCmdFrameArr[0].payload.var_4b_2 = systemConfig.sys_time_s;
-        bleInfo.bleCmdFrameArr[0].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[0].payload.var_1b_1;
-        bleInfo.bleCmdFrameArr[0].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[0].payload.var_1b_2;
+完成非开发者模式下的主页面UI设计。UI界面需要包含以下内容：
 
-        /* ---- CMD 0x18 ← STM32 CMD 0x0A ---- */
-        bleInfo.bleCmdFrameArr[1].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[1].payload.var_4b_1;
-        bleInfo.bleCmdFrameArr[1].payload.var_4b_2 = stm32Info.stm32CmdFrameArr[1].payload.var_4b_2;
-        bleInfo.bleCmdFrameArr[1].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[1].payload.var_1b_1;
-        bleInfo.bleCmdFrameArr[1].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[1].payload.var_1b_2;
+项目名称：流水线产品计数和分拣系统设计（醒目）
 
-        /* ---- CMD 0x19 ← STM32 CMD 0x0B ---- */
-        bleInfo.bleCmdFrameArr[2].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[2].payload.var_4b_1;
-        bleInfo.bleCmdFrameArr[2].payload.var_4b_2 = stm32Info.stm32CmdFrameArr[2].payload.var_4b_2;
-        bleInfo.bleCmdFrameArr[2].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[2].payload.var_1b_1;
-        bleInfo.bleCmdFrameArr[2].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[2].payload.var_1b_2;
+作者：2205006435-卞家俊
 
-        /* ---- CMD 0x1A ← STM32 CMD 0x0C ---- */
-        bleInfo.bleCmdFrameArr[3].payload.var_4b_1 = stm32Info.stm32CmdFrameArr[3].payload.var_4b_1;
-        bleInfo.bleCmdFrameArr[3].payload.var_4b_2 = stm32Info.stm32CmdFrameArr[3].payload.var_4b_2;
-        bleInfo.bleCmdFrameArr[3].payload.var_1b_1 = stm32Info.stm32CmdFrameArr[3].payload.var_1b_1;
-        bleInfo.bleCmdFrameArr[3].payload.var_1b_2 = stm32Info.stm32CmdFrameArr[3].payload.var_1b_2;
+已实现通过写特征完成APP对下位机的数据发送，APP需要按钮来向下位机发送数据，实现对下位机的控制。现在定义数据包数据字段含义：
 
-        这是esp32向APP发送的代码。周期100ms。现在需要把0x17~0x20：ESP32向APP发送数据包中每一个控制字段的数据都显示在调试页面上
+CMD: 0X21
+1B_1: 发送0x01为启动传送带，发送0x00为停止传送带
+
+
+已实现通过订阅特征完成下位机对APP的数据发送，下位机发来的数据需要显示在UI界面上。现在定义数据包数据字段含义：
+
+CMD: 0X17
+4B_1: 系统时间
+
+
+CMD: 0X18
+4B_1: 当前包裹总数
+4B_2: 当前包裹是否已完成分拣
+1B_1: 触发的舵机编号
+1B_2：系统是否使能（0：未使能，1：使能）
+
+设计原则：简洁，看上去是一个大学本科毕业生的水平。
+上述数据内容已通过调试界面验证，理论上只需要做主页面的UI即可，正常情况下不需要改任何后端已有逻辑。

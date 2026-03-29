@@ -26,9 +26,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -48,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.demo_1.ui.theme.Demo_1Theme
 import java.util.Locale
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -150,16 +151,6 @@ class MainActivity : ComponentActivity() {
                                 onTabSelected = { tab ->
                                     navigateToTab(AppTab.Home, tab)
                                 }
-                            )
-                        } else {
-                            Text(
-                                text = UserConfig.author_name,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 10.dp)
                             )
                         }
                     }
@@ -506,7 +497,9 @@ fun HomeScreen(
 ) {
     val connectedDevice = BleConnectionManager.connectedDeviceInfo
     val discoveredServices = BleConnectionManager.discoveredServices
-    val mcuTimeSeconds = UserConfig.mcu_time
+    val frame21 = BleProtocol.rxFrames[0x17]
+    val frame22 = BleProtocol.rxFrames[0x18]
+
     if (!UserConfig.DEVELOPER_MODE && connectedDevice != null) {
         LaunchedEffect(
             connectedDevice.address,
@@ -527,74 +520,232 @@ fun HomeScreen(
 
     val pageContent: @Composable (Modifier) -> Unit = { containerModifier ->
         Column(
-        modifier = containerModifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        HomeSection(
-            title = "BLE连接状态",
-            cardContainerColor = MaterialTheme.colorScheme.surfaceVariant
+            modifier = containerModifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
+            // 作者信息
+            Text(
+                text = UserConfig.author_name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                    .padding(bottom = 4.dp)
+            )
+
+            // BLE 连接状态
+            HomeSection(
+                title = "BLE 连接状态",
+                cardContainerColor = MaterialTheme.colorScheme.surfaceVariant
             ) {
-                if (connectedDevice == null) {
-                    Text(
-                        text = "未连接",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "当前没有连接设备，请前往 BLE 搜索页面连接设备。",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (connectedDevice == null) {
                         Text(
-                            text = "已连接",
+                            text = "未连接",
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "${connectedDevice.rssi} dBm",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    Text(
-                        text = "设备：${connectedDevice.name}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "MAC：${connectedDevice.address}",
-                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "${mcuTimeSeconds}s",
+                            text = "下拉刷新可重新搜索设备",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "已连接",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "${connectedDevice.rssi} dBm",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Text(
+                            text = "设备：${connectedDevice.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "MAC：${connectedDevice.address}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
-        }
 
-    }
+            if (connectedDevice != null) {
+                // 系统状态
+                HomeSection(title = "系统状态") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val systemTime = frame21?.var4b1 ?: 0
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "系统时间",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "${systemTime}s",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+
+                // 包裹信息
+                HomeSection(title = "包裹信息") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val packageCount = frame22?.var4b1 ?: 0
+                        val sortComplete = frame22?.var4b2 == 1
+                        val servoNumber = frame22?.var1b1 ?: 0
+                        val systemEnabled = frame22?.var1b2 == 1
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "当前包裹总数",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "$packageCount 件",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "分拣状态",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = if (sortComplete) "已完成" else "进行中",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (sortComplete) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "触发舵机编号",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "#$servoNumber",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "运行状态",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = if (systemEnabled) "使能" else "未使能",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (systemEnabled) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+
+                // 传送带控制
+                HomeSection(title = "传送带控制") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                val frame = BleProtocol.buildTxFrame(cmd = 0x21, var1_1 = 0x01)
+                                val ok = BleConnectionManager.writeCharacteristic(
+                                    serviceUuid = UserConfig.esp32_service_1_uuid,
+                                    characteristicUuid = UserConfig.esp32_service_1_characteristic_1_uuid,
+                                    value = frame
+                                )
+                                if (ok) BleConnectionManager.recordOutgoingMessage(
+                                    characteristicUuid = UserConfig.esp32_service_1_characteristic_1_uuid,
+                                    value = frame
+                                )
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = "启动传送带")
+                        }
+                        Button(
+                            onClick = {
+                                val frame = BleProtocol.buildTxFrame(cmd = 0x21, var1_1 = 0x00)
+                                val ok = BleConnectionManager.writeCharacteristic(
+                                    serviceUuid = UserConfig.esp32_service_1_uuid,
+                                    characteristicUuid = UserConfig.esp32_service_1_characteristic_1_uuid,
+                                    value = frame
+                                )
+                                if (ok) BleConnectionManager.recordOutgoingMessage(
+                                    characteristicUuid = UserConfig.esp32_service_1_characteristic_1_uuid,
+                                    value = frame
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            ),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = "停止传送带")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     if (UserConfig.DEVELOPER_MODE) {

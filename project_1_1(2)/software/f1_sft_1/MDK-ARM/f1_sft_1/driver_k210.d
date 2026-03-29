@@ -35,3 +35,4 @@ f1_sft_1\driver_k210.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex
 f1_sft_1\driver_k210.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 f1_sft_1\driver_k210.o: .\userLib\stdlib_common.h
 f1_sft_1\driver_k210.o: ../Core/Inc/main.h
+f1_sft_1\driver_k210.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h

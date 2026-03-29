@@ -53,3 +53,6 @@ f1_sft_1\task_user1.o: .\userDriver\driver_tb6612.h
 f1_sft_1\task_user1.o: .\userDriver\driver_board.h
 f1_sft_1\task_user1.o: .\userDriver\driver_k210.h
 f1_sft_1\task_user1.o: .\userLib\stdlib_usart.h
+f1_sft_1\task_user1.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
+f1_sft_1\task_user1.o: userApp\task_system.h
+f1_sft_1\task_user1.o: .\userDriver\func_appcom.h

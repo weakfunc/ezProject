@@ -1,10 +1,10 @@
 #include "task_user1.h"
 #include "driver_oled.h"
-#include "driver_steer.h"
 #include "driver_tb6612.h"
 #include "driver_board.h"
 #include "driver_verison.h"
 #include "task_system.h"
+#include "func_appcom.h"
 
 /*============================================================================
  * 私有宏定义
@@ -15,38 +15,8 @@ uint32_t timeA = 1400;
 uint32_t timeB = 8000;
 
 
-/* 包裹列表最大容量 */
-#define PACK_MAX_NUM         (20U)
 
-/* 从识别到舵机触发的延迟计数（单位：循环次数，循环周期10ms）
- * 目的地A：800×10ms=8s，目的地B：1500×10ms=15s */
-#define CONVEYOR_DELAY_A     (timeA)
-#define CONVEYOR_DELAY_B     (timeB)
 
-/* 舵机无效编号（目的地C不触发舵机） */
-#define SERVO_ID_NONE        (0xFFU)
-
-/* 电机速度范围 */
-#define MOTOR_SPEED_RAMP_STEP (10)   /* 每次循环步进量，约1s内从0升至最大值 */
-
-/*============================================================================
- * 私有结构体定义
- *============================================================================*/
-
-/* 包裹信息（移植自QRcodePack_t，仅保留分拣所需字段） */
-typedef struct {
-  uint8_t  aim;          /* 目的地：0x01=A 0x02=B 0x03=C */
-  uint32_t outportTime;  /* 舵机触发时刻（taskCnt单位） */
-  uint8_t  servoId;      /* 触发的舵机编号，SERVO_ID_NONE=不触发 */
-  uint8_t  isOutFlag;    /* 是否已完成分拣 */
-} packInfo_t;
-
-/* 系统运行时状态（移植自sysConfig_t） */
-typedef struct {
-  uint32_t taskCnt;                   /* 任务计数器，每次循环+1 */
-  uint8_t  packNum;                   /* 当前包裹总数（循环使用） */
-  uint8_t  servoEnable[STEER_SERVO_COUNT]; /* 舵机触发使能标志 */
-} sysCtrl_t;
 
 extern uint8_t key1;
 
@@ -56,6 +26,7 @@ extern uint8_t key1;
 
 /* 包裹列表 */
 packInfo_t packList[PACK_MAX_NUM];
+packInfo_t remoteInfo;
 
 /* 系统状态 */
 sysCtrl_t sysCtrl;
@@ -99,6 +70,12 @@ static void packRecognize(void){
       packList[sysCtrl.packNum].servoId     = SERVO_ID_NONE;
       break;
   }
+	
+	remoteInfo.aim = packList[sysCtrl.packNum].aim;
+	remoteInfo.packNum = maixCamInfo.rxTotalCnt;
+	remoteInfo.outportTime = packList[sysCtrl.packNum].outportTime;
+	remoteInfo.servoId = packList[sysCtrl.packNum].servoId;
+	
 
   sysCtrl.packNum++;
   if(sysCtrl.packNum >= PACK_MAX_NUM){
@@ -128,7 +105,7 @@ static void sysControl(void){
 /* 传送带电机控制：KEY1按下时斜坡加速，松开时立即停止
  * 移植自motorTaskUpdata()电机部分，使用TB6612_MOTOR_A驱动传送带 */
 static void motorControl(void){
-  if(key1){
+  if(1){
     if(motorSpeed < TB6612_SPEED_MAX){
       motorSpeed += MOTOR_SPEED_RAMP_STEP;
     } else {
@@ -204,6 +181,7 @@ void user1TaskInit(){
   /* 初始化360度舵机为停止状态 */
   DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CW, 0U);
   DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CW, 0U);
+	FUNC_APPCOM_Init();
 }
 
 void user1TaskUpdata(void *argument){
@@ -222,8 +200,15 @@ void user1TaskUpdata(void *argument){
     /* OLED每100ms刷新一次，避免高频I2C传输拖慢控制循环 */
     if(sysCtrl.taskCnt % 50u == 0U){
       oledControl();
+
     }
 		
+
+		
+		if(sysCtrl.taskCnt % 5u == 0U){
+      FUNC_APPCOM_TxUpdate();
+			FUNC_APPCOM_RxUpdate();
+    }
 
     osDelay(2);
   }
