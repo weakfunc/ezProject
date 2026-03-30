@@ -40,6 +40,8 @@ typedef struct{
   uint8_t key1;
   uint8_t key2;
   uint8_t key3;
+
+  uint8_t var[16];
 }remoteInfo_t;
 
 extern appcomInfo_t appcomInfo;

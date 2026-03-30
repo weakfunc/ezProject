@@ -125,8 +125,8 @@ void appcom_task(void *arg)
         //     bleInfo.bleCmdFrameArr[i].payload.var_1b_2 = systemConfig.sys_time_s;
         // }
 
-        /* ---- 发送所有 ESP32→APP 帧 ---- */
-        driver_ble_send_all();
+        /* ---- 每次只发一帧给 APP（轮询），避免背靠背覆盖 gatt_chr1_val ---- */
+        appcom_ble_send_next_frame();
 
         /* ================================================================
          * APP→ESP32→STM32 数据装填（手动逐字段赋值）

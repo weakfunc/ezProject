@@ -23,7 +23,7 @@ void systemTaskUpdata(void *argument){
 		STDLIB_USART_Updata();
 
 		if(systemTaskInfo.systemTaskCnt % 10 == 0){
-//			FUNC_APPCOM_UPDATA();
+			FUNC_APPCOM_UPDATA();
 		}
 		
 		if(systemTaskInfo.systemTaskCnt % 100 == 0){

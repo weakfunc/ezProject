@@ -398,7 +398,7 @@ static void system_time_task(void *arg)
         uint32_t stm32_time = stm32Info.stm32CmdFrameArr[0].payload.var_4b_1;
         ESP_LOGI(tag, "sys_time: %" PRIu32 " s | stm32_time: %" PRIu32 " s",
                  systemConfig.sys_time_s, stm32_time);
-        appcom_dbg_print_rx();
+ //       appcom_dbg_print_rx();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

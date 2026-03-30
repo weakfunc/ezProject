@@ -141,6 +141,9 @@ static uint8_t crc8_calc(const uint8_t *data, uint8_t len)
  * ============================================================ */
 static void frame_parse(const uint8_t *buf)
 {
+    ESP_LOGI("BLE", "frame_parse called: %02X %02X %02X ... %02X",
+             buf[0], buf[1], buf[2], buf[15]);
+
     /* 包头/包尾校验 */
     if (buf[0] != BLE_FRAME_HEADER1 || buf[1] != BLE_FRAME_HEADER2 ||
         buf[BLE_FRAME_LEN - 1] != BLE_FRAME_TAIL) {
@@ -194,12 +197,16 @@ gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
         if (OS_MBUF_PKTLEN(ctxt->om) != BLE_FRAME_LEN) {
             return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
         }
-        rc = ble_hs_mbuf_to_flat(ctxt->om, gatt_chr1_val,
-                                  BLE_FRAME_LEN, &gatt_chr1_val_len);
-        if (rc != 0) {
-            return BLE_ATT_ERR_UNLIKELY;
+        /* 使用独立局部缓冲区接收，避免与 gatt_chr1_val（notify TX）共用产生竞争 */
+        {
+            uint8_t  rx_buf[BLE_FRAME_LEN];
+            uint16_t rx_len = 0;
+            rc = ble_hs_mbuf_to_flat(ctxt->om, rx_buf, BLE_FRAME_LEN, &rx_len);
+            if (rc != 0) {
+                return BLE_ATT_ERR_UNLIKELY;
+            }
+            frame_parse(rx_buf);
         }
-        frame_parse(gatt_chr1_val);
         return 0;
 
     default:

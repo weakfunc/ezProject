@@ -50,26 +50,26 @@ void FUNC_APPCOM_TxUpdate(void){
    * ================================================================ */
 
   /* ---- CMD 0x09 ---- */
-  appcomInfo.appCmdFrameArr[0].payload.var_4b_1 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[0].payload.var_4b_1 = systemTaskInfo.systemTaskCnt;
   appcomInfo.appCmdFrameArr[0].payload.var_4b_2 = systemTaskInfo.systemTaskCnt;
   appcomInfo.appCmdFrameArr[0].payload.var_1b_1 = remoteInfo.key1;
   appcomInfo.appCmdFrameArr[0].payload.var_1b_2 = remoteInfo.key2;
 
   /* ---- CMD 0x0A ---- */
-  appcomInfo.appCmdFrameArr[1].payload.var_4b_1 = remoteInfo.null;
-  appcomInfo.appCmdFrameArr[1].payload.var_4b_2 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[1].payload.var_4b_1 = systemTaskInfo.systemTaskCnt;
+  appcomInfo.appCmdFrameArr[1].payload.var_4b_2 = systemTaskInfo.systemTaskCnt;
   appcomInfo.appCmdFrameArr[1].payload.var_1b_1 = remoteInfo.null;
   appcomInfo.appCmdFrameArr[1].payload.var_1b_2 = remoteInfo.null;
 
   /* ---- CMD 0x0B ---- */
-  appcomInfo.appCmdFrameArr[2].payload.var_4b_1 = remoteInfo.null;
-  appcomInfo.appCmdFrameArr[2].payload.var_4b_2 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[2].payload.var_4b_1 = systemTaskInfo.systemTaskCnt;
+  appcomInfo.appCmdFrameArr[2].payload.var_4b_2 = systemTaskInfo.systemTaskCnt;
   appcomInfo.appCmdFrameArr[2].payload.var_1b_1 = remoteInfo.null;
   appcomInfo.appCmdFrameArr[2].payload.var_1b_2 = remoteInfo.null;
 
   /* ---- CMD 0x0C ---- */
-  appcomInfo.appCmdFrameArr[3].payload.var_4b_1 = remoteInfo.null;
-  appcomInfo.appCmdFrameArr[3].payload.var_4b_2 = remoteInfo.null;
+  appcomInfo.appCmdFrameArr[3].payload.var_4b_1 = systemTaskInfo.systemTaskCnt;
+  appcomInfo.appCmdFrameArr[3].payload.var_4b_2 = systemTaskInfo.systemTaskCnt;
   appcomInfo.appCmdFrameArr[3].payload.var_1b_1 = remoteInfo.null;
   appcomInfo.appCmdFrameArr[3].payload.var_1b_2 = remoteInfo.null;
 
@@ -109,28 +109,28 @@ void FUNC_APPCOM_RxUpdate(void){
    * ================================================================ */
 
   /* ---- CMD 0x13 ---- */
-  remoteInfo.null = appcomInfo.appCmdFrameArr[4].payload.var_4b_1;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[4].payload.var_4b_2;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[4].payload.var_1b_1;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[4].payload.var_1b_2;
+  remoteInfo.var[0] = appcomInfo.appCmdFrameArr[4].payload.var_4b_1;
+  remoteInfo.var[1] = appcomInfo.appCmdFrameArr[4].payload.var_4b_2;
+  remoteInfo.var[2] = appcomInfo.appCmdFrameArr[4].payload.var_1b_1;
+  remoteInfo.var[3] = appcomInfo.appCmdFrameArr[4].payload.var_1b_2;
 
   /* ---- CMD 0x14 ---- */
-  remoteInfo.null = appcomInfo.appCmdFrameArr[5].payload.var_4b_1;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[5].payload.var_4b_2;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[5].payload.var_1b_1;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[5].payload.var_1b_2;
+  remoteInfo.var[4] = appcomInfo.appCmdFrameArr[5].payload.var_4b_1;
+  remoteInfo.var[5] = appcomInfo.appCmdFrameArr[5].payload.var_4b_2;
+  remoteInfo.var[6] = appcomInfo.appCmdFrameArr[5].payload.var_1b_1;
+  remoteInfo.var[7] = appcomInfo.appCmdFrameArr[5].payload.var_1b_2;
 
   /* ---- CMD 0x15 ---- */
-  remoteInfo.null = appcomInfo.appCmdFrameArr[6].payload.var_4b_1;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[6].payload.var_4b_2;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[6].payload.var_1b_1;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[6].payload.var_1b_2;
+  remoteInfo.var[8] = appcomInfo.appCmdFrameArr[6].payload.var_4b_1;
+  remoteInfo.var[9] = appcomInfo.appCmdFrameArr[6].payload.var_4b_2;
+  remoteInfo.var[10] = appcomInfo.appCmdFrameArr[6].payload.var_1b_1;
+  remoteInfo.var[11] = appcomInfo.appCmdFrameArr[6].payload.var_1b_2;
 
   /* ---- CMD 0x16 ---- */
-  remoteInfo.null = appcomInfo.appCmdFrameArr[7].payload.var_4b_1;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[7].payload.var_4b_2;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[7].payload.var_1b_1;
-  remoteInfo.null = appcomInfo.appCmdFrameArr[7].payload.var_1b_2;
+  remoteInfo.var[12] = appcomInfo.appCmdFrameArr[7].payload.var_4b_1;
+  remoteInfo.var[13] = appcomInfo.appCmdFrameArr[7].payload.var_4b_2;
+  remoteInfo.var[14] = appcomInfo.appCmdFrameArr[7].payload.var_1b_1;
+  remoteInfo.var[15] = appcomInfo.appCmdFrameArr[7].payload.var_1b_2;
 }
 
 

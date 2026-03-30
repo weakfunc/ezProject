@@ -1,6 +1,7 @@
 package com.example.demo_1
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -234,6 +235,17 @@ object BleConnectionManager {
                     )
                 }
             }
+
+            override fun onCharacteristicWrite(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                status: Int
+            ) {
+                Log.d("BLE", "onCharacteristicWrite status=$status")
+                mainHandler.post {
+                    startRssiPolling()
+                }
+            }
         }
 
         val gatt = device.connectGatt(context.applicationContext, false, callback)
@@ -279,6 +291,7 @@ object BleConnectionManager {
         val gatt = currentGatt ?: return false
         val characteristic = findCharacteristic(serviceUuid, characteristicUuid) ?: return false
         if (!characteristicCanWrite(characteristic.properties)) return false
+        stopRssiPolling()
         return writeCharacteristicCompat(gatt, characteristic, value)
     }
 
