@@ -64,7 +64,7 @@ data class BleTerminalEntryUi(
 )
 
 object BleConnectionManager {
-    private const val RSSI_REFRESH_INTERVAL_MS = 1500L
+    private const val RSSI_REFRESH_INTERVAL_MS = 5000L
     private const val MAX_TERMINAL_ENTRIES = 200
     private val CCCD_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
@@ -144,7 +144,6 @@ object BleConnectionManager {
                         if (!discoverStarted) {
                             refreshDiscoveredServices(gatt)
                         }
-                        startRssiPolling()
                         return@post
                     }
                     handleDisconnected(address = address, callbackGatt = gatt)
@@ -242,9 +241,6 @@ object BleConnectionManager {
                 status: Int
             ) {
                 Log.d("BLE", "onCharacteristicWrite status=$status")
-                mainHandler.post {
-                    startRssiPolling()
-                }
             }
         }
 

@@ -154,6 +154,11 @@ void driver_ble_on_connect(uint16_t conn_handle);
 void driver_ble_on_disconnect(void);
 void driver_ble_on_subscribe(uint16_t attr_handle, bool cur_notify);
 
+/* ============================================================
+ * 启动 BLE 帧解析任务（需在 gatt_svr_init() 之后调用）
+ * ============================================================ */
+void driver_ble_start_parse_task(void);
+
 #ifdef __cplusplus
 }
 #endif

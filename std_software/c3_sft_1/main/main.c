@@ -458,10 +458,11 @@ app_main(void)
     ble_hs_cfg.sm_sc = 0;  /* 使用传统配对方式 */
 #endif
 
-    /* ---- 5. 初始化 GATT 服务 ---- */
+    /* ---- 5. 初始化 GATT 服务，并启动 BLE 帧解析任务 ---- */
 #if MYNEWT_VAL(BLE_GATTS)
     rc = gatt_svr_init();  /* 注册所有自定义 GATT 服务和特征 */
     assert(rc == 0);
+    driver_ble_start_parse_task();  /* write 回调解耦：parse 在独立任务执行 */
 #endif
 
 #if CONFIG_BT_NIMBLE_GAP_SERVICE

@@ -41,6 +41,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "host/ble_hs.h"
 #include "host/ble_uuid.h"
 #include "services/gap/ble_svc_gap.h"
@@ -50,6 +52,12 @@
 
 #undef MODLOG_DFLT
 #define MODLOG_DFLT(...) ((void)0)
+
+/* ============================================================
+ * write 回调 → parse 任务 解耦缓冲区及任务句柄（内部）
+ * ============================================================ */
+static uint8_t      s_write_buf[BLE_FRAME_LEN];
+static TaskHandle_t s_parse_task_handle = NULL;
 
 /* ============================================================
  * 模块公有实例
@@ -197,15 +205,17 @@ gatt_svc_access(uint16_t conn_handle, uint16_t attr_handle,
         if (OS_MBUF_PKTLEN(ctxt->om) != BLE_FRAME_LEN) {
             return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN;
         }
-        /* 使用独立局部缓冲区接收，避免与 gatt_chr1_val（notify TX）共用产生竞争 */
+        /* 仅拷贝数据，立即释放 NimBLE ATT task；
+         * 帧解析由 ble_frame_parse_task 在独立任务中执行 */
         {
-            uint8_t  rx_buf[BLE_FRAME_LEN];
             uint16_t rx_len = 0;
-            rc = ble_hs_mbuf_to_flat(ctxt->om, rx_buf, BLE_FRAME_LEN, &rx_len);
+            rc = ble_hs_mbuf_to_flat(ctxt->om, s_write_buf, BLE_FRAME_LEN, &rx_len);
             if (rc != 0) {
                 return BLE_ATT_ERR_UNLIKELY;
             }
-            frame_parse(rx_buf);
+            if (s_parse_task_handle != NULL) {
+                xTaskNotifyGive(s_parse_task_handle);
+            }
         }
         return 0;
 
@@ -366,4 +376,27 @@ void driver_ble_on_subscribe(uint16_t attr_handle, bool cur_notify)
     if (attr_handle == gatt_chr1_val_handle) {
         bleInfo.subscribed = cur_notify;
     }
+}
+
+/* ============================================================
+ * 函数：ble_frame_parse_task（内部 FreeRTOS 任务）
+ * 说明：等待 write 回调的 TaskNotify，在独立任务上下文中执行
+ *       frame_parse()，避免占用 NimBLE ATT task 的资源。
+ * ============================================================ */
+static void ble_frame_parse_task(void *arg)
+{
+    (void)arg;
+    while (1) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        frame_parse(s_write_buf);
+    }
+}
+
+/* ============================================================
+ * 函数：driver_ble_start_parse_task
+ * 说明：创建 ble_frame_parse_task，需在 gatt_svr_init() 之后调用。
+ * ============================================================ */
+void driver_ble_start_parse_task(void)
+{
+    xTaskCreate(ble_frame_parse_task, "ble_parse", 2048, NULL, 5, &s_parse_task_handle);
 }
