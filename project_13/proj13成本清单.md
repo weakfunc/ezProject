@@ -1,19 +1,19 @@
-| 名称                                                         | 链接                                                         | 参数                                     | 单价  | 数量 | 备注 |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------- | ----- | ---- | ---- |
-| f1_hw_1                                                      |                                                              |                                          |       |      |      |
-| 维特智能gps模块北斗 gps卫星定位导航模块WTGPS+BD中科微带天线  | [维特智能gps模块北斗 gps卫星定位导航模块WTGPS+BD中科微带天线-淘宝网](https://item.taobao.com/item.htm?id=624481101795&mi_id=0000TkHKSSufSHvoqOybzuqkevBlzT5iwr5bn2TakLoP-yo&spm=tbpc.boughtlist.suborder_itemtitle.1.317c2e8dU5ex80) | WT-GPS-6N（带陶瓷天线）                  | 43    | 1    |      |
-| 维特智能串口双轴姿态角度传感器MPU6050模块WT1-IMU             | [维特智能串口双轴姿态角度传感器MPU6050模块WT1-IMU-淘宝网](https://item.taobao.com/item.htm?id=737551711190&mi_id=0000mvzGn3DnU5IITIuxhmMgGb-aBn4TeWSByD_bR0X4Hb0&spm=tbpc.boughtlist.suborder_itemtitle.1.317c2e8dU5ex80) | WT1-IMU（双轴角度/20Hz回传速率/串口TTL） | 30.9  | 1    |      |
-| ESP32-C3-PRO/SuperMini开发板 Wi-Fi蓝牙编程学习控制器模块     | [ESP32-C3-PRO/SuperMini开发板 Wi-Fi蓝牙编程学习控制器模块-淘宝网](https://item.taobao.com/item.htm?id=965597504812&mi_id=0000VD79bacKn7aWQrW_NE2Ta0kQ1_ulR_dmWtH9Zwjnjq4&spm=tbpc.boughtlist.suborder_itemtitle.1.317c2e8dU5ex80) | ESP32-C3-SuperMini开发板_不焊接          | 10.3  | 1    |      |
-| 0.91/0.96/1.3寸 OLED显示液晶屏模块 IIC/SPI液晶串口屏         | [0.91/0.96/1.3寸 OLED显示液晶屏模块 IIC/SPI液晶串口屏-淘宝网](https://item.taobao.com/item.htm?id=562145367495&mi_id=0000ArkyQDWwRqxOjmMdMesbuHY9Kf8anEPi0v7OKfw_5r0&skuId=4843968313714&spm=tbpc.boughtlist.suborder_itemtitle.1.317c2e8dU5ex80) | 0.96寸蓝色OLED模块/4P                    | 10.89 | 1    |      |
-| 【优信电子】MPU-6050模块三轴加速度+三轴陀螺仪 6DOF模块GY-521 | [【优信电子】MPU-6050模块三轴加速度+三轴陀螺仪 6DOF模块GY-521-淘宝网](https://item.taobao.com/item.htm?from=cart&id=522575310310&mi_id=0000QBfosq9Qt2ytOnWyNwZdyhYTyL-7ghVgq647cgQKGHk&spm=a1z0d.6639537%2F202410.item.d522575310310.3b787484JtPEj3&upStreamPrice=825) | -                                        | 8.25  | 1    |      |
-|                                                              |                                                              |                                          |       |      |      |
-|                                                              |                                                              |                                          |       |      |      |
-|                                                              |                                                              |                                          |       |      |      |
-|                                                              |                                                              |                                          |       |      |      |
-|                                                              |                                                              |                                          |       |      |      |
-|                                                              |                                                              |                                          |       |      |      |
-|                                                              |                                                              | **合计：**                               | 95.18 |      |      |
-|                                                              |                                                              |                                          |       |      |      |
+| 名称                                                         | 链接                                                         | 参数                            | 单价  | 数量 | 备注 |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------- | ----- | ---- | ---- |
+| f1_hw_1                                                      |                                                              |                                 |       |      |      |
+| 维特智能gps模块北斗 gps卫星定位导航模块WTGPS+BD中科微带天线  | [维特智能gps模块北斗 gps卫星定位导航模块WTGPS+BD中科微带天线-淘宝网](https://item.taobao.com/item.htm?id=624481101795&mi_id=0000TkHKSSufSHvoqOybzuqkevBlzT5iwr5bn2TakLoP-yo&spm=tbpc.boughtlist.suborder_itemtitle.1.317c2e8dU5ex80) | WT-GPS-6N（带陶瓷天线）         | 43    | 1    | 1    |
+|                                                              |                                                              |                                 |       |      |      |
+| ESP32-C3-PRO/SuperMini开发板 Wi-Fi蓝牙编程学习控制器模块     | [ESP32-C3-PRO/SuperMini开发板 Wi-Fi蓝牙编程学习控制器模块-淘宝网](https://item.taobao.com/item.htm?id=965597504812&mi_id=0000VD79bacKn7aWQrW_NE2Ta0kQ1_ulR_dmWtH9Zwjnjq4&spm=tbpc.boughtlist.suborder_itemtitle.1.317c2e8dU5ex80) | ESP32-C3-SuperMini开发板_不焊接 | 10.3  | 1    | 1    |
+|                                                              |                                                              |                                 |       |      | +    |
+| 【优信电子】MPU-6050模块三轴加速度+三轴陀螺仪 6DOF模块GY-521 | [【优信电子】MPU-6050模块三轴加速度+三轴陀螺仪 6DOF模块GY-521-淘宝网](https://item.taobao.com/item.htm?from=cart&id=522575310310&mi_id=0000QBfosq9Qt2ytOnWyNwZdyhYTyL-7ghVgq647cgQKGHk&spm=a1z0d.6639537%2F202410.item.d522575310310.3b787484JtPEj3&upStreamPrice=825) | -                               | 8.25  | 1    | 1    |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              |                                 |       |      |      |
+|                                                              |                                                              | **合计：**                      | 95.18 |      |      |
+|                                                              |                                                              |                                 |       |      |      |
 
 **由于快递不能发电池，电池需要自己购买**
 
@@ -30,9 +30,9 @@
 
 **采购订单截图**
 
-| ![](C:\11_pro_develop\ezProject_2026\project_12\img\采购1.png) |
-| ------------------------------------------------------------ |
-|                                                              |
-|                                                              |
-|                                                              |
+| ![](.\img\采购1.png) |
+| -------------------- |
+|                      |
+|                      |
+|                      |
 

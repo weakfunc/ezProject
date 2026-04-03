@@ -67,7 +67,7 @@ GenerateClassCluster=0
 DocumentUniqueId=DIIZSDGY
 
 [Document2]
-DocumentPath=pow_hw_2_V00.04.PcbDoc
+DocumentPath=pow_hw_2_V00.05.PcbDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
