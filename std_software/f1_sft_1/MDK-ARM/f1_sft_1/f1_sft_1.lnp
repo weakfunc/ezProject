@@ -57,9 +57,11 @@
 "f1_sft_1\stdlib_tim.o"
 "f1_sft_1\stdlib_usart.o"
 "f1_sft_1\stdlib_dwt.o"
+"f1_sft_1\stdlib_pid.o"
 "f1_sft_1\task_system.o"
 "f1_sft_1\task_user1.o"
 "f1_sft_1\func_appcom.o"
+"f1_sft_1\func_func.o"
 --strict --scatter "f1_sft_1\f1_sft_1.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

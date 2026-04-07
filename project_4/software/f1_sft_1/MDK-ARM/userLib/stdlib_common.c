@@ -16,6 +16,9 @@ static const commonGpioMap_t gpioMap[GPIO_ID_COUNT] = {
     [GPIO_ID_KEY_2]     = { KEY_2_GPIO_Port, KEY_2_Pin, COMMON_GPIO_DIR_INPUT, GPIO_PIN_SET },
     [GPIO_ID_KEY_1]     = { KEY_1_GPIO_Port, KEY_1_Pin, COMMON_GPIO_DIR_INPUT, GPIO_PIN_SET },
     [GPIO_ID_KEY_3]     = { KEY_3_GPIO_Port, KEY_3_Pin, COMMON_GPIO_DIR_INPUT, GPIO_PIN_SET },
+    [GPIO_ID_USER_IO_9]   = { USER_IO_9_GPIO_Port,   USER_IO_9_Pin,   COMMON_GPIO_DIR_INPUT,  GPIO_PIN_SET   },
+    [GPIO_ID_USER_IO_10]  = { USER_IO_10_GPIO_Port,  USER_IO_10_Pin,  COMMON_GPIO_DIR_INPUT,  GPIO_PIN_SET   },
+    [GPIO_ID_USER_IO_ADC] = { USER_IO_ADC_GPIO_Port, USER_IO_ADC_Pin, COMMON_GPIO_DIR_OUTPUT, GPIO_PIN_RESET },
     [GPIO_ID_RGB_G]     = { RGB_G_GPIO_Port, RGB_G_Pin, COMMON_GPIO_DIR_OUTPUT, GPIO_PIN_RESET },
     [GPIO_ID_RGB_R]     = { RGB_R_GPIO_Port, RGB_R_Pin, COMMON_GPIO_DIR_OUTPUT, GPIO_PIN_RESET },
 };
@@ -68,6 +71,36 @@ uint8_t STDLIB_COMMON_GpioRead(uint8_t gpioId){
 
     state = HAL_GPIO_ReadPin(gpioMap[gpioId].port, gpioMap[gpioId].pin);
     return (state == GPIO_PIN_SET) ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW;
+}
+
+/* 动态将指定 GPIO 切换为输入模式（内部上拉）。 */
+void STDLIB_COMMON_GpioModeInput(uint8_t gpioId){
+    GPIO_InitTypeDef init = {0};
+
+    if(__STDLIB_COMMON_GpioIsValidId(gpioId) == 0U) return;
+
+    init.Pin  = gpioMap[gpioId].pin;
+    init.Mode = GPIO_MODE_INPUT;
+    init.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(gpioMap[gpioId].port, &init);
+}
+
+/* 动态将指定 GPIO 切换为推挽输出模式并立即输出指定电平。 */
+void STDLIB_COMMON_GpioModeOutput(uint8_t gpioId, uint8_t level){
+    GPIO_InitTypeDef init = {0};
+
+    if(__STDLIB_COMMON_GpioIsValidId(gpioId) == 0U) return;
+
+    /* 先写电平后配置，防止方向切换瞬间产生毛刺 */
+    HAL_GPIO_WritePin(gpioMap[gpioId].port,
+                      gpioMap[gpioId].pin,
+                      (level == 0U) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+
+    init.Pin   = gpioMap[gpioId].pin;
+    init.Mode  = GPIO_MODE_OUTPUT_PP;
+    init.Pull  = GPIO_PULLUP;
+    init.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(gpioMap[gpioId].port, &init);
 }
 
 /* 获取指定 GPIO 的端口和引脚信息。 */

@@ -704,6 +704,11 @@
               <FileType>1</FileType>
               <FilePath>.\userLib\stdlib_dwt.c</FilePath>
             </File>
+            <File>
+              <FileName>stdlib_pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userLib\stdlib_pid.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -728,6 +733,11 @@
               <FileName>func_appcom.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userFunc\func_appcom.c</FilePath>
+            </File>
+            <File>
+              <FileName>func_func.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userFunc\func_func.c</FilePath>
             </File>
           </Files>
         </Group>

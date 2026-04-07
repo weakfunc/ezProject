@@ -44,7 +44,10 @@ typedef struct {
 #define GPIO_ID_RGB_G                   (12U)
 #define GPIO_ID_RGB_R                   (13U)
 #define GPIO_ID_KEY_3                   (14U)
-#define GPIO_ID_COUNT                   (15U)
+#define GPIO_ID_USER_IO_9               (15U)
+#define GPIO_ID_USER_IO_10              (16U)
+#define GPIO_ID_USER_IO_ADC             (17U)
+#define GPIO_ID_COUNT                   (18U)
 
 /* GPIO 端口和引脚信息。 */
 typedef struct {
@@ -76,6 +79,12 @@ uint8_t STDLIB_COMMON_GpioRead(uint8_t gpioId);
 
 /* 获取指定 GPIO 的端口和引脚信息，仅对已映射输出脚生效。 */
 uint8_t STDLIB_COMMON_GpioGetPinInfo(uint8_t gpioId, commonGpioPin_t *pinInfo);
+
+/* 动态将指定 GPIO 切换为输入模式（上拉），用于1-Wire等需要改变方向的场景。 */
+void STDLIB_COMMON_GpioModeInput(uint8_t gpioId);
+
+/* 动态将指定 GPIO 切换为推挽输出模式并立即输出指定电平，用于1-Wire等需要改变方向的场景。 */
+void STDLIB_COMMON_GpioModeOutput(uint8_t gpioId, uint8_t level);
 
 /* 获取系统毫秒节拍，等价于 HAL_GetTick。 */
 uint32_t STDLIB_COMMON_GetTickMs(void);

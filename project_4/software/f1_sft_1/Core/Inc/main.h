@@ -64,6 +64,8 @@ void Error_Handler(void);
 #define RGB_G_GPIO_Port GPIOC
 #define RGB_R_Pin GPIO_PIN_15
 #define RGB_R_GPIO_Port GPIOC
+#define USER_IO_ADC_Pin GPIO_PIN_0
+#define USER_IO_ADC_GPIO_Port GPIOA
 #define USER_IO_7_Pin GPIO_PIN_4
 #define USER_IO_7_GPIO_Port GPIOA
 #define USER_IO_8_Pin GPIO_PIN_5
@@ -80,6 +82,10 @@ void Error_Handler(void);
 #define KEY_1_GPIO_Port GPIOB
 #define USER_IO_2_Pin GPIO_PIN_8
 #define USER_IO_2_GPIO_Port GPIOA
+#define USER_IO_10_Pin GPIO_PIN_11
+#define USER_IO_10_GPIO_Port GPIOA
+#define USER_IO_9_Pin GPIO_PIN_12
+#define USER_IO_9_GPIO_Port GPIOA
 #define I2C_SDA_Pin GPIO_PIN_4
 #define I2C_SDA_GPIO_Port GPIOB
 #define I2C_SDL_Pin GPIO_PIN_5

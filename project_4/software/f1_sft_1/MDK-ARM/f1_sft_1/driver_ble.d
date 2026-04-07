@@ -23,7 +23,6 @@ f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
-f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
@@ -35,4 +34,5 @@ f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 f1_sft_1\driver_ble.o: ./userLib/stdlib_common.h
 f1_sft_1\driver_ble.o: ../Core/Inc/main.h
+f1_sft_1\driver_ble.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
 f1_sft_1\driver_ble.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h

@@ -1,3 +1,12 @@
+/*============================================================================
+ * README
+ * 时序值需要观测示波器调：
+   BIT0_H:250~550ns
+   BIT0_L:700~1000ns
+   BIT1_H:650~950ns
+   BIT1_L:300~600ns
+ *============================================================================*/
+
 #include "driver_ws2812.h"
 #include <string.h>
 
@@ -9,14 +18,8 @@
  * GPIO写寄存器后立即读取CYCCNT作为起点，彻底消除函数调用开销对时序的影响。
  * T0H=400ns→29cyc, T0L=850ns→61cyc
  * T1H=800ns→58cyc, T1L=450ns→32cyc
- * Reset: >50us→3600cyc */
-
-/* 时序值需要观测示波器调，
-   BIT0_H:250~550ns
-   BIT0_L:700~1000ns
-   BIT1_H:650~950ns
-   BIT1_L:300~600ns
-*/
+ * Reset: >50us→3600cyc
+ *  */
 
 static const uint32_t ws2812Bit0HighCyc = 10U;
 static const uint32_t ws2812Bit0LowCyc  = 61U;

@@ -1,0 +1,9 @@
+Change Component Designator: OldDesignator=JP?1 NewDesignator=JP1
+Change Component Designator: OldDesignator=JP? NewDesignator=JP2
+Added Pin To Net: NetName=VSS Pin=JP1-1
+Added Pin To Net: NetName=3V3 Pin=JP1-2
+Added Pin To Net: NetName=5V Pin=JP2-1
+Added Pin To Net: NetName=VSS Pin=JP2-2
+Added Pin To Net: NetName=3V3 Pin=JP2-20
+Added Member To Class: ClassName=f1_bd_3 Member=Component JP1 HDR-1X4
+Added Member To Class: ClassName=f1_bd_3 Member=Component JP2 Header 2X10

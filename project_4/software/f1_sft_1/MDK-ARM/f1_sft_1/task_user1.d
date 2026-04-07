@@ -22,7 +22,6 @@ f1_sft_1\task_user1.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex
 f1_sft_1\task_user1.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
 f1_sft_1\task_user1.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 f1_sft_1\task_user1.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
-f1_sft_1\task_user1.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h
 f1_sft_1\task_user1.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
 f1_sft_1\task_user1.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h
 f1_sft_1\task_user1.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
@@ -50,11 +49,11 @@ f1_sft_1\task_user1.o: ./userLib/stdlib_i2c.h
 f1_sft_1\task_user1.o: ./userDriver/driver_steer.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_tim.h
 f1_sft_1\task_user1.o: ./userDriver/driver_tb6612.h
-f1_sft_1\task_user1.o: ./userDriver/driver_QR.h
-f1_sft_1\task_user1.o: ./userLib/stdlib_usart.h
 f1_sft_1\task_user1.o: ./userDriver/driver_board.h
-f1_sft_1\task_user1.o: ./userDriver/driver_verison.h
-f1_sft_1\task_user1.o: ./userDriver/driver_GY615.h
-f1_sft_1\task_user1.o: ./userDriver/driver_ws2812.h
+f1_sft_1\task_user1.o: ./userDriver/driver_ble.h
+f1_sft_1\task_user1.o: ./userLib/stdlib_usart.h
+f1_sft_1\task_user1.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
+f1_sft_1\task_user1.o: ./userFunc/func_appcom.h
+f1_sft_1\task_user1.o: ./userDriver/driver_senser.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_dwt.h
-f1_sft_1\task_user1.o: ./userDriver/driver_mp3.h
+f1_sft_1\task_user1.o: ./userLib/stdlib_pid.h

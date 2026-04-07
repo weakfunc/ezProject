@@ -78,4 +78,7 @@ void DRIVER_OLED_ShowString(uint8_t x, uint8_t y, const char *str);
 /* 显示十进制数字 */
 void DRIVER_OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len);
 
+/* 显示非负浮点数，decLen为小数位数，返回显示结束后的下一个x坐标 */
+uint8_t DRIVER_OLED_ShowFloat(uint8_t x, uint8_t y, float val, uint8_t decLen);
+
 #endif

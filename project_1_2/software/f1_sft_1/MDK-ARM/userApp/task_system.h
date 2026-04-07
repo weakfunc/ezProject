@@ -6,21 +6,18 @@
 #include "stdlib_usart.h"
 #include "stdlib_tim.h"
 #include "stdlib_i2c.h"
-
-typedef struct usartInfo{
-	uint8_t rxBuff[64];
-	uint8_t txBuff[64];
-	
-	uint8_t cmd;
-	uint8_t len;
-}usartInfo_t;
+#include "stdlib_dwt.h"
 
 typedef struct systemTaskInfo{
-	uint32_t systemTaskCnt;					
+	uint32_t systemTaskCnt;
+	
+	uint8_t key1Press;
+	uint8_t key2Press;
+	uint8_t key3Press;
 	
 }systemTaskInfo_t;
-extern systemTaskInfo_t systemTaskInfo;
+
 extern void systemTaskInit(void);
 extern void systemTaskUpdata(void *argument);
-
+extern systemTaskInfo_t systemTaskInfo;
 #endif

@@ -39,6 +39,13 @@ typedef struct {
     uint32_t longPressCount; /* 累计长按次数 */
 } boardKeyInfo_t;
 
+/* 开发板模块信息结构体 */
+typedef struct {
+  boardKeyInfo_t key[BOARD_KEY_COUNT]; /* 各按键信息 */
+} boardInfo_t;
+
+extern boardInfo_t boardInfo;
+
 /* 开发板驱动初始化 */
 void DRIVER_BOARD_Init(void);
 

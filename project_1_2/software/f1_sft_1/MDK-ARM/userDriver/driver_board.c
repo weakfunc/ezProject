@@ -13,8 +13,8 @@ typedef struct {
 
 /* 按键私有状态缓存 */
 static boardKeyState_t boardKeyState[BOARD_KEY_COUNT];
-/* 按键信息缓存（向上提供） */
-boardKeyInfo_t boardKeyInfoCache[BOARD_KEY_COUNT];
+/* 开发板模块数据 */
+boardInfo_t boardInfo;
 /* RGB闪烁计时缓存 */
 static uint32_t boardRgbLastToggleTickMs[BOARD_RGB_COLOR_COUNT];
 
@@ -136,10 +136,10 @@ void DRIVER_BOARD_KeyInit(void){
         boardKeyState[i].pressStartTickMs = nowTickMs;
         boardKeyState[i].longPressCounted = 0U;
 
-        boardKeyInfoCache[i].isPressed      = 0U;
-        boardKeyInfoCache[i].isLongPressed  = 0U;
-        boardKeyInfoCache[i].pressCount     = 0U;
-        boardKeyInfoCache[i].longPressCount = 0U;
+        boardInfo.key[i].isPressed      = 0U;
+        boardInfo.key[i].isLongPressed  = 0U;
+        boardInfo.key[i].pressCount     = 0U;
+        boardInfo.key[i].longPressCount = 0U;
     }
 }
 
@@ -152,27 +152,27 @@ void DRIVER_BOARD_KeyInfoUpdate(void){
         isPressed = DRIVER_BOARD_KeyIsPressed(i);
 
         if(isPressed != 0U){
-            boardKeyInfoCache[i].isPressed = 1U;
+            boardInfo.key[i].isPressed = 1U;
 
             /* 检测按下上升沿，累计按下次数 */
             if(boardKeyState[i].lastPressed == 0U){
                 boardKeyState[i].lastPressed      = 1U;
                 boardKeyState[i].pressStartTickMs = nowTickMs;
                 boardKeyState[i].longPressCounted = 0U;
-                boardKeyInfoCache[i].pressCount++;
+                boardInfo.key[i].pressCount++;
             }
 
             /* 达到长按阈值且本次尚未计过，累计长按次数 */
             if((boardKeyState[i].longPressCounted == 0U) &&
                (__DRIVER_BOARD_ElapsedMs(nowTickMs, boardKeyState[i].pressStartTickMs) >= BOARD_KEY_LONG_PRESS_DEFAULT_MS)){
                 boardKeyState[i].longPressCounted  = 1U;
-                boardKeyInfoCache[i].isLongPressed = 1U;
-                boardKeyInfoCache[i].longPressCount++;
+                boardInfo.key[i].isLongPressed = 1U;
+                boardInfo.key[i].longPressCount++;
             }
         } else {
             /* 按键释放，清除当次状态 */
-            boardKeyInfoCache[i].isPressed     = 0U;
-            boardKeyInfoCache[i].isLongPressed = 0U;
+            boardInfo.key[i].isPressed     = 0U;
+            boardInfo.key[i].isLongPressed = 0U;
             boardKeyState[i].lastPressed       = 0U;
             boardKeyState[i].longPressCounted  = 0U;
         }
@@ -183,6 +183,6 @@ void DRIVER_BOARD_KeyInfoUpdate(void){
 uint8_t DRIVER_BOARD_KeyInfoGet(uint8_t keyId, boardKeyInfo_t *info){
     if(keyId >= BOARD_KEY_COUNT) return 0U;
     if(info == NULL) return 0U;
-    *info = boardKeyInfoCache[keyId];
+    *info = boardInfo.key[keyId];
     return 1U;
 }

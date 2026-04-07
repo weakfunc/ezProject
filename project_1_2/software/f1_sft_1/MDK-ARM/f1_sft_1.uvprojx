@@ -134,11 +134,11 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4107</DriverSelection>
+            <DriverSelection>4101</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>STLink\ST-LINKIII-KEIL_SWO.dll</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xB</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;.\userLib;.\userDriver;.\userApp</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;./userLib;./userDriver;./userApp;.\userFunc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -620,14 +620,14 @@
               <FilePath>.\userDriver\driver_board.c</FilePath>
             </File>
             <File>
-              <FileName>driver_k210.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_k210.c</FilePath>
-            </File>
-            <File>
               <FileName>driver_oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>driver_verison.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userDriver\driver_verison.c</FilePath>
             </File>
             <File>
               <FileName>driver_steer.c</FileName>
@@ -638,11 +638,6 @@
               <FileName>driver_tb6612.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_tb6612.c</FilePath>
-            </File>
-            <File>
-              <FileName>driver_verison.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_verison.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -669,6 +664,11 @@
               <FileType>1</FileType>
               <FilePath>.\userLib\stdlib_usart.c</FilePath>
             </File>
+            <File>
+              <FileName>stdlib_dwt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userLib\stdlib_dwt.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -683,6 +683,16 @@
               <FileName>task_user1.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userApp\task_user1.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>userFunc</GroupName>
+          <Files>
+            <File>
+              <FileName>func_appcom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userFunc\func_appcom.c</FilePath>
             </File>
           </Files>
         </Group>

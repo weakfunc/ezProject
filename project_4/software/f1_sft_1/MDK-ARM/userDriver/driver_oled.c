@@ -326,6 +326,43 @@ void DRIVER_OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len){
     }
 }
 
+/* 显示非负浮点数，decLen为小数位数，返回显示结束后的下一个x坐标。
+ * 小数部分四舍五入到decLen位；decLen为0时只显示整数部分。 */
+uint8_t DRIVER_OLED_ShowFloat(uint8_t x, uint8_t y, float val, uint8_t decLen){
+    uint32_t intPart;
+    uint32_t decPart;
+    uint32_t decMul;
+    uint32_t tmp;
+    uint8_t  intLen;
+    uint8_t  xPos = x;
+
+    intPart = (uint32_t)val;
+
+    /* 计算小数部分，四舍五入到decLen位 */
+    decMul  = __DRIVER_OLED_Pow(10U, decLen);
+    decPart = (uint32_t)((val - (float)intPart) * (float)decMul + 0.5f);
+    if(decPart >= decMul){ intPart++; decPart = 0U; }  /* 小数进位处理 */
+
+    /* 计算整数部分位数（至少1位） */
+    tmp    = intPart;
+    intLen = 1U;
+    while(tmp >= 10U){ tmp /= 10U; intLen++; }
+
+    /* 显示整数部分 */
+    DRIVER_OLED_ShowNum(xPos, y, intPart, intLen);
+    xPos = (uint8_t)(xPos + (uint8_t)(intLen * 6U));
+
+    /* 显示小数点和小数部分（保留前导零） */
+    if(decLen > 0U){
+        DRIVER_OLED_ShowChar6x8(xPos, y, '.', 1U);
+        xPos = (uint8_t)(xPos + 6U);
+        DRIVER_OLED_ShowNum(xPos, y, decPart, decLen);
+        xPos = (uint8_t)(xPos + (uint8_t)(decLen * 6U));
+    }
+
+    return xPos;
+}
+
 /* OLED 初始化 */
 void DRIVER_OLED_Init(void){
     OLED_DEP_I2C_INIT();

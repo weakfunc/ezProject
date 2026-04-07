@@ -54,10 +54,18 @@
 
 /* 电机映射结构体 */
 typedef struct {
-    uint8_t pwmCh;
-    uint8_t io1GpioId;
-    uint8_t io2GpioId;
+  uint8_t pwmCh;
+  uint8_t io1GpioId;
+  uint8_t io2GpioId;
 } tb6612MotorMap_t;
+
+/* TB6612模块信息结构体（每路电机一个元素） */
+typedef struct {
+  uint8_t motorId; /* 电机ID */
+  int16_t duty;    /* 当前占空比（-1000~1000） */
+} tb6612Info_t;
+
+extern tb6612Info_t tb6612Info[TB6612_MOTOR_COUNT];
 
 /* 电机转速控制：speed范围[-1000, +1000] */
 void DRIVER_TB6612_MotorSetSpeed(uint8_t motorId, int16_t speed);

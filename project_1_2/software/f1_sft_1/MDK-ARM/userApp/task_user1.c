@@ -1,79 +1,14 @@
 #include "task_user1.h"
-#include "driver_oled.h"
-#include "driver_steer.h"
-#include "driver_tb6612.h"
-#include "driver_board.h"
-#include "driver_verison.h"
 #include "task_system.h"
 
-/*============================================================================
- * ç§æœ‰å®å®šä¹‰
- *============================================================================*/
+user1TaskInfo_t user1TaskInfo = {
+	.timeA = 1800,
+	.timeB = 1800 + 3500 ,
+};
 
-
-uint32_t timeA = 1400;
-uint32_t timeB = 8000;
-
-
-/* åŒ…è£¹åˆ—è¡¨æœ€å¤§å®¹é‡ */
-#define PACK_MAX_NUM         (20U)
-
-/* ä»è¯†åˆ«åˆ°èˆµæœºè§¦å‘çš„å»¶è¿Ÿè®¡æ•°ï¼ˆå•ä½ï¼šå¾ªç¯æ¬¡æ•°ï¼Œå¾ªç¯å‘¨æœŸ10msï¼‰
- * ç›®çš„åœ°Aï¼š800Ã—10ms=8sï¼Œç›®çš„åœ°Bï¼š1500Ã—10ms=15s */
-#define CONVEYOR_DELAY_A     (timeA)
-#define CONVEYOR_DELAY_B     (timeB)
-
-/* èˆµæœºæ— æ•ˆç¼–å·ï¼ˆç›®çš„åœ°Cä¸è§¦å‘èˆµæœºï¼‰ */
-#define SERVO_ID_NONE        (0xFFU)
-
-/* ç”µæœºé€Ÿåº¦èŒƒå›´ */
-#define MOTOR_SPEED_RAMP_STEP (10)   /* æ¯æ¬¡å¾ªç¯æ­¥è¿›é‡ï¼Œçº¦1så†…ä»0å‡è‡³æœ€å¤§å€¼ */
-
-/*============================================================================
- * ç§æœ‰ç»“æ„ä½“å®šä¹‰
- *============================================================================*/
-
-/* åŒ…è£¹ä¿¡æ¯ï¼ˆç§»æ¤è‡ªQRcodePack_tï¼Œä»…ä¿ç•™åˆ†æ‹£æ‰€éœ€å­—æ®µï¼‰ */
-typedef struct {
-  uint8_t  aim;          /* ç›®çš„åœ°ï¼š0x01=A 0x02=B 0x03=C */
-  uint32_t outportTime;  /* èˆµæœºè§¦å‘æ—¶åˆ»ï¼ˆtaskCntå•ä½ï¼‰ */
-  uint8_t  servoId;      /* è§¦å‘çš„èˆµæœºç¼–å·ï¼ŒSERVO_ID_NONE=ä¸è§¦å‘ */
-  uint8_t  isOutFlag;    /* æ˜¯å¦å·²å®Œæˆåˆ†æ‹£ */
-} packInfo_t;
-
-/* ç³»ç»Ÿè¿è¡Œæ—¶çŠ¶æ€ï¼ˆç§»æ¤è‡ªsysConfig_tï¼‰ */
-typedef struct {
-  uint32_t taskCnt;                   /* ä»»åŠ¡è®¡æ•°å™¨ï¼Œæ¯æ¬¡å¾ªç¯+1 */
-  uint8_t  packNum;                   /* å½“å‰åŒ…è£¹æ€»æ•°ï¼ˆå¾ªç¯ä½¿ç”¨ï¼‰ */
-  uint8_t  servoEnable[STEER_SERVO_COUNT]; /* èˆµæœºè§¦å‘ä½¿èƒ½æ ‡å¿— */
-} sysCtrl_t;
-
-extern uint8_t key1;
-
-/*============================================================================
- * ç§æœ‰å˜é‡
- *============================================================================*/
-
-/* åŒ…è£¹åˆ—è¡¨ */
-packInfo_t packList[PACK_MAX_NUM];
-
-/* ç³»ç»ŸçŠ¶æ€ */
-sysCtrl_t sysCtrl;
-
-/* ç”µæœºå½“å‰é€Ÿåº¦ï¼Œç”¨äºè½¯å¯åŠ¨æ–œå¡æ§åˆ¶ */
-int16_t motorSpeed;
-
-user1TaskInfo_t user1TaskInfo;
-
-uint32_t QR;
-
-/*============================================================================
- * ç§æœ‰å‡½æ•°
- *============================================================================*/
-
-/* æ£€æµ‹K210æ–°è¯†åˆ«ç»“æœï¼Œå°†åŒ…è£¹åŠ å…¥åˆ—è¡¨å¹¶è®¡ç®—è§¦å‘æ—¶åˆ»
- * ç§»æ¤è‡ªuartRevPack()ï¼Œä»¥k210RxFlagæ›¿ä»£QRcodePack.revFlag
- * æ¯æ”¶åˆ°ä¸€å¸§é©±åŠ¨å±‚ç½®k210RxFlag=1ï¼Œæ­¤å¤„è¯»å–åç«‹å³æ¸…é›¶ï¼Œè¿ç»­ç›¸åŒç›®çš„åœ°å‡å¯è®°å½• */
+/* ¼ì²âK210ĞÂÊ¶±ğ½á¹û£¬½«°ü¹ü¼ÓÈëÁĞ±í²¢¼ÆËã´¥·¢Ê±¿Ì
+ * ÒÆÖ²×ÔuartRevPack()£¬ÒÔk210RxFlagÌæ´úQRcodePack.revFlag
+ * Ã¿ÊÕµ½Ò»Ö¡Çı¶¯²ãÖÃk210RxFlag=1£¬´Ë´¦¶ÁÈ¡ºóÁ¢¼´ÇåÁã£¬Á¬ĞøÏàÍ¬Ä¿µÄµØ¾ù¿É¼ÇÂ¼ */
 static void packRecognize(void){
 	uint8_t *pHasNew = DRIVER_VERISON_HasNewData();
 	
@@ -82,82 +17,98 @@ static void packRecognize(void){
 	}
   *pHasNew = 0U;
 
-  packList[sysCtrl.packNum].aim       = versionRealData.field.var1;;
-  packList[sysCtrl.packNum].isOutFlag = 0U;
+  user1TaskInfo.packList[user1TaskInfo.packNum].aim       = verisonInfo.realData.var_4b_1;
+  user1TaskInfo.packList[user1TaskInfo.packNum].isOutFlag = 0U;
 
-  switch(versionRealData.field.var1){
-    case 0x31:  /* ç›®çš„åœ°Aï¼šå»¶è¿Ÿ8såè§¦å‘èˆµæœº1 */
-      packList[sysCtrl.packNum].outportTime = sysCtrl.taskCnt + CONVEYOR_DELAY_A;
-      packList[sysCtrl.packNum].servoId     = STEER_SERVO_1;
+  switch(verisonInfo.realData.var_4b_1){
+    case 0x01:  /* Ä¿µÄµØA£ºÑÓ³Ù8sºó´¥·¢¶æ»ú1 */
+      user1TaskInfo.packList[user1TaskInfo.packNum].outportTime = user1TaskInfo.user1TaskCnt + CONVEYOR_DELAY_A;
+      user1TaskInfo.packList[user1TaskInfo.packNum].servoId     = STEER_SERVO_1;
       break;
-    case 0x32:  /* ç›®çš„åœ°Bï¼šå»¶è¿Ÿ15såè§¦å‘èˆµæœº2 */
-      packList[sysCtrl.packNum].outportTime = sysCtrl.taskCnt + CONVEYOR_DELAY_B;
-      packList[sysCtrl.packNum].servoId     = STEER_SERVO_2;
+    case 0x02:  /* Ä¿µÄµØB£ºÑÓ³Ù15sºó´¥·¢¶æ»ú2 */
+      user1TaskInfo.packList[user1TaskInfo.packNum].outportTime = user1TaskInfo.user1TaskCnt + CONVEYOR_DELAY_B;
+      user1TaskInfo.packList[user1TaskInfo.packNum].servoId     = STEER_SERVO_2;
       break;
-    default:    /* ç›®çš„åœ°Cï¼šä¸è§¦å‘èˆµæœºï¼Œç›´æ¥é€šè¿‡ */
-      packList[sysCtrl.packNum].outportTime = 0U;
-      packList[sysCtrl.packNum].servoId     = SERVO_ID_NONE;
+    default:    /* Ä¿µÄµØC£º²»´¥·¢¶æ»ú£¬Ö±½ÓÍ¨¹ı */
+      user1TaskInfo.packList[user1TaskInfo.packNum].outportTime = 0U;
+      user1TaskInfo.packList[user1TaskInfo.packNum].servoId     = SERVO_ID_NONE;
       break;
   }
 
-  sysCtrl.packNum++;
-  if(sysCtrl.packNum >= PACK_MAX_NUM){
-    sysCtrl.packNum = 0U;
+  user1TaskInfo.packNum++;
+  if(user1TaskInfo.packNum >= PACK_MAX_NUM){
+    user1TaskInfo.packNum = 0U;
   }
+	
+	remoteInfo.remoteVar_TX[4].var_uint32 = user1TaskInfo.packNum;
+	remoteInfo.remoteVar_TX[5].var_uint32 = user1TaskInfo.packList[user1TaskInfo.packNum].isOutFlag;
+	remoteInfo.remoteVar_TX[6].var_uint32 = user1TaskInfo.packList[user1TaskInfo.packNum].servoId;
+  remoteInfo.remoteVar_TX[7].var_uint32 = verisonInfo.realData.var_4b_1;
+  remoteInfo.remoteVar_TX[8].var_uint32 = verisonInfo.realData.var_4b_2;
 }
 
-/* éå†åŒ…è£¹åˆ—è¡¨ï¼Œåˆ°è¾¾è§¦å‘æ—¶åˆ»æ—¶ä½¿èƒ½å¯¹åº”èˆµæœº
- * ç§»æ¤è‡ªsysControl()ï¼Œç”¨>=æ¯”è¾ƒé¿å…èˆµæœºé˜»å¡æœŸé—´æ¼è§¦å‘ */
+/* ±éÀú°ü¹üÁĞ±í£¬µ½´ï´¥·¢Ê±¿ÌÊ±Ê¹ÄÜ¶ÔÓ¦¶æ»ú
+ * ÒÆÖ²×ÔsysControl()£¬ÓÃ>=±È½Ï±ÜÃâ¶æ»ú×èÈûÆÚ¼äÂ©´¥·¢ */
 static void sysControl(void){
   uint8_t i;
-  for(i = 0U; i < sysCtrl.packNum; i++){
-    if(packList[i].isOutFlag == 0U &&
-       packList[i].servoId   != SERVO_ID_NONE &&
-       (int32_t)(sysCtrl.taskCnt - packList[i].outportTime) >= 0){
+  for(i = 0U; i < user1TaskInfo.packNum; i++){
+    if(user1TaskInfo.packList[i].isOutFlag == 0U &&
+       user1TaskInfo.packList[i].servoId   != SERVO_ID_NONE &&
+       (int32_t)(user1TaskInfo.user1TaskCnt - user1TaskInfo.packList[i].outportTime) >= 0){
 
-      if(packList[i].servoId == STEER_SERVO_1){
-        sysCtrl.servoEnable[STEER_SERVO_1] = 1U;
-      } else if(packList[i].servoId == STEER_SERVO_2){
-        sysCtrl.servoEnable[STEER_SERVO_2] = 1U;
+      if(user1TaskInfo.packList[i].servoId == STEER_SERVO_1){
+        user1TaskInfo.servoEnable[STEER_SERVO_1] = 1U;
+      } else if(user1TaskInfo.packList[i].servoId == STEER_SERVO_2){
+        user1TaskInfo.servoEnable[STEER_SERVO_2] = 1U;
       }
-      packList[i].isOutFlag = 1U;
+      user1TaskInfo.packList[i].isOutFlag = 1U;
     }
   }
 }
 
-/* ä¼ é€å¸¦ç”µæœºæ§åˆ¶ï¼šKEY1æŒ‰ä¸‹æ—¶æ–œå¡åŠ é€Ÿï¼Œæ¾å¼€æ—¶ç«‹å³åœæ­¢
- * ç§»æ¤è‡ªmotorTaskUpdata()ç”µæœºéƒ¨åˆ†ï¼Œä½¿ç”¨TB6612_MOTOR_Aé©±åŠ¨ä¼ é€å¸¦ */
+/* ´«ËÍ´øµç»ú¿ØÖÆ£ºKEY1°´ÏÂÊ±Ğ±ÆÂ¼ÓËÙ£¬ËÉ¿ªÊ±Á¢¼´Í£Ö¹
+ * ÒÆÖ²×ÔmotorTaskUpdata()µç»ú²¿·Ö£¬Ê¹ÓÃTB6612_MOTOR_AÇı¶¯´«ËÍ´ø */
 static void motorControl(void){
-  if(key1){
-    if(motorSpeed < TB6612_SPEED_MAX){
-      motorSpeed += MOTOR_SPEED_RAMP_STEP;
+  if(systemTaskInfo.key1Press){
+    if(user1TaskInfo.motorSpeed < TB6612_SPEED_MAX){
+      user1TaskInfo.motorSpeed += MOTOR_SPEED_RAMP_STEP;
     } else {
-      motorSpeed = (int16_t)TB6612_SPEED_MAX;
+      user1TaskInfo.motorSpeed = (int16_t)TB6612_SPEED_MAX;
     }
-    DRIVER_TB6612_MotorSetSpeed(TB6612_MOTOR_A, -motorSpeed);
+    DRIVER_TB6612_MotorSetSpeed(TB6612_MOTOR_A, user1TaskInfo.motorSpeed);
   } else {
-    motorSpeed = 0;
+    user1TaskInfo.motorSpeed = 0;
     DRIVER_TB6612_MotorSetSpeed(TB6612_MOTOR_A, 0);
   }
 }
 
-/* èˆµæœºæ§åˆ¶ï¼šä»…åœ¨KEY1æŒ‰ä¸‹ï¼ˆç”µæœºè¿è¡Œï¼‰æ—¶è§¦å‘ï¼Œæ—‹è½¬500msåè‡ªåŠ¨åœæ­¢
- * ç§»æ¤è‡ªmotorTaskUpdata()èˆµæœºéƒ¨åˆ†ï¼Œä»¥Rotate360æ›¿ä»£å®šæ—¶å™¨è®¡æ•° */
+/* ¶æ»ú¿ØÖÆ£º½öÔÚKEY1°´ÏÂ£¨µç»úÔËĞĞ£©Ê±´¥·¢£¬Ğı×ª500msºó×Ô¶¯Í£Ö¹
+ * ÒÆÖ²×ÔmotorTaskUpdata()¶æ»ú²¿·Ö£¬ÒÔRotate360Ìæ´ú¶¨Ê±Æ÷¼ÆÊı */
 static void servoControl(void){
   uint8_t i;
-  if(!key1){
+  if(!systemTaskInfo.key1Press){
     return;
   }
   for(i = 0U; i < STEER_SERVO_COUNT; i++){
-    if(sysCtrl.servoEnable[i] == 1U){
+    if(user1TaskInfo.servoEnable[i] == 1U){
+//			if(i == STEER_SERVO_1){
+//				DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CW,  400); /* Ë³Ê±ÕëĞı×ª500ms£¨²¦¿ª°ü¹ü£© */
+//				DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CCW, 390); /* ÄæÊ±ÕëĞı×ª500ms£¨»Øµ½Ô­Î»£© */
+//			}else{
+//				DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CCW,  400); /* Ë³Ê±ÕëĞı×ª500ms£¨²¦¿ª°ü¹ü£© */
+//				DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CW, 380); /* ÄæÊ±ÕëĞı×ª500ms£¨»Øµ½Ô­Î»£© */
+//			}
+			
 			if(i == STEER_SERVO_1){
-				DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CW,  400); /* é¡ºæ—¶é’ˆæ—‹è½¬500msï¼ˆæ‹¨å¼€åŒ…è£¹ï¼‰ */
-				DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CCW, 390); /* é€†æ—¶é’ˆæ—‹è½¬500msï¼ˆå›åˆ°åŸä½ï¼‰ */
+				DRIVER_STEER_Rotate180(STEER_SERVO_1, 2500); 
+				STDLIB_DWT_DelayMs(500);
+				DRIVER_STEER_Rotate180(STEER_SERVO_1, 500); 
 			}else{
-				DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CCW,  400); /* é¡ºæ—¶é’ˆæ—‹è½¬500msï¼ˆæ‹¨å¼€åŒ…è£¹ï¼‰ */
-				DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CW, 380); /* é€†æ—¶é’ˆæ—‹è½¬500msï¼ˆå›åˆ°åŸä½ï¼‰ */
+				DRIVER_STEER_Rotate180(STEER_SERVO_2, 2500); 
+				STDLIB_DWT_DelayMs(500);
+				DRIVER_STEER_Rotate180(STEER_SERVO_2, 500); 
 			}
-			sysCtrl.servoEnable[i] = 0U;
+			user1TaskInfo.servoEnable[i] = 0U;
     }
   }
 }
@@ -166,65 +117,53 @@ void oledControl(){
 	DRIVER_OLED_Refresh();
 	DRIVER_OLED_ShowString(5,5," PACKAGE SORT SYSTEM ");
 	DRIVER_OLED_ShowString(5,15,"system time:");
-	DRIVER_OLED_ShowNum(80, 15, systemTaskInfo.systemTaskCnt/10, 3);
-	DRIVER_OLED_DrawPoint(100,20,1);					//å°æ•°ç‚¹
+	DRIVER_OLED_ShowNum(80, 15, systemTaskInfo.systemTaskCnt/100, 3);
+	DRIVER_OLED_DrawPoint(100,20,1);					//Ğ¡Êıµã
 	DRIVER_OLED_ShowNum(102, 15, systemTaskInfo.systemTaskCnt%10, 1);
 	DRIVER_OLED_ShowString(110,15,"s");
 	
 	DRIVER_OLED_ShowString(5,25,"----Packge Info----");
-//	DRIVER_OLED_ShowNum(100, 35, QRcodePack.id, 1, 24, 1);			//åŒ…è£¹ç¼–å·
 	
 	DRIVER_OLED_ShowString(5,35,"NUM:");
-	DRIVER_OLED_ShowNum(35,35, maixCamInfo.rxTotalCnt, 1);
+	DRIVER_OLED_ShowNum(35,35, user1TaskInfo.packNum, 1);
 	
 	DRIVER_OLED_ShowString(5,45,"system enable:");
-	DRIVER_OLED_ShowNum(100 ,45, key1, 1);
-//	switch(packList.source){
-//		case 0x01: OLED_ShowString(50,35,"E",8,1); break;
-//		case 0x02: OLED_ShowString(50,35,"F",8,1); break;
-//		case 0x03: OLED_ShowString(50,35,"G",8,1); break;
-//	}
-//	OLED_ShowString(5,45,"aim:",8,1);
-//	switch(packList.aim){
-//		case 0x01: OLED_ShowString(30,45,"A",8,1); break;
-//		case 0x02: OLED_ShowString(30,45,"B",8,1); break;
-//		case 0x03: OLED_ShowString(30,45,"C",8,1); break;
-//	}
-
+	DRIVER_OLED_ShowNum(100 ,45, systemTaskInfo.key1Press, 1);
 }
 
-/*============================================================================
- * ä»»åŠ¡å…¥å£
- *============================================================================*/
+uint8_t i;
+uint32_t test1;
+uint32_t test2;
+uint32_t delay = 500;
 
 void user1TaskInit(){
-  DRIVER_OLED_Init();
+	DRIVER_BLE_Init();
+	DRIVER_OLED_Init();
   DRIVER_BOARD_KeyInit();
 	DRIVER_VERISON_Init();
-  /* åˆå§‹åŒ–360åº¦èˆµæœºä¸ºåœæ­¢çŠ¶æ€ */
-  DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CW, 0U);
-  DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CW, 0U);
+//	DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CW, 0U);
+//  DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CW, 0U);
+	DRIVER_STEER_Rotate180(STEER_SERVO_1, 500); 
+	DRIVER_STEER_Rotate180(STEER_SERVO_2, 500); 
 }
 
 void user1TaskUpdata(void *argument){
-  user1TaskInit();
-  for(;;){
-    user1TaskInfo.user1TaskCnt++;
-    sysCtrl.taskCnt++;
-
-    DRIVER_BOARD_KeyInfoUpdate();
-    sysControl();
+	user1TaskInit();
+	for(;;){
+		user1TaskInfo.user1TaskCnt++;
+		
+		DRIVER_BOARD_KeyInfoUpdate();
+		
+		remoteInfo.remoteVar_TX[9].var_uint32 = systemTaskInfo.key1Press;
+		
+		sysControl();
     motorControl();
     servoControl();
 		DRIVER_VERISON_GetMaixCamInfo();
 		packRecognize();
-
-    /* OLEDæ¯100msåˆ·æ–°ä¸€æ¬¡ï¼Œé¿å…é«˜é¢‘I2Cä¼ è¾“æ‹–æ…¢æ§åˆ¶å¾ªç¯ */
-    if(sysCtrl.taskCnt % 50u == 0U){
+    if(user1TaskInfo.user1TaskCnt % 50u == 0U){
       oledControl();
     }
-		
-
-    osDelay(2);
-  }
+		osDelay(2);
+	}
 }
