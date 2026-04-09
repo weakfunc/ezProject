@@ -21,7 +21,7 @@
 
 **只修改** `MainActivity.kt` 中的 `HomeScreen()` 函数，实现全部 UI 展示和控制交互。
 
-**不可修改**：`BleProtocol.kt`、`BleConnectionManager.kt`、`BleAutoConnector.kt`、`AppBottomNavigation.kt`、`userConfig.kt`、`ui/theme/` 等通信底层和框架文件。
+**不可修改**：`BleProtocol.kt`、`BleConnectionManager.kt`、`BleAutoConnector.kt`、`AppBottomNavigation.kt`、`ui/theme/` 等通信底层和框架文件。
 
 **UI 框架**：Jetpack Compose + Material Design 3，可复用 `HomeSection()` 和 `ProtoFieldRow()` 组件。
 
@@ -107,7 +107,7 @@ fun sendAlarmThreshold(highMm: Float, lowMm: Float) {
 
 ```
 项目名称（大字体，居中）：液位高度测量系统
-项目作者（小字体，居中，名称下方）：（留空）
+项目作者（小字体，居中，名称下方）：刘皓然
 ```
 
 ### 功能区域划分

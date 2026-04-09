@@ -8,12 +8,12 @@
 /*============================================================================
  * 向下依赖宏（driver层向stdlib层索要）
  *============================================================================*/
-#define BOARD_DEP_BUZZER_PWM_CH              PWM_TIM4_CH4
+#define BOARD_DEP_BUZZER_PWM_CH              PWM_TIM4_CH1
 #define BOARD_DEP_KEY1_GPIO_ID               GPIO_ID_KEY_1
 #define BOARD_DEP_KEY2_GPIO_ID               GPIO_ID_KEY_2
 #define BOARD_DEP_KEY3_GPIO_ID               GPIO_ID_KEY_3
-#define BOARD_DEP_RGB_R_GPIO_ID              GPIO_ID_RGB_R
-#define BOARD_DEP_RGB_G_GPIO_ID              GPIO_ID_RGB_G
+#define BOARD_DEP_RGB_R_GPIO_ID              GPIO_ID_USER_IO_8
+#define BOARD_DEP_RGB_G_GPIO_ID              GPIO_ID_USER_IO_7
 #define BOARD_DEP_KEY_RELEASE_LEVEL          GPIO_LEVEL_HIGH
 #define BOARD_DEP_KEY_PRESSED_LEVEL          GPIO_LEVEL_LOW
 #define BOARD_DEP_RGB_ON_LEVEL               GPIO_LEVEL_LOW
@@ -42,6 +42,7 @@ typedef struct {
 /* 开发板模块信息结构体 */
 typedef struct {
   boardKeyInfo_t key[BOARD_KEY_COUNT]; /* 各按键信息 */
+  uint16_t       buzzTimeMs;           /* 蜂鸣时长（ms），0=停止，0xFFFF=持续蜂鸣 */
 } boardInfo_t;
 
 extern boardInfo_t boardInfo;
@@ -75,5 +76,8 @@ void DRIVER_BOARD_KeyInfoUpdate(void);
 
 /* 获取指定按键的信息结构体快照，成功返回1，keyId越界返回0 */
 uint8_t DRIVER_BOARD_KeyInfoGet(uint8_t keyId, boardKeyInfo_t *info);
+
+/* 蜂鸣器非阻塞更新，需在10ms周期内调用；读取boardInfo.buzzTimeMs决定蜂鸣状态 */
+void DRIVER_BOARD_BuzzUpdate(void);
 
 #endif

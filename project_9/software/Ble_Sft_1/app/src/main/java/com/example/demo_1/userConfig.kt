@@ -11,7 +11,7 @@ data class KnownBleServiceUuidConfig(
 
 object UserConfig {
     // Developer mode macro: can only be changed in code.
-    const val DEVELOPER_MODE = true
+    const val DEVELOPER_MODE = false
 
     var project_name by mutableStateOf("GUET")
     var author_name by mutableStateOf("刘皓然")

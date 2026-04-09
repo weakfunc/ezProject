@@ -314,7 +314,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>4</Optim>
+            <Optim>1</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -708,6 +708,11 @@
               <FileName>stdlib_pid.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userLib\stdlib_pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>stdlib_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userLib\stdlib_adc.c</FilePath>
             </File>
           </Files>
         </Group>

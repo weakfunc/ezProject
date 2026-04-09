@@ -1,0 +1,36 @@
+Removed Pin From Net: NetName=OUT_2 Pin=JP3-1
+Removed Pin From Net: NetName=OUT_1 Pin=JP3-2
+Removed Pin From Net: NetName=LED_G_OUT Pin=JP3-4
+Removed Pin From Net: NetName=LED_R_OUT Pin=JP3-5
+Removed Pin From Net: NetName=BEEF_OUT Pin=JP3-6
+Removed Pin From Net: NetName=GND Pin=JP4-1
+Removed Pin From Net: NetName=VIN Pin=JP4-2
+Removed Pin From Net: NetName=VCC Pin=JP4-3
+Removed Pin From Net: NetName=ADC_OUT Pin=JP4-4
+Removed Pin From Net: NetName=LED_G_IN Pin=JP4-5
+Removed Pin From Net: NetName=LED_R_IN Pin=JP4-6
+Removed Pin From Net: NetName=BEEF_IN Pin=JP4-7
+Removed Member From Class: ClassName=FUC Member=JP3
+Removed Member From Class: ClassName=FUC Member=JP4
+Added Component: Designator=JP?(HDR2.54-LI-7P)
+Add component (AddParameter): Name = "BOM名称"; Value = "7P接插件"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "学习资源"; Value = "www.ooocke.com"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "版权归属"; Value = "源创客"; VariantName = "[No Variations]"
+Added Component: Designator=JP?(HDR2.54-LI-7P)
+Add component (AddParameter): Name = "BOM名称"; Value = "7P接插件"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "学习资源"; Value = "www.ooocke.com"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "版权归属"; Value = "源创客"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=JP?-1
+Added Pin To Net: NetName=OUT_2 Pin=JP?-1
+Added Pin To Net: NetName=OUT_1 Pin=JP?-2
+Added Pin To Net: NetName=VIN Pin=JP?-2
+Added Pin To Net: NetName=VCC Pin=JP?-3
+Added Pin To Net: NetName=LED_G_IN Pin=JP?-4
+Added Pin To Net: NetName=LED_G_OUT Pin=JP?-4
+Added Pin To Net: NetName=LED_R_IN Pin=JP?-5
+Added Pin To Net: NetName=LED_R_OUT Pin=JP?-5
+Added Pin To Net: NetName=BEEF_IN Pin=JP?-6
+Added Pin To Net: NetName=BEEF_OUT Pin=JP?-6
+Added Pin To Net: NetName=ADC_OUT Pin=JP?-7
+Added Member To Class: ClassName=FUC Member=Component JP? HDR-1X7
+Added Member To Class: ClassName=FUC Member=Component JP? HDR-1X7

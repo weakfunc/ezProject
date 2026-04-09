@@ -58,6 +58,7 @@
 "f1_sft_1\stdlib_usart.o"
 "f1_sft_1\stdlib_dwt.o"
 "f1_sft_1\stdlib_pid.o"
+"f1_sft_1\stdlib_adc.o"
 "f1_sft_1\task_system.o"
 "f1_sft_1\task_user1.o"
 "f1_sft_1\func_appcom.o"

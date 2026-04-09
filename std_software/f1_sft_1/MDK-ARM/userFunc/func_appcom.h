@@ -42,13 +42,9 @@ typedef union {
 typedef struct{
   uint8_t null;
   //TX
-
-  //RX
-  uint8_t key1;
-  uint8_t key2;
-  uint8_t key3;
-
   remoteVar_t remoteVar_TX[16];
+  //RX
+  uint8_t systemEnable;
   remoteVar_t remoteVar_RX[16];
 }remoteInfo_t;
 

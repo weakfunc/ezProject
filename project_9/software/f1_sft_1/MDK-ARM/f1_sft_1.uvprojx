@@ -659,6 +659,11 @@
               <FileType>1</FileType>
               <FilePath>.\userLib\stdlib_dwt.c</FilePath>
             </File>
+            <File>
+              <FileName>stdlib_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userLib\stdlib_adc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

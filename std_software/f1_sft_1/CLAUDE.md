@@ -15,9 +15,11 @@
  - 已安装python的pypdf插件用于读取pdf文件
 
 ## 任务
+   完善driver_board模块，实现API：蜂鸣器控制（输入参数：蜂鸣时间（单位ms，0XFFFF表示一直蜂鸣））。
+   蜂鸣器蜂鸣时间用非阻塞式延时实现，蜂鸣器控制会在systemTask的10ms循环中被调用。当其它任务需要使用蜂鸣器时，只需要更新boardInfo结构体的蜂鸣时间参数即可。
+   蜂鸣器使用TIME4_CH1,满占空比即为蜂鸣，低电平为停止蜂鸣
 
-
-
+   把GPIO_ID_RGB_G，GPIO_ID_RGB_R的引脚分别改为GPIO_ID_USER_IO_7，GPIO_ID_USER_IO_8
 
 ## 约束
 - 不要修改 CubeMX 生成的代码（USER CODE 区域以外的部分）
@@ -43,7 +45,7 @@
 
 ## 集成方式
 
-- 无需集成，仅提供API接口
+- 集成在userTASK，用于功能测试
 
 ## 验收标准
 

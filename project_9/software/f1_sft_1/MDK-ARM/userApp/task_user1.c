@@ -1,5 +1,6 @@
 #include "task_user1.h"
 #include "driver_ble.h"
+#include "driver_board.h"
 #include "driver_oled.h"
 #include "driver_senser.h"
 #include "func_appcom.h"
@@ -134,7 +135,7 @@ void user1TaskInit(void)
   user1TaskInfo.liquidLevel_mm       = 0.0f;
   user1TaskInfo.liquidLevelInit_mm   = 0.0f;
   user1TaskInfo.liquidLevelDelta_mm  = 0.0f;
-  user1TaskInfo.alarmHigh_mm         = 0.0f;
+  user1TaskInfo.alarmHigh_mm         = 200.0f;  /* 默认高报警阈值200mm */
   user1TaskInfo.alarmLow_mm          = 0.0f;
   user1TaskInfo.filterIdx            = 0U;
   user1TaskInfo.filterFull           = 0U;
@@ -237,6 +238,22 @@ void user1TaskUpdata(void *argument)
     if (user1TaskInfo.taskCnt % 100U == 0U) {
       /* 功能模块5：OLED 显示刷新 */
       __user1_OledRefresh();
+    }
+
+    /* ---- 每周期：报警硬件输出 ---- */
+    if ((user1TaskInfo.calibDone == 1U) &&
+        (user1TaskInfo.alarmHigh_mm > 0.0f) &&
+        (user1TaskInfo.liquidLevel_mm >= user1TaskInfo.alarmHigh_mm)) {
+      /* 液位超阈值：点亮红灯 */
+      DRIVER_BOARD_RgbOn(BOARD_RGB_R);
+      /* 每1000ms触发一次200ms蜂鸣（仅在蜂鸣器空闲时写入，避免重复触发） */
+      if ((user1TaskInfo.taskCnt % 500U == 0U) && (boardInfo.buzzTimeMs == 0U)) {
+        boardInfo.buzzTimeMs = 200U;
+      }
+    } else {
+      /* 液位正常或标定中：关闭红灯，停止蜂鸣 */
+      DRIVER_BOARD_RgbOff(BOARD_RGB_R);
+      boardInfo.buzzTimeMs = 0U;
     }
 
     osDelay(2);

@@ -128,7 +128,7 @@ void FUNC_APPCOM_RxUpdate(void){
   /* 4字节字段：APP小端序发送，翻转为STM32本地字节序；1字节字段：无需翻转 */
   remoteInfo.remoteVar_RX[0].var_uint32 = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[4].payload.var_4b_1);
   remoteInfo.remoteVar_RX[1].var_uint32 = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[4].payload.var_4b_2);
-  remoteInfo.remoteVar_RX[2].var_uint32 = appcomInfo.appCmdFrameArr[4].payload.var_1b_1;
+  remoteInfo.systemEnable = appcomInfo.appCmdFrameArr[4].payload.var_1b_1;
   remoteInfo.remoteVar_RX[3].var_uint32 = appcomInfo.appCmdFrameArr[4].payload.var_1b_2;
 
   /* ---- CMD 0x14 ---- */
