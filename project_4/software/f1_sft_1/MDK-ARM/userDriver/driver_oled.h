@@ -69,16 +69,17 @@ void DRIVER_OLED_DrawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_
 /* 绘制圆 */
 void DRIVER_OLED_DrawCircle(uint8_t x, uint8_t y, uint8_t r);
 
-/* 显示单字符（6x8） */
+/* 显示单字符（6x8），仅更新显存，需调用 DRIVER_OLED_Refresh() 刷屏 */
 void DRIVER_OLED_ShowChar6x8(uint8_t x, uint8_t y, char chr, uint8_t mode);
 
-/* 显示字符串 */
+/* 显示字符串，仅更新显存，需调用 DRIVER_OLED_Refresh() 刷屏 */
 void DRIVER_OLED_ShowString(uint8_t x, uint8_t y, const char *str);
 
-/* 显示十进制数字 */
+/* 显示十进制数字，仅更新显存，需调用 DRIVER_OLED_Refresh() 刷屏 */
 void DRIVER_OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len);
 
-/* 显示非负浮点数，decLen为小数位数，返回显示结束后的下一个x坐标 */
+/* 显示非负浮点数，仅更新显存，需调用 DRIVER_OLED_Refresh() 刷屏 */
+/* decLen为小数位数，返回显示结束后的下一个x坐标 */
 uint8_t DRIVER_OLED_ShowFloat(uint8_t x, uint8_t y, float val, uint8_t decLen);
 
 #endif

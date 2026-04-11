@@ -68,10 +68,13 @@ void Error_Handler(void);
 #define USER_IO_ADC_GPIO_Port GPIOA
 #define USER_IO_7_Pin GPIO_PIN_4
 #define USER_IO_7_GPIO_Port GPIOA
+#define USER_IO_7_EXTI_IRQn EXTI4_IRQn
 #define USER_IO_8_Pin GPIO_PIN_5
 #define USER_IO_8_GPIO_Port GPIOA
+#define USER_IO_8_EXTI_IRQn EXTI9_5_IRQn
 #define USER_IO_5_Pin GPIO_PIN_2
 #define USER_IO_5_GPIO_Port GPIOB
+#define USER_IO_5_EXTI_IRQn EXTI2_IRQn
 #define USER_IO_4_Pin GPIO_PIN_12
 #define USER_IO_4_GPIO_Port GPIOB
 #define USER_IO_3_Pin GPIO_PIN_13
@@ -92,6 +95,7 @@ void Error_Handler(void);
 #define I2C_SDL_GPIO_Port GPIOB
 #define USER_IO_6_Pin GPIO_PIN_7
 #define USER_IO_6_GPIO_Port GPIOB
+#define USER_IO_6_EXTI_IRQn EXTI9_5_IRQn
 #define USER_IO_1_Pin GPIO_PIN_8
 #define USER_IO_1_GPIO_Port GPIOB
 #define PWM_BUZZER_Pin GPIO_PIN_9

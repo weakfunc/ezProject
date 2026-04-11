@@ -52,3 +52,5 @@ f1_sft_1\task_system.o: ./userLib/stdlib_dwt.h
 f1_sft_1\task_system.o: ./userDriver/driver_board.h
 f1_sft_1\task_system.o: ./userDriver/driver_ble.h
 f1_sft_1\task_system.o: ./userFunc/func_appcom.h
+f1_sft_1\task_system.o: ./userLib/stdlib_flash.h
+f1_sft_1\task_system.o: userApp\task_user1.h

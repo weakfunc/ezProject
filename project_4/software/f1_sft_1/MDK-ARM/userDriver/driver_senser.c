@@ -1,12 +1,11 @@
 #include "driver_senser.h"
-#include "FreeRTOS.h"
-#include "task.h"
 
 /* 传感器模块公有信息结构体 */
 senserInfo_t senserInfo;
 
 /*============================================================================
  * 水加热模块
+ * 接口参数：PWM控制
  *============================================================================*/
 
 /* 水加热通道 PWM 通道映射表（私有） */
@@ -60,6 +59,7 @@ uint8_t DRIVER_SENSER_WaterLvlGet(uint8_t ch){
 
 /*============================================================================
  * DS18B20 水温传感器（单总线1-Wire协议）
+ * 接口参数：单引脚配置为OUTPUT模式
  *============================================================================*/
 
 /* DS18B20 1-Wire命令定义 */
@@ -175,25 +175,23 @@ void DRIVER_SENSER_DS18B20Init(void){
   __DRIVER_SENSER_DS18B20WriteByte(DS18B20_CFG_9BIT); /* 配置寄存器：R1=0,R0=0,9位精度 */
 }
 
-/* 启动DS18B20温度转换，等待完成后读取暂存器，返回摄氏度。
- * 设备不存在或通信异常时返回 SENSER_DS18B20_TEMP_ERROR，且不更新senserInfo.ds18b20Temp。 */
-float DRIVER_SENSER_DS18B20GetTemp(void){
+/* 启动DS18B20温度转换，发送转换命令后立即返回（非阻塞）。
+ * 须等待约100ms后调用 DRIVER_SENSER_DS18B20ReadTemp() 读取结果。 */
+void DRIVER_SENSER_DS18B20StartConvert(void){
+  if(__DRIVER_SENSER_DS18B20Reset() == 0U) return;
+  __DRIVER_SENSER_DS18B20WriteByte(DS18B20_CMD_SKIP_ROM);
+  __DRIVER_SENSER_DS18B20WriteByte(DS18B20_CMD_CONVERT_T);
+}
+
+/* 读取DS18B20暂存器温度（须在StartConvert约100ms后调用，非阻塞）。
+ * 设备异常返回 SENSER_DS18B20_TEMP_ERROR；有效值（>= DS18B20_TEMP_VALID_MIN）时
+ * 同步更新 senserInfo.ds18b20Temp，保留上次有效读数。 */
+float DRIVER_SENSER_DS18B20ReadTemp(void){
   uint8_t  byte0;
   uint8_t  byte1;
   uint16_t raw;
   float    temp;
 
-  /* 第一阶段：发送转换命令 */
-  if(__DRIVER_SENSER_DS18B20Reset() == 0U){
-    return SENSER_DS18B20_TEMP_ERROR;
-  }
-  __DRIVER_SENSER_DS18B20WriteByte(DS18B20_CMD_SKIP_ROM);
-  __DRIVER_SENSER_DS18B20WriteByte(DS18B20_CMD_CONVERT_T);
-
-  /* 等待9位精度转换完成（标称93.75ms，留余量至100ms） */
-  vTaskDelay(pdMS_TO_TICKS(100U));
-
-  /* 第二阶段：读取暂存器 */
   if(__DRIVER_SENSER_DS18B20Reset() == 0U){
     return SENSER_DS18B20_TEMP_ERROR;
   }
@@ -207,47 +205,9 @@ float DRIVER_SENSER_DS18B20GetTemp(void){
   raw  = ((uint16_t)byte1 << 8U) | (uint16_t)byte0;
   temp = (float)((int16_t)raw) / 16.0f;
 
-  /* 仅在返回值有效时更新信息结构体，避免异常值覆盖上次有效读数 */
+  /* 仅在有效范围内更新，避免异常值覆盖上次有效读数 */
   if(temp >= DS18B20_TEMP_VALID_MIN){
     senserInfo.ds18b20Temp = temp;
   }
   return temp;
-}
-
-/*============================================================================
- * 水温闭环控制（PID）
- *============================================================================*/
-
-/* PID增益及限幅参数（位置式，加热器单向驱动） */
-#define WATER_TEMP_KP       (1000.0f)  /* 比例增益：1℃误差→1000占空比（5%功率） */
-#define WATER_TEMP_KI       (800.0f)   /* 积分增益：消除稳态误差，配合iMax防饱和 */
-#define WATER_TEMP_KD       (0.0f)     /* 微分增益：热系统响应慢，D项引入噪声置零 */
-#define WATER_TEMP_P_MAX    (20000.0f) /* P项限幅：覆盖全量程 */
-#define WATER_TEMP_I_MAX    (15000.0f) /* I项限幅：半量程，防积分饱和 */
-#define WATER_TEMP_OUT_MAX  (20000.0f) /* 输出限幅：对应最大占空比 */
-
-/* 初始化水温PID控制器。 */
-void DRIVER_SENSER_WaterTempCtrlInit(void){
-  STDLIB_PID_Init(SENSER_DEP_WATER_TEMP_PID_ID,
-                  WATER_TEMP_KP, WATER_TEMP_KI, WATER_TEMP_KD,
-                  WATER_TEMP_P_MAX, WATER_TEMP_I_MAX, WATER_TEMP_OUT_MAX);
-  senserInfo.waterTempCtrl.targetTemp = 0.0f;
-}
-
-/* 以senserInfo.ds18b20Temp为反馈，计算PID并同步设置两路加热模块占空比。
- * 加热器不具备制冷能力，PID负输出（水温超标）时占空比置零，依靠自然冷却。 */
-void DRIVER_SENSER_WaterTempCtrlUpdate(float targetTemp){
-  float    output;
-  uint32_t duty;
-
-  senserInfo.waterTempCtrl.targetTemp = targetTemp;
-
-  output = STDLIB_PID_Calc(SENSER_DEP_WATER_TEMP_PID_ID,
-                            targetTemp, senserInfo.ds18b20Temp);
-
-  /* 负输出置零：加热器只能加热，超温时停止输出，自然冷却 */
-  duty = (output > 0.0f) ? (uint32_t)output : 0U;
-
-  DRIVER_SENSER_HeatSetDuty(SENSER_HEAT_CH_1, duty);
-  DRIVER_SENSER_HeatSetDuty(SENSER_HEAT_CH_2, duty);
 }

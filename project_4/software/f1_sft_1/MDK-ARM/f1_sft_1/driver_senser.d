@@ -35,13 +35,3 @@ f1_sft_1\driver_senser.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart
 f1_sft_1\driver_senser.o: ./userLib/stdlib_common.h
 f1_sft_1\driver_senser.o: ./userLib/stdlib_tim.h
 f1_sft_1\driver_senser.o: ./userLib/stdlib_dwt.h
-f1_sft_1\driver_senser.o: ./userLib/stdlib_pid.h
-f1_sft_1\driver_senser.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h
-f1_sft_1\driver_senser.o: ../Core/Inc/FreeRTOSConfig.h
-f1_sft_1\driver_senser.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h
-f1_sft_1\driver_senser.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h
-f1_sft_1\driver_senser.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h
-f1_sft_1\driver_senser.o: ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM3/portmacro.h
-f1_sft_1\driver_senser.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
-f1_sft_1\driver_senser.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
-f1_sft_1\driver_senser.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h

@@ -33,24 +33,18 @@ typedef struct {
 } appcomInfo_t;
 
 typedef union {
-  uint8_t raw[4];
-  struct __attribute__((packed)) {
+    uint8_t  raw[4];
     uint32_t var_uint32;
-    int      var_int32;
-    float    var_float; 
-  };
+    int32_t  var_int32;
+    float    var_float;
 } remoteVar_t;
 
 typedef struct{
   uint8_t null;
   //TX
-
-  //RX
-  uint8_t key1;
-  uint8_t key2;
-  uint8_t key3;
-
   remoteVar_t remoteVar_TX[16];
+  //RX
+  uint8_t systemEnable;
   remoteVar_t remoteVar_RX[16];
 }remoteInfo_t;
 

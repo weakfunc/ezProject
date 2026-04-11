@@ -185,7 +185,6 @@ void DRIVER_OLED_Clear(void){
             oledGram[page][x] = 0x00U;
         }
     }
-    DRIVER_OLED_Refresh();
 }
 
 /* 绘制像素点 */
@@ -303,7 +302,6 @@ void DRIVER_OLED_ShowChar6x8(uint8_t x, uint8_t y, char chr, uint8_t mode){
         }
     }
 
-    DRIVER_OLED_Refresh();
 }
 
 /* 显示字符串 */
@@ -335,6 +333,13 @@ uint8_t DRIVER_OLED_ShowFloat(uint8_t x, uint8_t y, float val, uint8_t decLen){
     uint32_t tmp;
     uint8_t  intLen;
     uint8_t  xPos = x;
+
+    /* 处理负数：显示负号后对绝对值操作 */
+    if(val < 0.0f){
+        DRIVER_OLED_ShowChar6x8(xPos, y, '-', 1U);
+        xPos = (uint8_t)(xPos + 6U);
+        val = -val;
+    }
 
     intPart = (uint32_t)val;
 

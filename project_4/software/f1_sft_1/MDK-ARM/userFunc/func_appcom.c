@@ -7,6 +7,22 @@
 
 
 /*============================================================================
+ * 私有函数
+ *============================================================================*/
+
+/* 32位字节序翻转：将大端序接收到的4字节字段转换为小端序。
+ * val : 原始32位值（大端字节顺序）
+ * 返回: 字节序翻转后的32位值（小端字节顺序）
+ */
+static uint32_t __APPCOM_SwapU32(uint32_t val)
+{
+  return ((val & 0x000000FFU) << 24U) |
+         ((val & 0x0000FF00U) <<  8U) |
+         ((val & 0x00FF0000U) >>  8U) |
+         ((val & 0xFF000000U) >> 24U);
+}
+
+/*============================================================================
  * 公有变量
  *============================================================================*/
 
@@ -109,26 +125,27 @@ void FUNC_APPCOM_RxUpdate(void){
    * ================================================================ */
 
   /* ---- CMD 0x13 ---- */
-  remoteInfo.remoteVar_RX[0].var_uint32 = appcomInfo.appCmdFrameArr[4].payload.var_4b_1;
-  remoteInfo.remoteVar_RX[1].var_uint32 = appcomInfo.appCmdFrameArr[4].payload.var_4b_2;
+  /* 4字节字段：APP小端序发送，翻转为STM32本地字节序；1字节字段：无需翻转 */
+  remoteInfo.remoteVar_RX[0].var_uint32 = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[4].payload.var_4b_1);
+  remoteInfo.remoteVar_RX[1].var_uint32 = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[4].payload.var_4b_2);
   remoteInfo.remoteVar_RX[2].var_uint32 = appcomInfo.appCmdFrameArr[4].payload.var_1b_1;
   remoteInfo.remoteVar_RX[3].var_uint32 = appcomInfo.appCmdFrameArr[4].payload.var_1b_2;
 
   /* ---- CMD 0x14 ---- */
-  remoteInfo.remoteVar_RX[4].var_uint32 = appcomInfo.appCmdFrameArr[5].payload.var_4b_1;
-  remoteInfo.remoteVar_RX[5].var_uint32 = appcomInfo.appCmdFrameArr[5].payload.var_4b_2;
+  remoteInfo.remoteVar_RX[4].var_uint32 = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[5].payload.var_4b_1);
+  remoteInfo.remoteVar_RX[5].var_uint32 = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[5].payload.var_4b_2);
   remoteInfo.remoteVar_RX[6].var_uint32 = appcomInfo.appCmdFrameArr[5].payload.var_1b_1;
   remoteInfo.remoteVar_RX[7].var_uint32 = appcomInfo.appCmdFrameArr[5].payload.var_1b_2;
 
   /* ---- CMD 0x15 ---- */
-  remoteInfo.remoteVar_RX[8].var_uint32 = appcomInfo.appCmdFrameArr[6].payload.var_4b_1;
-  remoteInfo.remoteVar_RX[9].var_uint32 = appcomInfo.appCmdFrameArr[6].payload.var_4b_2;
+  remoteInfo.remoteVar_RX[8].var_uint32  = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[6].payload.var_4b_1);
+  remoteInfo.remoteVar_RX[9].var_uint32  = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[6].payload.var_4b_2);
   remoteInfo.remoteVar_RX[10].var_uint32 = appcomInfo.appCmdFrameArr[6].payload.var_1b_1;
   remoteInfo.remoteVar_RX[11].var_uint32 = appcomInfo.appCmdFrameArr[6].payload.var_1b_2;
 
   /* ---- CMD 0x16 ---- */
-  remoteInfo.remoteVar_RX[12].var_uint32 = appcomInfo.appCmdFrameArr[7].payload.var_4b_1;
-  remoteInfo.remoteVar_RX[13].var_uint32 = appcomInfo.appCmdFrameArr[7].payload.var_4b_2;
+  remoteInfo.remoteVar_RX[12].var_uint32 = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[7].payload.var_4b_1);
+  remoteInfo.remoteVar_RX[13].var_uint32 = __APPCOM_SwapU32(appcomInfo.appCmdFrameArr[7].payload.var_4b_2);
   remoteInfo.remoteVar_RX[14].var_uint32 = appcomInfo.appCmdFrameArr[7].payload.var_1b_1;
   remoteInfo.remoteVar_RX[15].var_uint32 = appcomInfo.appCmdFrameArr[7].payload.var_1b_2;
 }
