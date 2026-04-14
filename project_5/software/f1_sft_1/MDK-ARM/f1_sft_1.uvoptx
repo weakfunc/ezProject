@@ -180,6 +180,21 @@
           <WinNumber>1</WinNumber>
           <ItemText>sim800cInfo</ItemText>
         </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>smsResult</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>usartInfo</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>uartRawInfo</ItemText>
+        </Ww>
       </WatchWindow1>
       <Tracepoint>
         <THDelay>0</THDelay>
@@ -838,8 +853,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>.\userDriver\driver_sim800c.c</PathWithFileName>
-      <FilenameWithoutPath>driver_sim800c.c</FilenameWithoutPath>
+      <PathWithFileName>.\userDriver\driver_a7670c.c</PathWithFileName>
+      <FilenameWithoutPath>driver_a7670c.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

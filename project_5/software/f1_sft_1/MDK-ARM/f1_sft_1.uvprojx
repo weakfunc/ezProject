@@ -742,9 +742,9 @@
               <FilePath>.\userDriver\driver_mpu6050.c</FilePath>
             </File>
             <File>
-              <FileName>driver_sim800c.c</FileName>
+              <FileName>driver_a7670c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_sim800c.c</FilePath>
+              <FilePath>.\userDriver\driver_a7670c.c</FilePath>
             </File>
           </Files>
         </Group>

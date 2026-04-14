@@ -64,10 +64,10 @@ void Error_Handler(void);
 #define RGB_G_GPIO_Port GPIOC
 #define RGB_R_Pin GPIO_PIN_15
 #define RGB_R_GPIO_Port GPIOC
-#define USER_IO_7_Pin GPIO_PIN_4
-#define USER_IO_7_GPIO_Port GPIOA
-#define USER_IO_8_Pin GPIO_PIN_5
-#define USER_IO_8_GPIO_Port GPIOA
+#define USER_IO_7_Pin GPIO_PIN_14
+#define USER_IO_7_GPIO_Port GPIOC
+#define USER_IO_8_Pin GPIO_PIN_15
+#define USER_IO_8_GPIO_Port GPIOC
 #define USER_IO_5_Pin GPIO_PIN_2
 #define USER_IO_5_GPIO_Port GPIOB
 #define USER_IO_4_Pin GPIO_PIN_12

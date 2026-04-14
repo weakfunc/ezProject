@@ -714,20 +714,10 @@
               <FileType>1</FileType>
               <FilePath>.\userLib\stdlib_adc.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>userApp</GroupName>
-          <Files>
             <File>
-              <FileName>task_system.c</FileName>
+              <FileName>stdlib_flash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\userApp\task_system.c</FilePath>
-            </File>
-            <File>
-              <FileName>task_user1.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userApp\task_user1.c</FilePath>
+              <FilePath>.\userLib\stdlib_flash.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -743,6 +733,21 @@
               <FileName>func_func.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userFunc\func_func.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>userApp</GroupName>
+          <Files>
+            <File>
+              <FileName>task_system.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userApp\task_system.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_user1.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userApp\task_user1.c</FilePath>
             </File>
           </Files>
         </Group>

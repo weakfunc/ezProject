@@ -53,4 +53,4 @@ f1_sft_1\task_user1.o: ./userDriver/driver_gps.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_usart.h
 f1_sft_1\task_user1.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
 f1_sft_1\task_user1.o: ./userDriver/driver_mpu6050.h
-f1_sft_1\task_user1.o: ./userDriver/driver_sim800c.h
+f1_sft_1\task_user1.o: ./userDriver/driver_a7670c.h

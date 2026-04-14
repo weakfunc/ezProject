@@ -1,58 +1,35 @@
+/* 框架兼容存根 — driver_ble.h
+ * 本项目无BLE通信需求，此文件仅为满足 task_system.c / func_appcom.c 编译依赖而提供空实现。
+ * 所有接口均为空操作，不实际使用BLE硬件。
+ */
 #ifndef __DRIVER_BLE_H__
 #define __DRIVER_BLE_H__
 
+#include <stdint.h>
 #include "stdlib_usart.h"
 
 /*============================================================================
- * 向下依赖宏（driver层向stdlib层索要）
+ * 向下依赖（driver层向stdlib层索要）
+ * 依赖：stdlib_usart — UART_PORT1、STM32_DATA_LEN
  *============================================================================*/
-#define BLE_DEP_UART_PORT                           UART_PORT1
-#define BLE_DEP_UART_SEND_FRAME(cmd, data, len)     STDLIB_USART_SendFrame(BLE_DEP_UART_PORT, (cmd), (data), (len))                                               
-#define BLE_DEP_UART_GET_FRAME(cmd, data, len)      STDLIB_USART_GetFrame(BLE_DEP_UART_PORT, (cmd), (data), (len))
 
 /*============================================================================
- * 向上提供宏（driver层向task层提供）
+ * 向上提供（公有结构体、API）
  *============================================================================*/
-#define BLE_DATA_MAX_LEN                       (32U)
 
-/* BLE数据联合体 */
-typedef union {
-    uint8_t bytes[BLE_DATA_MAX_LEN];
-    /* USER VAR START*/
-
-    /* USER VAR END*/
-} bleDataUnion_t;
-
-/* BLE发送信息结构体 */
+/* BLE接收帧结构体（框架协议帧格式） */
 typedef struct {
-    uint8_t cmd;
-    uint8_t dataLen;
-    bleDataUnion_t data;
-} bleTxInfo_t;
+  uint8_t cmd;                    /* 帧控制字节 */
+  uint8_t data[STM32_DATA_LEN];   /* 数据段（10字节） */
+} bleFrame_t;
 
-/* BLE接收信息结构体 */
-typedef struct {
-    uint8_t cmd;
-    uint8_t dataLen;
-    bleDataUnion_t data;
-} bleRxInfo_t;
-
-/* 初始化BLE驱动 */
+/* 初始化BLE驱动（存根，本项目无BLE，不执行任何操作） */
 void DRIVER_BLE_Init(void);
 
-/* 清空BLE接收缓存 */
-void DRIVER_BLE_Reset(void);
+/* 发送一帧数据到BLE（存根，本项目无BLE，不执行任何操作） */
+void DRIVER_BLE_SendFrame(uint8_t cmd, uint8_t *data, uint8_t len);
 
-/* 发送一帧BLE数据 */
-void DRIVER_BLE_Send(const bleTxInfo_t *txInfo);
-
-/* 轮询BLE接收缓存并提取一帧新数据 */
-void DRIVER_BLE_Updata(void);
-
-/* 查询是否收到新的BLE数据 */
-uint8_t DRIVER_BLE_HasNewData(void);
-
-/* 获取最近一次收到的BLE数据 */
-uint8_t DRIVER_BLE_GetRxInfo(bleRxInfo_t *rxInfo);
+/* 获取BLE接收帧（存根，本项目无BLE，始终返回0表示无新帧） */
+uint8_t DRIVER_BLE_GetRxFrame(bleFrame_t *frame);
 
 #endif

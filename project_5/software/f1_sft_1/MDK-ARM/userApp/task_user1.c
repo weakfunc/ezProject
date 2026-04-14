@@ -3,7 +3,7 @@
 #include "driver_board.h"
 #include "driver_gps.h"
 #include "driver_mpu6050.h"
-#include "driver_sim800c.h"
+#include "driver_a7670c.h"
 
 user1TaskInfo_t user1TaskInfo;
 
@@ -11,12 +11,12 @@ void user1TaskInit(){
 	DRIVER_GPS_Init();
 	DRIVER_MPU6050_Init();
 	DRIVER_OLED_Init();
-	DRIVER_SIM800C_Init();
+	DRIVER_A7670C_Init();
 }
 
 float longti, lati;
 
-/* SIM800C 短信发送测试：上电后仅触发一次，发送测试短信到指定号码。 */
+/* A7670C 短信发送测试：上电后仅触发一次，发送测试短信到指定号码。 */
 static uint8_t smsSentFlag = 0U;
 uint8_t smsResult;
 
@@ -49,10 +49,10 @@ void user1TaskUpdata(void *argument){
 		}
 
 		/* 上电约 10s 后发送一条测试短信（仅触发一次）。
-		 * 测试号码与内容可按需修改。
+		 * 测试号码与内容可按需修改，content 支持 UTF-8 中文。
 		 */
-		if((smsSentFlag == 0U) && (user1TaskInfo.user1TaskCnt == 500U)){
-			smsResult = DRIVER_SIM800C_SendSms("13772411182", "SIM800C test OK");
+		if((smsSentFlag == 0U) && (user1TaskInfo.user1TaskCnt == 100U)){
+			smsResult = DRIVER_A7670C_SendSms("13772411182", "A7670C test OK");
 			smsSentFlag = 1U;
 			(void)smsResult; /* 调试时可在此处打断点查看 smsResult */
 		}

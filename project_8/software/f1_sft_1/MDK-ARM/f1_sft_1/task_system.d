@@ -46,5 +46,12 @@ f1_sft_1\task_system.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.
 f1_sft_1\task_system.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 f1_sft_1\task_system.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 f1_sft_1\task_system.o: ./userLib/stdlib_usart.h
+f1_sft_1\task_system.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
 f1_sft_1\task_system.o: ./userLib/stdlib_tim.h
 f1_sft_1\task_system.o: ./userLib/stdlib_i2c.h
+f1_sft_1\task_system.o: ./userLib/stdlib_dwt.h
+f1_sft_1\task_system.o: ./userDriver/driver_board.h
+f1_sft_1\task_system.o: ./userDriver/driver_ble.h
+f1_sft_1\task_system.o: ./userLib/stdlib_flash.h
+f1_sft_1\task_system.o: ./userFunc/func_appcom.h
+f1_sft_1\task_system.o: ./userLib/stdlib_adc.h

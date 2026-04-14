@@ -5,7 +5,8 @@
       "Bash(python -c \":*)",
       "Bash(pip install:*)",
       "Bash(python -c \"import sys; data=sys.stdin.buffer.read\\(\\); print\\(data.decode\\(''''utf-8'''', errors=''''replace''''\\)\\)\")",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(grep -v \"\\\\.o$\")"
     ]
   }
 }

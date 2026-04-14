@@ -69,7 +69,7 @@ usartInfo_t usartInfo[PORT_MAX];
 
 /* 每个端口的协议预设。 */
 static const protocolCfg_t cfgPreset[PORT_MAX] = {
-  /* UART_PORT1：自定义协议，由 driver_sim800c 逐字节处理。 */
+  /* UART_PORT1：自定义协议，由 driver_a7670c 逐字节处理。 */
   { .customProtocol = 1 },
   /* UART_PORT2：自定义协议，由 driver_qr 逐字节处理。 */
   { .customProtocol = 1 },
