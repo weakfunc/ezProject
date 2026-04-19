@@ -624,6 +624,11 @@
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_oled.c</FilePath>
             </File>
+            <File>
+              <FileName>driver_senser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userDriver\driver_senser.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

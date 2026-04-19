@@ -48,8 +48,10 @@ f1_sft_1\task_user1.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/
 f1_sft_1\task_user1.o: ./userFunc/func_appcom.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_usart.h
 f1_sft_1\task_user1.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
+f1_sft_1\task_user1.o: ./userFunc/func_func.h
 f1_sft_1\task_user1.o: ./userDriver/driver_board.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_tim.h
 f1_sft_1\task_user1.o: ./userDriver/driver_oled.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_i2c.h
 f1_sft_1\task_user1.o: ./userDriver/driver_ble.h
+f1_sft_1\task_user1.o: ./userDriver/driver_senser.h

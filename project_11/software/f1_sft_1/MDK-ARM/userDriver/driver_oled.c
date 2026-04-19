@@ -372,6 +372,94 @@ uint8_t DRIVER_OLED_ShowFloat(uint8_t x, uint8_t y, float val, uint8_t decLen){
     return xPos;
 }
 
+/* 以2倍缩放显示单个字符（显示尺寸12x16像素），仅更新显存 */
+void DRIVER_OLED_ShowChar12x16(uint8_t x, uint8_t y, char chr, uint8_t mode){
+    uint8_t chrOffset;
+    uint8_t data;
+    uint8_t pix;
+
+    if(((uint8_t)chr < (uint8_t)' ') || ((uint8_t)chr > (uint8_t)'~')){
+        chr = ' ';
+    }
+    chrOffset = (uint8_t)((uint8_t)chr - (uint8_t)' ');
+
+    for(uint8_t col = 0U; col < 6U; col++){
+        data = asc2_0806[chrOffset][col];
+        for(uint8_t bit = 0U; bit < 8U; bit++){
+            /* 每个源像素放大为2×2像素 */
+            pix = (((data >> bit) & 0x01U) != 0U) ? mode : (uint8_t)(!mode);
+            DRIVER_OLED_DrawPoint((uint8_t)(x + col * 2U),      (uint8_t)(y + bit * 2U),      pix);
+            DRIVER_OLED_DrawPoint((uint8_t)(x + col * 2U + 1U), (uint8_t)(y + bit * 2U),      pix);
+            DRIVER_OLED_DrawPoint((uint8_t)(x + col * 2U),      (uint8_t)(y + bit * 2U + 1U), pix);
+            DRIVER_OLED_DrawPoint((uint8_t)(x + col * 2U + 1U), (uint8_t)(y + bit * 2U + 1U), pix);
+        }
+    }
+}
+
+/* 以2倍缩放显示字符串（每字符12x16像素），仅更新显存 */
+void DRIVER_OLED_ShowString12x16(uint8_t x, uint8_t y, const char *str){
+    uint8_t xPos = x;
+    const char *p = str;
+
+    while(*p != '\0'){
+        DRIVER_OLED_ShowChar12x16(xPos, y, *p, 1U);
+        xPos = (uint8_t)(xPos + 12U);
+        p++;
+    }
+}
+
+/* 私有：以2倍缩放显示定长十进制整数（每字符12x16像素），仅更新显存 */
+static void __DRIVER_OLED_ShowNum12x16(uint8_t x, uint8_t y, uint32_t num, uint8_t len){
+    for(uint8_t i = 0U; i < len; i++){
+        uint8_t digit = (uint8_t)((num / __DRIVER_OLED_Pow(10U, (uint8_t)(len - i - 1U))) % 10U);
+        DRIVER_OLED_ShowChar12x16((uint8_t)(x + i * 12U), y, (char)('0' + digit), 1U);
+    }
+}
+
+/* 以2倍缩放显示非负浮点数（每字符12x16像素），仅更新显存 */
+/* decLen为小数位数，返回显示结束后的下一个x坐标 */
+uint8_t DRIVER_OLED_ShowFloat12x16(uint8_t x, uint8_t y, float val, uint8_t decLen){
+    uint32_t intPart;
+    uint32_t decPart;
+    uint32_t decMul;
+    uint32_t tmp;
+    uint8_t  intLen;
+    uint8_t  xPos = x;
+
+    /* 处理负数：显示负号后对绝对值操作 */
+    if(val < 0.0f){
+        DRIVER_OLED_ShowChar12x16(xPos, y, '-', 1U);
+        xPos = (uint8_t)(xPos + 12U);
+        val = -val;
+    }
+
+    intPart = (uint32_t)val;
+
+    /* 计算小数部分，四舍五入到decLen位 */
+    decMul  = __DRIVER_OLED_Pow(10U, decLen);
+    decPart = (uint32_t)((val - (float)intPart) * (float)decMul + 0.5f);
+    if(decPart >= decMul){ intPart++; decPart = 0U; }
+
+    /* 计算整数部分位数（至少1位） */
+    tmp    = intPart;
+    intLen = 1U;
+    while(tmp >= 10U){ tmp /= 10U; intLen++; }
+
+    /* 显示整数部分 */
+    __DRIVER_OLED_ShowNum12x16(xPos, y, intPart, intLen);
+    xPos = (uint8_t)(xPos + (uint8_t)(intLen * 12U));
+
+    /* 显示小数点和小数部分（保留前导零） */
+    if(decLen > 0U){
+        DRIVER_OLED_ShowChar12x16(xPos, y, '.', 1U);
+        xPos = (uint8_t)(xPos + 12U);
+        __DRIVER_OLED_ShowNum12x16(xPos, y, decPart, decLen);
+        xPos = (uint8_t)(xPos + (uint8_t)(decLen * 12U));
+    }
+
+    return xPos;
+}
+
 /* OLED 初始化 */
 void DRIVER_OLED_Init(void){
     OLED_DEP_I2C_INIT();

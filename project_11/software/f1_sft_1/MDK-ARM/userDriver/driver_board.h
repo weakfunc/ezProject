@@ -29,6 +29,7 @@
 #define BOARD_RGB_R                          (1U)
 #define BOARD_KEY_COUNT                      (3U)
 #define BOARD_RGB_COLOR_COUNT                (2U)
+#define BOARD_KEY_DEBOUNCE_MS                (50U)    /* 按键软件消抖时长（ms） */
 #define BOARD_KEY_LONG_PRESS_DEFAULT_MS      (1000U)
 
 /* 按键信息管理结构体 */

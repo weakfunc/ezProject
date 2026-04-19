@@ -26,9 +26,9 @@ void systemTaskUpdata(void *argument){
 		if(DRIVER_BOARD_KeyIsPressed(BOARD_KEY1) || remoteControl){
 			key1 = 1;
 		}
-		if(!remoteControl){
-			key1 = 0;
-		}
+//		if(!remoteControl){
+//			key1 = 0;
+//		}
 		
 		if(systemTaskInfo.systemTaskCnt % 100 == 0){
 			

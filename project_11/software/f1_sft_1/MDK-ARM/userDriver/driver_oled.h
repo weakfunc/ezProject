@@ -82,4 +82,14 @@ void DRIVER_OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len);
 /* decLen为小数位数，返回显示结束后的下一个x坐标 */
 uint8_t DRIVER_OLED_ShowFloat(uint8_t x, uint8_t y, float val, uint8_t decLen);
 
+/* 以2倍缩放显示单个字符（12x16像素），仅更新显存，需调用 DRIVER_OLED_Refresh() 刷屏 */
+void DRIVER_OLED_ShowChar12x16(uint8_t x, uint8_t y, char chr, uint8_t mode);
+
+/* 以2倍缩放显示字符串（12x16像素），仅更新显存，需调用 DRIVER_OLED_Refresh() 刷屏 */
+void DRIVER_OLED_ShowString12x16(uint8_t x, uint8_t y, const char *str);
+
+/* 以2倍缩放显示非负浮点数（12x16像素），仅更新显存，需调用 DRIVER_OLED_Refresh() 刷屏 */
+/* decLen为小数位数，返回显示结束后的下一个x坐标 */
+uint8_t DRIVER_OLED_ShowFloat12x16(uint8_t x, uint8_t y, float val, uint8_t decLen);
+
 #endif

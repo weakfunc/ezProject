@@ -42,6 +42,7 @@
 "f1_sft_1\driver_ble.o"
 "f1_sft_1\driver_board.o"
 "f1_sft_1\driver_oled.o"
+"f1_sft_1\driver_senser.o"
 "f1_sft_1\stdlib_common.o"
 "f1_sft_1\stdlib_i2c.o"
 "f1_sft_1\stdlib_tim.o"

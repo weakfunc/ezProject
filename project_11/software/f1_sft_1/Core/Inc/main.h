@@ -88,6 +88,7 @@ void Error_Handler(void);
 #define USER_IO_6_GPIO_Port GPIOB
 #define USER_IO_1_Pin GPIO_PIN_8
 #define USER_IO_1_GPIO_Port GPIOB
+#define USER_IO_1_EXTI_IRQn EXTI9_5_IRQn
 #define PWM_BUZZER_Pin GPIO_PIN_9
 #define PWM_BUZZER_GPIO_Port GPIOB
 
