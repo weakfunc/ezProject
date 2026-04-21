@@ -44,7 +44,9 @@ typedef struct {
 #define GPIO_ID_RGB_G                   (12U)
 #define GPIO_ID_RGB_R                   (13U)
 #define GPIO_ID_KEY_3                   (14U)
-#define GPIO_ID_COUNT                   (15U)
+#define GPIO_ID_I2C_SDA_2               (15U)
+#define GPIO_ID_I2C_SCL_2               (16U)
+#define GPIO_ID_COUNT                   (17U)
 
 /* GPIO 端口和引脚信息。 */
 typedef struct {

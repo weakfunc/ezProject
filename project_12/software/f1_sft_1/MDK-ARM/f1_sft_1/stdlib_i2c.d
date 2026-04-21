@@ -33,4 +33,4 @@ f1_sft_1\stdlib_i2c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 f1_sft_1\stdlib_i2c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 f1_sft_1\stdlib_i2c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 f1_sft_1\stdlib_i2c.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-f1_sft_1\stdlib_i2c.o: .\userLib\stdlib_common.h
+f1_sft_1\stdlib_i2c.o: ./userLib/stdlib_common.h

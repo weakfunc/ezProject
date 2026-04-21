@@ -1,6 +1,6 @@
 f1_sft_1\driver_ble.o: userDriver\driver_ble.c
 f1_sft_1\driver_ble.o: userDriver\driver_ble.h
-f1_sft_1\driver_ble.o: .\userLib\stdlib_usart.h
+f1_sft_1\driver_ble.o: ./userLib/stdlib_usart.h
 f1_sft_1\driver_ble.o: ../Core/Inc/main.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 f1_sft_1\driver_ble.o: ../Core/Inc/stm32f1xx_hal_conf.h
@@ -33,6 +33,7 @@ f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 f1_sft_1\driver_ble.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-f1_sft_1\driver_ble.o: .\userLib\stdlib_common.h
+f1_sft_1\driver_ble.o: ./userLib/stdlib_common.h
 f1_sft_1\driver_ble.o: ../Core/Inc/main.h
+f1_sft_1\driver_ble.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
 f1_sft_1\driver_ble.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h

@@ -43,7 +43,7 @@
 #define UART_PORT1      0U
 /* USART2，DMA 收发（由 driver_qr 通过自定义回调处理）。 */
 #define UART_PORT2      1U
-/* USART3，中断收发（由 driver_imu901 通过自定义回调处理）。 */
+/* USART3，中断收发（由 driver_tjcLCD 通过自定义回调处理）。 */
 #define UART_PORT3      2U
 
 /* 自定义协议字节回调类型，每收到一字节触发一次。 */

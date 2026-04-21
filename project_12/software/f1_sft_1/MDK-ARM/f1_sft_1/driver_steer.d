@@ -1,7 +1,7 @@
 f1_sft_1\driver_steer.o: userDriver\driver_steer.c
 f1_sft_1\driver_steer.o: userDriver\driver_steer.h
 f1_sft_1\driver_steer.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdint.h
-f1_sft_1\driver_steer.o: .\userLib\stdlib_tim.h
+f1_sft_1\driver_steer.o: ./userLib/stdlib_tim.h
 f1_sft_1\driver_steer.o: ../Core/Inc/main.h
 f1_sft_1\driver_steer.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 f1_sft_1\driver_steer.o: ../Core/Inc/stm32f1xx_hal_conf.h
@@ -33,7 +33,7 @@ f1_sft_1\driver_steer.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 f1_sft_1\driver_steer.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 f1_sft_1\driver_steer.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 f1_sft_1\driver_steer.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-f1_sft_1\driver_steer.o: .\userLib\stdlib_common.h
+f1_sft_1\driver_steer.o: ./userLib/stdlib_common.h
 f1_sft_1\driver_steer.o: ../Core/Inc/main.h
 f1_sft_1\driver_steer.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h
 f1_sft_1\driver_steer.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h

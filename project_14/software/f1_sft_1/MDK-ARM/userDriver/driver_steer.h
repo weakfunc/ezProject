@@ -41,11 +41,18 @@ typedef struct {
 
 extern steerInfo_t steerInfo[STEER_SERVO_COUNT];
 
+/* 180度舵机脉宽控制范围 */
+#define STEER_180_PULSE_MIN   (500U)    /* 0°对应脉宽（us） */
+#define STEER_180_PULSE_MAX   (2500U)   /* 180°对应脉宽（us） */
+
 /* 180度舵机角度控制：steerId取值为STEER_SERVO_x，anglePulse取值为STEER_ANGLE_x */
 void DRIVER_STEER_Rotate180(uint8_t steerId, uint16_t anglePulse);
 
 /* 360度舵机旋转控制：steerId取值为STEER_SERVO_x，dir取值为STEER_DIR_x，timeMs为旋转时间（ms） */
 void DRIVER_STEER_Rotate360(uint8_t steerId, uint8_t dir, uint32_t timeMs);
+
+/* 180度舵机角度控制（浮点角度）：steerId取值为STEER_SERVO_x，angleDeg取值范围0.0~180.0 */
+void DRIVER_STEER_SetAngleDeg(uint8_t steerId, float angleDeg);
 
 void DRIVER_STEER_DebugMode(void);
 

@@ -80,6 +80,10 @@ void Error_Handler(void);
 #define KEY_1_GPIO_Port GPIOB
 #define USER_IO_2_Pin GPIO_PIN_8
 #define USER_IO_2_GPIO_Port GPIOA
+#define I2C_SCL_2_Pin GPIO_PIN_11
+#define I2C_SCL_2_GPIO_Port GPIOA
+#define I2C_SDA_2_Pin GPIO_PIN_12
+#define I2C_SDA_2_GPIO_Port GPIOA
 #define I2C_SDA_Pin GPIO_PIN_4
 #define I2C_SDA_GPIO_Port GPIOB
 #define I2C_SDL_Pin GPIO_PIN_5

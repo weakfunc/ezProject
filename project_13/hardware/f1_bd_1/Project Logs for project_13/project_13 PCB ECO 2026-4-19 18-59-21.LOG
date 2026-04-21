@@ -1,0 +1,6 @@
+Added Component: Designator=U?(mod_oled)
+Added Pin To Net: NetName=GND Pin=U?-1
+Added Pin To Net: NetName=3V3 Pin=U?-2
+Added Pin To Net: NetName=PB5 Pin=U?-3
+Added Pin To Net: NetName=PB4 Pin=U?-4
+Added Member To Class: ClassName=project_13 Member=Component U? mod_oled

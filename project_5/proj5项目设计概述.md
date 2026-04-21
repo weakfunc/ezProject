@@ -50,3 +50,9 @@
 SIM800需要单路5V供电。MPU6050单挂一路I2C， 时钟模块和OLED挂另一路I2C
 
 CAN_TX改I2C_SCL, RX改I2C_SDA
+
+GPS模块默认波特率115200，刚上电能收到utc信息，窗边3分钟左右收到gps信息
+
+改了stdlib_i2c，加入i2c读API
+
+sim800c应该使用串口2，改硬件

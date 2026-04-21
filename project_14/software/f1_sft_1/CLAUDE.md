@@ -1,51 +1,48 @@
 ## 项目背景
 
-- 芯片: STM32F103C8T6，HAL库开发 
+- 芯片: STM32F103C8T6，HAL库开发
 - IDE: Keil
-- RTOS: FreeRTOS CMSIS_V2 
-- 已配置外设: 
-    USART1，
-    USART2, 
-    USART3, 
-    TIM2(CH1,CH2), 
-    TIM3(CH1,CH2,CH3,CH4)，
-    TIM4(CH1,CH4)，
-    GPIO,
- - 分层架构: HAL库底层->stdlib层->driver层->func层(暂未实现)->task层
- - 已安装python的pypdf插件用于读取pdf文件
+- RTOS: FreeRTOS CMSIS_V2
+- 已配置外设:
+    USART1，USART2，USART3，
+    TIM2(CH1,CH2)，TIM3(CH1,CH2,CH3,CH4)，TIM4(CH1,CH4)，GPIO
+- 分层架构: HAL库底层 -> stdlib层 -> driver层 -> func层 -> task层
+- 已安装python的pypdf插件用于读取pdf文件
 
 ## 任务
-  重写driver_imu模块，重命名为driver_imu901模块。该模块使用正点原子的十轴陀螺仪。
-  driver_imu901模块默认使用USART3，模块的协议手册在根目录的ATK-MS901M模块用户手册_V1.0中
-  实现手册中的数据解析，把数据都保存在imu901Info_t中，对task层提供update API，在userTask中10ms调用
 
-## 约束
-- 不要修改 CubeMX 生成的代码（USER CODE 区域以外的部分）
-- 不使用 malloc，全部静态分配
-- 代码注释用中文
-- 代码正文首行缩进两个空格
-- 参考UserCode文件夹下已有代码的规范和命名规则
-- 为每个函数和必要的变量添加注释,注释格式参考USERCODE文件夹下其它函数的注释
-- 私有结构体定义,宏定义均写在.c文件中，对外的结构体定义,宏定义写在.h文件中
-- 不要跨层调用函数（func层调用stdlib层除外）,若低层级提供的API无法实现功能,先完善低层级API提供接口后,再在上层调用.跨层之间实现解耦
-- func层可调用stdlib层api
-- 不要额外实现我在"任务"章节没有要求的功能
-- 对于driver层的.h文件,明确分成“向下依赖”和“向上提供”两类，并且注释标明向下依赖了哪些stdlib
-- 仅在driver层减少不必要的边界检查
-- 对于driver层的模块，都要新建一个且仅一个以该模块名称命名（模块名+Info_t，如：ws2812Info_t ws2812Info）的公有结构体，并在h中extern，用于管理该模块的相关数据。对于一个模块中有多个通道控制的情况，使用结构体数组管理该模块
-- driver层只会向下调用stdlib层，driver层之间不会相互调用
-- 对于stdlib层的.h文件,明确分层"内部配置"和"API接口"两类
-- 遇到缺失文件时，优先清理引用，不要新增空 h/c 文件
-- driver层只提供模块的基础API（读、写、初始化等），涉及模块应用逻辑（如PID闭环控制、状态机、策略）在func_func模块中实现
-- FUNC层用于实现基于driver层模块提供API的复杂应用逻辑，并向TASK层提供API
-- 不要修改task层任何.c的任务周期，userTask的基础周期是2ms，systemTask的基础周期是10ms。通过任务计数器取余的方式获得更长的子周期
-- 如果对于工程硬件层面如接线，引脚分配不确定，必须先停下来确认，不要自行实现
+实现云台闭环控制功能模块 `func_gimbal.c / func_gimbal.h`。
+
+### 控制目标
+以 driver_mpu6050 提供的陀螺仪角度作为反馈，通过位置式PID控制 driver_steer 两路舵机，
+使云台实际角度跟随目标角度指令。
+
+### 硬件信息
+先阅读 driver_steer.h 和 driver_mpu6050.h，了解已有API后再实现，
+如有疑问停下来提问，不要自行假设接口。
+
+### 控制架构
+目标角度(yaw_target, pitch_target)
+↓
+误差 e = 目标角度 - MPU6050反馈角度
+↓
+位置式PID（调用 stdlib_pid）
+↓
+补偿量 u(k)（单位：度）
+↓
+舵机指令 = 目标角度 + u(k)，限幅 [10°, 170°]
+↓
+driver_steer 设置舵机角度
+
+
+
+### PID说明
+- yaw和pitch各一个独立PID实例，调用 stdlib_pid 提供的位置式PID
+- 初始参数 Kp=1.0, Ki=0.0, Kd=0.1，仅做结构占位，实际需调参
 
 ## 集成方式
 
-- 集成在userTASK，用于功能测试
-
-## 验收标准
-
-- 编译无 warning 无 error
+- 在 task_user1.c 中以10ms为子周期调用 Gimbal_Task()
+- 在任务初始化处调用 Gimbal_Init()
+- 调用 Gimbal_SetTarget(90.0f, 90.0f) 设置初始目标为中位
 

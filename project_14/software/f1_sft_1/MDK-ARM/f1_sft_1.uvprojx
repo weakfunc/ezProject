@@ -610,14 +610,14 @@
           <GroupName>userDriver</GroupName>
           <Files>
             <File>
+              <FileName>driver_ble.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userDriver\driver_ble.c</FilePath>
+            </File>
+            <File>
               <FileName>driver_board.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_board.c</FilePath>
-            </File>
-            <File>
-              <FileName>driver_imu901.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_imu901.c</FilePath>
             </File>
             <File>
               <FileName>driver_oled.c</FileName>
@@ -630,9 +630,9 @@
               <FilePath>.\userDriver\driver_steer.c</FilePath>
             </File>
             <File>
-              <FileName>driver_ble.c</FileName>
+              <FileName>driver_mpu6050.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_ble.c</FilePath>
+              <FilePath>.\userDriver\driver_mpu6050.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -678,6 +678,11 @@
               <FileName>stdlib_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userLib\stdlib_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stdlib_sleep.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userLib\stdlib_sleep.c</FilePath>
             </File>
           </Files>
         </Group>

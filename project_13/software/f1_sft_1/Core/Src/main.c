@@ -20,7 +20,6 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
-#include "can.h"
 #include "dma.h"
 #include "tim.h"
 #include "usart.h"
@@ -100,7 +99,6 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM4_Init();
   MX_ADC1_Init();
-  MX_CAN_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 

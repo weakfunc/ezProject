@@ -11,7 +11,7 @@
 #define STEER_DEP_SERVO_2_PWM_CH             PWM_TIM2_CH2
 
 /*============================================================================
- * 向上提供宏（180度舵机）
+ * 向上提供宏（driver层向task层提供）
  *============================================================================*/
 #define STEER_SERVO_1                        (0U)
 #define STEER_SERVO_2                        (1U)
@@ -22,9 +22,7 @@
 #define STEER_ANGLE_USER_1                   (1000U)
 #define STEER_ANGLE_USER_2                   (1000U)
 
-/*============================================================================
- * 向上提供宏（360度舵机）
- *============================================================================*/
+/* 360度舵机控制参数 */
 #define STEER_360_CW                         (1000U)  /* 顺时针旋转脉宽 */
 #define STEER_360_CCW                        (2000U)  /* 逆时针旋转脉宽 */
 #define STEER_360_STOP                       (1500U)  /* 停止脉宽 */
@@ -33,9 +31,15 @@
 #define STEER_DIR_CW                         (0U)     /* 顺时针 */
 #define STEER_DIR_CCW                        (1U)     /* 逆时针 */
 
-/*============================================================================
- * 对外 API
- *============================================================================*/
+/* 舵机模块信息结构体（每路舵机一个元素） */
+typedef struct {
+  uint8_t  ch;     /* 舵机通道 */
+  uint8_t  dir;    /* 旋转方向 */
+  uint16_t duty;   /* 脉宽 */
+  uint32_t timeMs; /* 旋转时间（ms） */
+} steerInfo_t;
+
+extern steerInfo_t steerInfo[STEER_SERVO_COUNT];
 
 /* 180度舵机角度控制：steerId取值为STEER_SERVO_x，anglePulse取值为STEER_ANGLE_x */
 void DRIVER_STEER_Rotate180(uint8_t steerId, uint16_t anglePulse);

@@ -56,6 +56,20 @@ void DRIVER_STEER_Rotate180(uint8_t steerId, uint16_t anglePulse){
   STDLIB_TIM_PwmSetPulse(steerMap[steerId].pwmCh, anglePulse);
 }
 
+/* 180度舵机角度控制（浮点角度）：将角度转换为脉宽后输出，0°→500us，180°→2500us */
+void DRIVER_STEER_SetAngleDeg(uint8_t steerId, float angleDeg){
+  uint32_t pulse;
+
+  if(steerId >= STEER_SERVO_COUNT){
+    return;
+  }
+
+  /* 角度转脉宽：线性映射，0°→500us，180°→2500us */
+  pulse = (uint32_t)(500.0f + (angleDeg / 180.0f) * 2000.0f);
+  steerInfo[steerId].duty = (uint16_t)pulse;
+  STDLIB_TIM_PwmSetPulse(steerMap[steerId].pwmCh, pulse);
+}
+
 void DRIVER_STEER_DebugMode(void){
   for(int i = 0; i < STEER_SERVO_COUNT; i++){
     //DRIVER_STEER_Rotate180(steerInfo[i].ch, steerInfo[i].duty);

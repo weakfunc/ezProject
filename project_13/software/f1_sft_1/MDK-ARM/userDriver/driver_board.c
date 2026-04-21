@@ -1,3 +1,8 @@
+/*============================================================================
+ * README
+ *
+ *============================================================================*/
+
 #include "driver_board.h"
 
 /*============================================================================
@@ -15,8 +20,10 @@ typedef struct {
 static boardKeyState_t boardKeyState[BOARD_KEY_COUNT];
 /* 开发板模块数据 */
 boardInfo_t boardInfo;
-/* RGB闪烁计时缓存 */
-static uint32_t boardRgbLastToggleTickMs[BOARD_RGB_COLOR_COUNT];
+/* 蜂鸣器开始计时时刻（ms） */
+static uint32_t boardBuzzStartTickMs;
+/* 蜂鸣器当前是否处于激活状态 */
+static uint8_t  boardBuzzActive;
 
 /* 按键ID到GPIO映射 */
 static const uint8_t boardKeyGpioMap[BOARD_KEY_COUNT] = {
@@ -35,55 +42,35 @@ static uint32_t __DRIVER_BOARD_ElapsedMs(uint32_t nowTickMs, uint32_t startTickM
     return (nowTickMs - startTickMs);
 }
 
+
 /*============================================================================
  * API接口
  *============================================================================*/
 
 /* 初始化板级驱动 */
 void DRIVER_BOARD_Init(void){
-    uint32_t nowTickMs;
-
     STDLIB_COMMON_PeriphInit();
-    DRIVER_BOARD_RgbOff(BOARD_RGB_R);
-    DRIVER_BOARD_RgbOff(BOARD_RGB_G);
+    DRIVER_BOARD_RgbSet(BOARD_RGB_R, 0U);
+    DRIVER_BOARD_RgbSet(BOARD_RGB_G, 1U);
 
     DRIVER_BOARD_KeyInit();
 
-    nowTickMs = STDLIB_COMMON_GetTickMs();
-    for(uint8_t i = 0U; i < BOARD_RGB_COLOR_COUNT; i++){
-        boardRgbLastToggleTickMs[i] = nowTickMs;
-    }
+    /* 初始化蜂鸣器：停止输出，清空计时状态 */
+    boardInfo.buzzTimeMs    = 0U;
+    boardBuzzActive         = 0U;
+    boardBuzzStartTickMs    = 0U;
+    STDLIB_TIM_PwmSetDuty(BOARD_DEP_BUZZER_PWM_CH, 0.0f);
 }
 
-/* 打开指定颜色RGB灯（低电平点亮） */
-void DRIVER_BOARD_RgbOn(uint8_t color){
-    STDLIB_COMMON_GpioWrite(boardRgbGpioMap[color], BOARD_DEP_RGB_ON_LEVEL);
+/* 设置指定颜色RGB灯亮灭（isOn=1点亮，isOn=0熄灭） */
+void DRIVER_BOARD_RgbSet(uint8_t color, uint8_t isOn){
+    uint8_t level = (isOn != 0U) ? BOARD_DEP_RGB_ON_LEVEL : BOARD_DEP_RGB_OFF_LEVEL;
+    STDLIB_COMMON_GpioWrite(boardRgbGpioMap[color], level);
 }
 
-/* 关闭指定颜色RGB灯 */
-void DRIVER_BOARD_RgbOff(uint8_t color){
-    STDLIB_COMMON_GpioWrite(boardRgbGpioMap[color], BOARD_DEP_RGB_OFF_LEVEL);
-}
-
-/* 非阻塞闪烁：周期调用，达到间隔后翻转一次 */
-void DRIVER_BOARD_RgbBlink(uint8_t color, uint32_t intervalMs){
-    uint8_t gpioId;
-    uint8_t idx;
-    uint32_t nowTickMs;
-
-    gpioId = boardRgbGpioMap[color];
-    idx = color;
-
-    if(intervalMs == 0U){
-        STDLIB_COMMON_GpioToggle(gpioId);
-        return;
-    }
-
-    nowTickMs = STDLIB_COMMON_GetTickMs();
-    if(__DRIVER_BOARD_ElapsedMs(nowTickMs, boardRgbLastToggleTickMs[idx]) < intervalMs) return;
-
-    boardRgbLastToggleTickMs[idx] = nowTickMs;
-    STDLIB_COMMON_GpioToggle(gpioId);
+/* 闪烁指定颜色RGB灯，每次调用翻转一次，闪烁周期由调用频率决定（需周期调用） */
+void DRIVER_BOARD_RgbBlink(uint8_t color){
+    STDLIB_COMMON_GpioToggle(boardRgbGpioMap[color]);
 }
 
 /* 读取按键IO电平 */
@@ -185,4 +172,49 @@ uint8_t DRIVER_BOARD_KeyInfoGet(uint8_t keyId, boardKeyInfo_t *info){
     if(info == NULL) return 0U;
     *info = boardInfo.key[keyId];
     return 1U;
+}
+
+/* 蜂鸣器非阻塞更新，需在10ms周期内调用。
+ * 读取 boardInfo.buzzTimeMs：
+ *   0       → 立即停止蜂鸣
+ *   0xFFFF  → 持续蜂鸣（不自动停止）
+ *   其它值  → 蜂鸣指定毫秒后自动停止，并将 buzzTimeMs 置0
+ */
+void DRIVER_BOARD_BuzzUpdate(void){
+  uint32_t nowTickMs;
+
+  if(boardInfo.buzzTimeMs == 0U){
+    /* 停止蜂鸣 */
+    if(boardBuzzActive != 0U){
+      STDLIB_TIM_PwmSetDuty(BOARD_DEP_BUZZER_PWM_CH, 0.0f);
+      boardBuzzActive = 0U;
+    }
+    return;
+  }
+
+  if(boardInfo.buzzTimeMs == 0xFFFFU){
+    /* 持续蜂鸣 */
+    if(boardBuzzActive == 0U){
+      STDLIB_TIM_PwmSetDuty(BOARD_DEP_BUZZER_PWM_CH, 100.0f);
+      boardBuzzActive = 1U;
+    }
+    return;
+  }
+
+  /* 定时蜂鸣 */
+  if(boardBuzzActive == 0U){
+    /* 新蜂鸣请求：启动计时，开始蜂鸣 */
+    boardBuzzStartTickMs = STDLIB_COMMON_GetTickMs();
+    STDLIB_TIM_PwmSetDuty(BOARD_DEP_BUZZER_PWM_CH, 100.0f);
+    boardBuzzActive = 1U;
+    return;
+  }
+
+  /* 已在蜂鸣中，检查是否到达设定时长 */
+  nowTickMs = STDLIB_COMMON_GetTickMs();
+  if((nowTickMs - boardBuzzStartTickMs) >= (uint32_t)boardInfo.buzzTimeMs){
+    STDLIB_TIM_PwmSetDuty(BOARD_DEP_BUZZER_PWM_CH, 0.0f);
+    boardInfo.buzzTimeMs = 0U;
+    boardBuzzActive      = 0U;
+  }
 }

@@ -159,7 +159,7 @@ __weak void user1TaskUpdata(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    osDelay(2);
   }
   /* USER CODE END user1TaskUpdata */
 }

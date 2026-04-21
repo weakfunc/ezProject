@@ -73,7 +73,7 @@ static const protocolCfg_t cfgPreset[PORT_MAX] = {
   { .customProtocol = 0 },
   /* UART_PORT2：自定义协议，由 driver_qr 逐字节处理。 */
   { .customProtocol = 1 },
-  /* UART_PORT3：自定义协议，由 driver_imu901 逐字节处理。 */
+  /* UART_PORT3：自定义协议，由 driver_tjcLCD 逐字节处理。 */
   { .customProtocol = 1 },
 };
 

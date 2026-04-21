@@ -1,5 +1,6 @@
 #include "task_system.h"
 #include "driver_board.h"
+#include "driver_ble.h"
 #include "stdlib_flash.h"
 #include "func_appcom.h"
 #include "stdlib_adc.h"
@@ -26,15 +27,24 @@ void systemTaskUpdata(void *argument){
 		STDLIB_USART_Updata();
 		DRIVER_BOARD_KeyInfoUpdate();
 		DRIVER_BOARD_BuzzUpdate();
+		
+		if(!systemTaskInfo.systemInitFinshFlag){
+			boardInfo.buzzTimeMs = 200;
+			systemTaskInfo.systemInitFinshFlag = 1;
+		}
 
 		if(systemTaskInfo.systemTaskCnt % 10 == 0){
-			FUNC_APPCOM_Update();
+			FUNC_APPCOM_UPDATA();
 		}
 		
 		if(systemTaskInfo.systemTaskCnt % 50 == 0){
 			STDLIB_ADC_Sample();
 		}
+		
+	    if(systemTaskInfo.systemTaskCnt % 100 == 0){
 
+		}
+			
 		if(systemTaskInfo.systemTaskCnt % 1000 == 0){
 			STDLIB_FLASH_Save();
 		}

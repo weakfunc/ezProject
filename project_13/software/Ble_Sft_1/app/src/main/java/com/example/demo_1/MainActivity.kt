@@ -8,10 +8,12 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,32 +22,39 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.demo_1.ui.theme.Demo_1Theme
 import java.util.Locale
@@ -494,8 +503,43 @@ fun HomeScreen(
     isPullRefreshing: Boolean = false,
     onRefreshRequested: () -> Unit = {}
 ) {
+    // ===== [MODIFIED BEGIN] HomeScreen - 防盗定位系统 UI =====
+    data class GpsPoint(val seq: Int, val lat: Float, val lon: Float)
+
+    val context = LocalContext.current
     val connectedDevice = BleConnectionManager.connectedDeviceInfo
     val discoveredServices = BleConnectionManager.discoveredServices
+    val frame18 = BleProtocol.rxFrames[0x18]
+    val frame19 = BleProtocol.rxFrames[0x19]
+
+    val gpsLatitude = frame18?.var4b1?.let { java.lang.Float.intBitsToFloat(it) } ?: 0f
+    val gpsLongitude = frame18?.var4b2?.let { java.lang.Float.intBitsToFloat(it) } ?: 0f
+    val gpsValid = frame18?.var1b1 ?: 0
+    val alarmFlag = frame18?.var1b2 ?: 0
+    val gpsFrameSeq = frame19?.var4b1 ?: 0
+    val antitheftEnabled = frame19?.var1b1 ?: 0
+    val systemStatus = frame19?.var1b2 ?: 0
+
+    val gpsTrackList = remember { mutableStateListOf<GpsPoint>() }
+    var previousGpsFrameSeq by remember { mutableStateOf<Int?>(null) }
+    var showTrackList by remember { mutableStateOf(false) }
+    var clearAlarmResetPending by remember { mutableStateOf(false) }
+
+    LaunchedEffect(gpsFrameSeq, gpsValid, gpsLatitude, gpsLongitude) {
+        if (gpsValid == 1 && gpsFrameSeq != previousGpsFrameSeq) {
+            if (gpsTrackList.size >= 500) {
+                gpsTrackList.removeAt(0)
+            }
+            gpsTrackList.add(
+                GpsPoint(
+                    seq = gpsFrameSeq,
+                    lat = gpsLatitude,
+                    lon = gpsLongitude
+                )
+            )
+            previousGpsFrameSeq = gpsFrameSeq
+        }
+    }
 
     if (!UserConfig.DEVELOPER_MODE && connectedDevice != null) {
         LaunchedEffect(
@@ -515,55 +559,357 @@ fun HomeScreen(
         }
     }
 
-    if (UserConfig.DEVELOPER_MODE) {
-        val pageContent: @Composable (Modifier) -> Unit = { containerModifier ->
-            Column(
-                modifier = containerModifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = UserConfig.author_name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                )
-            }
+    fun formatLatitude(value: Float): String {
+        return String.format(Locale.US, "%.6f°N", value)
+    }
+
+    fun formatLongitude(value: Float): String {
+        return String.format(Locale.US, "%.6f°E", value)
+    }
+
+    fun formatCoordinate(value: Float): String {
+        return String.format(Locale.US, "%.6f", value)
+    }
+
+    fun sendAntitheftCmd(antitheftOn: Int, clearAlarm: Int = 0) {
+        val frame = BleProtocol.buildTxFrame(
+            cmd = 0x21,
+            var4_1 = 0,
+            var4_2 = 0,
+            var1_1 = antitheftOn,
+            var1_2 = clearAlarm
+        )
+        val ok = BleConnectionManager.writeCharacteristic(
+            serviceUuid = UserConfig.esp32_service_1_uuid,
+            characteristicUuid = UserConfig.esp32_service_1_characteristic_1_uuid,
+            value = frame
+        )
+        if (ok) {
+            BleConnectionManager.recordOutgoingMessage(
+                characteristicUuid = UserConfig.esp32_service_1_characteristic_1_uuid,
+                value = frame
+            )
+        } else {
+            Toast.makeText(context, "BLE 未连接或特征不可写", Toast.LENGTH_SHORT).show()
         }
-        pageContent(modifier)
-    } else {
-        Column(
-            modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    }
+
+    LaunchedEffect(clearAlarmResetPending, systemStatus, alarmFlag, antitheftEnabled) {
+        if (clearAlarmResetPending && systemStatus == 0 && alarmFlag == 0) {
+            sendAntitheftCmd(antitheftOn = antitheftEnabled, clearAlarm = 0)
+            clearAlarmResetPending = false
+        }
+    }
+
+    @Composable
+    fun FieldRow(
+        label: String,
+        value: String,
+        valueColor: Color? = null
+    ) {
+        val resolvedValueColor = valueColor ?: MaterialTheme.colorScheme.onSurface
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = UserConfig.project_name,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center,
-                lineHeight = 36.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
             )
             Text(
-                text = UserConfig.author_name,
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = resolvedValueColor,
+                textAlign = TextAlign.End,
+                modifier = Modifier.weight(1.2f)
             )
         }
     }
+
+    val pageContent: @Composable (Modifier) -> Unit = { containerModifier ->
+        Column(
+            modifier = containerModifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "两轮电动车智能防盗与定位系统设计",
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = " ",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            HomeSection(title = "GPS 实时位置") {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FieldRow(
+                        label = "GPS 状态",
+                        value = if (gpsValid == 1) "有效" else "无效",
+                        valueColor = if (gpsValid == 1) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    FieldRow(label = "纬度", value = formatLatitude(gpsLatitude))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    FieldRow(label = "经度", value = formatLongitude(gpsLongitude))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    FieldRow(label = "帧序号", value = "#$gpsFrameSeq")
+                    Button(
+                        onClick = {
+                            val coordinate = String.format(
+                                Locale.US,
+                                "%.6f,%.6f",
+                                gpsLatitude,
+                                gpsLongitude
+                            )
+                            val uri = Uri.parse("geo:$coordinate?q=$coordinate")
+                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                            try {
+                                context.startActivity(intent)
+                            } catch (_: Exception) {
+                                Toast.makeText(context, "未找到可用地图应用", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        enabled = gpsValid == 1,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
+                    ) {
+                        Text(text = "在地图中查看")
+                    }
+                }
+            }
+
+            HomeSection(title = "历史轨迹") {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val latestPoint = gpsTrackList.lastOrNull()
+                    FieldRow(label = "轨迹点数", value = "已记录 ${gpsTrackList.size} 个点")
+                    Text(
+                        text = latestPoint?.let {
+                            "最新: ${formatCoordinate(it.lat)}, ${formatCoordinate(it.lon)}"
+                        } ?: "最新: 暂无有效坐标",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Button(
+                            onClick = { showTrackList = !showTrackList },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = if (showTrackList) "收起轨迹列表" else "查看轨迹列表")
+                        }
+                        Button(
+                            onClick = {
+                                gpsTrackList.clear()
+                                previousGpsFrameSeq = null
+                            },
+                            enabled = gpsTrackList.isNotEmpty(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            ),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = "清空轨迹")
+                        }
+                    }
+                    if (showTrackList) {
+                        val recentPoints = gpsTrackList.takeLast(20).asReversed()
+                        if (recentPoints.isEmpty()) {
+                            Text(
+                                text = "暂无轨迹记录",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 260.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                items(
+                                    items = recentPoints,
+                                    key = { "${it.seq}-${it.lat}-${it.lon}" }
+                                ) { point ->
+                                    Text(
+                                        text = "#${point.seq}  ${formatCoordinate(point.lat)}, ${formatCoordinate(point.lon)}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            HomeSection(title = "防盗控制") {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    FieldRow(
+                        label = "防盗状态",
+                        value = if (antitheftEnabled == 1) "已开启" else "已关闭",
+                        valueColor = if (antitheftEnabled == 1) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    FieldRow(
+                        label = "报警状态",
+                        value = if (alarmFlag == 1) "⚠️ 报警中" else "正常",
+                        valueColor = if (alarmFlag == 1) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                val nextAntitheftState = if (antitheftEnabled == 1) 0 else 1
+                                sendAntitheftCmd(antitheftOn = nextAntitheftState)
+                            },
+                            enabled = connectedDevice != null,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = if (antitheftEnabled == 1) "关闭防盗" else "开启防盗")
+                        }
+                        Button(
+                            onClick = {
+                                sendAntitheftCmd(
+                                    antitheftOn = antitheftEnabled,
+                                    clearAlarm = 1
+                                )
+                                clearAlarmResetPending = true
+                            },
+                            enabled = connectedDevice != null && alarmFlag == 1 && !clearAlarmResetPending,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            ),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = if (clearAlarmResetPending) "等待复位" else "消除报警")
+                        }
+                    }
+                }
+            }
+
+            HomeSection(
+                title = "系统状态",
+                cardContainerColor = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val systemStatusText = when (systemStatus) {
+                        0 -> "正常运行"
+                        1 -> "设备休眠中"
+                        2 -> "⚠️ 报警中"
+                        else -> "未知"
+                    }
+                    FieldRow(
+                        label = "系统状态",
+                        value = systemStatusText,
+                        valueColor = if (systemStatus == 2) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    FieldRow(
+                        label = "BLE 连接状态",
+                        value = if (connectedDevice == null) "未连接" else "已连接",
+                        valueColor = if (connectedDevice == null) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        }
+                    )
+                    if (connectedDevice == null) {
+                        Text(
+                            text = "下拉刷新可重新搜索设备",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text = "设备：${connectedDevice.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "MAC：${connectedDevice.address}  RSSI：${connectedDevice.rssi} dBm",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    if (UserConfig.DEVELOPER_MODE) {
+        pageContent(modifier)
+    } else if (connectedDevice == null) {
+        PullToRefreshBox(
+            isRefreshing = isPullRefreshing,
+            onRefresh = onRefreshRequested,
+            modifier = modifier.fillMaxSize()
+        ) {
+            pageContent(Modifier)
+        }
+    } else {
+        pageContent(modifier)
+    }
+    // ===== [MODIFIED END] =====
 }
 
 

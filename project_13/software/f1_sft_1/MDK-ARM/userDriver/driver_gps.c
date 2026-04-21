@@ -1,3 +1,8 @@
+/*============================================================================
+ * README
+ * 
+ *============================================================================*/
+
 #include "driver_gps.h"
 #include <string.h>
 #include <stdlib.h>
@@ -199,6 +204,17 @@ static uint8_t __DRIVER_GPS_TypeEndsWith(const char *typeStr, const char *suffix
     return 0U;
 }
 
+/* 根据hasTime/hasCourse更新gpsInfo.status */
+static void __DRIVER_GPS_UpdateStatus(void){
+    if(gpsInfo.hasTime == 0U){
+        gpsInfo.status = GPS_STATUS_DISCONNECTED;
+    } else if(gpsInfo.hasCourse == 0U){
+        gpsInfo.status = GPS_STATUS_SEARCHING;
+    } else {
+        gpsInfo.status = GPS_STATUS_WORKING;
+    }
+}
+
 /* 解析RMC语句（时间/经纬度/航向等） */
 static void __DRIVER_GPS_ParseRmc(char *fields[], uint8_t fieldCount){
     float value;
@@ -233,6 +249,7 @@ static void __DRIVER_GPS_ParseRmc(char *fields[], uint8_t fieldCount){
         gpsInfo.hasCourse = 1U;
     }
 
+    __DRIVER_GPS_UpdateStatus();
     gpsHasNewDataFlag = 1U;
 }
 
@@ -255,6 +272,7 @@ static void __DRIVER_GPS_ParseVtg(char *fields[], uint8_t fieldCount){
         gpsInfo.speedKmh = value;
     }
 
+    __DRIVER_GPS_UpdateStatus();
     gpsHasNewDataFlag = 1U;
 }
 
@@ -361,17 +379,11 @@ uint8_t DRIVER_GPS_GetInfo(gpsInfo_t *info){
     return 1U;
 }
 
-/* 获取纬度数据 */
-uint8_t DRIVER_GPS_GetLatitudeDeg(float *latitudeDeg){
-    if((latitudeDeg == NULL) || (gpsInfo.hasLocation == 0U)) return 0U;
-    *latitudeDeg = gpsInfo.latitudeDeg;
-    return 1U;
-}
-
-/* 获取经度数据 */
-uint8_t DRIVER_GPS_GetLongitudeDeg(float *longitudeDeg){
+/* 获取经纬度数据 */
+uint8_t DRIVER_GPS_GetPosition(float *longitudeDeg, float *latitudeDeg){
     if((longitudeDeg == NULL) || (gpsInfo.hasLocation == 0U)) return 0U;
     *longitudeDeg = gpsInfo.longitudeDeg;
+    *latitudeDeg = gpsInfo.latitudeDeg;
     return 1U;
 }
 

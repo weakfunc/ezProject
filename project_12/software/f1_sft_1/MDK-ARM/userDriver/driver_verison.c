@@ -3,7 +3,10 @@
  * [0]     0x55        包头1
  * [1]     0xAA        包头2
  * [2]     0x01        控制字段
- * [3~12]  data        二维码内容（10字节，不足补0x00）
+ * [3]     obj1        分类1编码（无目标/冷却中=0xFF）
+ * [4]     obj2        分类2编码（无目标/冷却中=0xFF）
+ * [5]     fps         摄像头帧率（uint8）
+ * [6~12]  0x00        保留
  * [13]    CRC8        0x00时直接通过，否则校验[0]~[12]（多项式0x07）
  * [14]    CNT         包计数（0x00~0xFF循环递增）
  * [15]    0xFF        包尾
@@ -12,8 +15,8 @@
 #include "driver_verison.h"
 #include <string.h>
 
-maixCamInfo_t maixCamInfo;
-realData_t versionRealData;
+/* MAIXCAM模块数据（对外暴露） */
+verisonInfo_t verisonInfo;
 
 /*============================================================================
  * 内部配置（仅driver_verison模块内部使用）
@@ -25,12 +28,24 @@ realData_t versionRealData;
 #define VERISON_FRAME_SOF2                          (0xAAU)
 /* 协议控制字段固定值 */
 #define VERISON_FRAME_CTRL                          (0x01U)
-/* CRC8初始值 */
-#define VERISON_CRC8_INIT                           (0x00U)
 /* 协议包尾 */
 #define VERISON_FRAME_TAIL                          (0xFFU)
+/* CRC8初始值 */
+#define VERISON_CRC8_INIT                           (0x00U)
+/* 数据段长度（字节[3]~[12]共10字节） */
+#define VERISON_DATA_LEN                            (10U)
 
-/* MAIXCAM解析状态机 */
+/* 内部帧缓存，由USART回调函数写入 */
+typedef struct {
+  uint8_t  obj1;         /* 分类1编码 */
+  uint8_t  obj2;         /* 分类2编码 */
+  uint8_t  fps;          /* 摄像头帧率 */
+  uint8_t  camCnt;       /* 摄像头CNT值 */
+  uint8_t  hasValidData; /* 有效数据标志（obj1 != 0xFF） */
+  uint8_t  hasNewData;   /* 新帧到达标志，Updata读取后清零 */
+} verisonFrameCache_t;
+
+/* MAIXCAM解析状态机枚举 */
 typedef enum {
   VERISON_STATE_WAIT_SOF1 = 0U,
   VERISON_STATE_WAIT_SOF2,
@@ -41,30 +56,26 @@ typedef enum {
   VERISON_STATE_WAIT_TAIL,
 } verisonParseState_e;
 
+/* 帧解析完成后的内部缓存 */
+static verisonFrameCache_t verisonFrameCache;
+/* 摄像头数据帧总接收计数（CRC通过即计） */
+static uint32_t verisonRxTotalCnt = 0U;
+/* STM32本地有效包计数（仅obj1 != 0xFF时累加） */
+static uint32_t verisonLocalPktCnt = 0U;
 /* 当前解析状态 */
 static verisonParseState_e verisonParseState = VERISON_STATE_WAIT_SOF1;
 /* 数据段接收计数 */
 static uint8_t verisonDataIdx = 0U;
-/* 新数据到达标志 */
-uint8_t maixCamHasNewDataFlag = 0U;
-/* 最近一次解析成功的MAIXCAM数据 */
-static maixCamInfo_t maixCamInfoCache;
-/* 当前帧临时控制字段 */
-static uint8_t verisonCtrlTmp = 0U;
 /* 当前帧临时数据段 */
 static uint8_t verisonDataTmp[VERISON_DATA_LEN];
-/* 当前帧临时CRC8 */
+/* 当前帧临时CRC8接收值 */
 static uint8_t verisonCrc8Tmp = 0U;
-/* 当前帧临时包计数 */
+/* 当前帧临时CNT值 */
 static uint8_t verisonCntTmp = 0U;
 /* 当前帧CRC8累计计算值 */
 static uint8_t verisonCrc8Calc = VERISON_CRC8_INIT;
-/* 当前帧CRC8是否通过 */
+/* 当前帧CRC8校验通过标志 */
 static uint8_t verisonCrc8PassFlag = 0U;
-/* CRC计算错误包总计数 */
-static uint32_t verisonCrcErrTotalCnt = 0U;
-/* 接收完整包总计数 */
-static uint32_t verisonRxTotalCnt = 0U;
 
 /* 按多项式0x07逐字节更新CRC8 */
 static uint8_t __DRIVER_VERISON_Crc8Calc(uint8_t crc, uint8_t byte){
@@ -81,37 +92,35 @@ static uint8_t __DRIVER_VERISON_Crc8Calc(uint8_t crc, uint8_t byte){
   return crc;
 }
 
-/* 同步累计统计值到对外结构体 */
-static void __DRIVER_VERISON_SyncTotalCnt(void){
-  maixCamInfoCache.crcErrTotalCnt = verisonCrcErrTotalCnt;
-  maixCamInfoCache.rxTotalCnt = verisonRxTotalCnt;
-  maixCamInfo.crcErrTotalCnt = verisonCrcErrTotalCnt;
-  maixCamInfo.rxTotalCnt = verisonRxTotalCnt;
-}
-
-/* 保存最近一次解析成功的MAIXCAM数据 */
-static void __DRIVER_VERISON_SaveFrame(void){
-  uint8_t i;
-
-  maixCamInfoCache.ctrl = verisonCtrlTmp;
-  maixCamInfoCache.crc8 = verisonCrc8Tmp;
-  maixCamInfoCache.cnt = verisonCntTmp;
-  for(i = 0U; i < VERISON_DATA_LEN; i++){
-    maixCamInfoCache.data[i] = verisonDataTmp[i];
-  }
-  __DRIVER_VERISON_SyncTotalCnt();
-  maixCamInfo = maixCamInfoCache;
-}
-
-/* 重置MAIXCAM解析状态机 */
+/* 重置解析状态机至初始状态 */
 static void __DRIVER_VERISON_ResetParseState(void){
   verisonParseState = VERISON_STATE_WAIT_SOF1;
-  verisonDataIdx = 0U;
-  verisonCtrlTmp = 0U;
-  verisonCrc8Tmp = 0U;
-  verisonCntTmp = 0U;
-  verisonCrc8Calc = VERISON_CRC8_INIT;
+  verisonDataIdx    = 0U;
+  verisonCrc8Tmp    = 0U;
+  verisonCntTmp     = 0U;
+  verisonCrc8Calc   = VERISON_CRC8_INIT;
   verisonCrc8PassFlag = 0U;
+}
+
+/* 将解析完成的帧数据写入内部缓存 */
+static void __DRIVER_VERISON_SaveFrame(void){
+  uint8_t isValid;
+
+  /* 从数据段中提取各字段 */
+  isValid = (verisonDataTmp[0] != VERISON_INVALID_OBJ) ? 1U : 0U;
+
+  verisonFrameCache.obj1         = verisonDataTmp[0];
+  verisonFrameCache.obj2         = verisonDataTmp[1];
+  verisonFrameCache.fps          = verisonDataTmp[2];
+  verisonFrameCache.camCnt       = verisonCntTmp;
+  verisonFrameCache.hasValidData = isValid;
+  verisonFrameCache.hasNewData   = 1U;
+
+  /* CRC通过即累加总接收计数，仅obj1有效时才累加本地包计数 */
+  verisonRxTotalCnt++;
+  if(isValid != 0U){
+    verisonLocalPktCnt++;
+  }
 }
 
 /* USART2自定义字节回调，按固定16字节协议解析MAIXCAM数据 */
@@ -141,7 +150,6 @@ static void __DRIVER_VERISON_UartByteCallback(uint8_t port, uint8_t byte){
 
   case VERISON_STATE_WAIT_CTRL:
     if(byte == VERISON_FRAME_CTRL){
-      verisonCtrlTmp = byte;
       memset(verisonDataTmp, 0, sizeof(verisonDataTmp));
       verisonDataIdx = 0U;
       verisonCrc8Calc = __DRIVER_VERISON_Crc8Calc(verisonCrc8Calc, byte);
@@ -180,13 +188,8 @@ static void __DRIVER_VERISON_UartByteCallback(uint8_t port, uint8_t byte){
 
   case VERISON_STATE_WAIT_TAIL:
     if(byte == VERISON_FRAME_TAIL){
-      verisonRxTotalCnt++;
       if(verisonCrc8PassFlag != 0U){
         __DRIVER_VERISON_SaveFrame();
-        maixCamHasNewDataFlag = 1U;
-      } else {
-        verisonCrcErrTotalCnt++;
-        __DRIVER_VERISON_SyncTotalCnt();
       }
     }
     __DRIVER_VERISON_ResetParseState();
@@ -208,31 +211,28 @@ static void __DRIVER_VERISON_UartByteCallback(uint8_t port, uint8_t byte){
 
 /* 初始化MAIXCAM驱动并注册USART2解析回调 */
 void DRIVER_VERISON_Init(void){
-  DRIVER_VERISON_Reset();
+  memset(&verisonFrameCache, 0, sizeof(verisonFrameCache));
+  memset(&verisonInfo, 0, sizeof(verisonInfo));
+  memset(verisonDataTmp, 0, sizeof(verisonDataTmp));
+  verisonRxTotalCnt  = 0U;
+  verisonLocalPktCnt = 0U;
+  __DRIVER_VERISON_ResetParseState();
   VERISON_DEP_UART_SET_CUSTOM_CB(__DRIVER_VERISON_UartByteCallback);
 }
 
-/* 清空MAIXCAM缓存和解析状态 */
-void DRIVER_VERISON_Reset(void){
-  memset(&maixCamInfoCache, 0, sizeof(maixCamInfoCache));
-  memset(&maixCamInfo, 0, sizeof(maixCamInfo));
-  memset(verisonDataTmp, 0, sizeof(verisonDataTmp));
-  maixCamHasNewDataFlag = 0U;
-  verisonCrcErrTotalCnt = 0U;
-  verisonRxTotalCnt = 0U;
-  __DRIVER_VERISON_ResetParseState();
-}
-
-/* 查询是否存在新的MAIXCAM数据 */
-uint8_t* DRIVER_VERISON_HasNewData(void){
-  return &maixCamHasNewDataFlag;
-}
-
-/* 获取最近一次解析成功的MAIXCAM数据 */
-uint8_t DRIVER_VERISON_GetMaixCamInfo(void){
-  if(maixCamHasNewDataFlag == 0U) return 0U;
-
-  maixCamInfo = maixCamInfoCache;
-  memcpy(versionRealData.raw, maixCamInfo.data, 10);
-  return 1U;
+/* 更新verisonInfo，读取内部缓存中最新帧数据，在userTask中10ms周期调用 */
+void DRIVER_VERISON_Updata(void){
+  if(verisonFrameCache.hasNewData != 0U){
+    verisonInfo.obj1         = verisonFrameCache.obj1;
+    verisonInfo.obj2         = verisonFrameCache.obj2;
+    verisonInfo.fps          = verisonFrameCache.fps;
+    verisonInfo.camCnt       = verisonFrameCache.camCnt;
+    verisonInfo.hasValidData = verisonFrameCache.hasValidData;
+    verisonInfo.hasNewData   = 1U;
+    verisonFrameCache.hasNewData = 0U;
+  } else {
+    verisonInfo.hasNewData = 0U;
+  }
+  verisonInfo.rxTotalCnt  = verisonRxTotalCnt;
+  verisonInfo.localPktCnt = verisonLocalPktCnt;
 }

@@ -32,5 +32,5 @@ f1_sft_1\tim.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 f1_sft_1\tim.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 f1_sft_1\tim.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 f1_sft_1\tim.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
-f1_sft_1\tim.o: .\userLib\stdlib_common.h
+f1_sft_1\tim.o: ./userLib/stdlib_common.h
 f1_sft_1\tim.o: ../Core/Inc/main.h

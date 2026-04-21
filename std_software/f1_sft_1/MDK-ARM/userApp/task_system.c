@@ -41,7 +41,7 @@ void systemTaskUpdata(void *argument){
 			STDLIB_ADC_Sample();
 		}
 		
-	  if(systemTaskInfo.systemTaskCnt % 100 == 0){
+	    if(systemTaskInfo.systemTaskCnt % 100 == 0){
 
 		}
 			

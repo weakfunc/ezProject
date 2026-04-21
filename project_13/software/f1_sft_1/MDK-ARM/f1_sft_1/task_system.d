@@ -22,7 +22,6 @@ f1_sft_1\task_system.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_e
 f1_sft_1\task_system.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h
 f1_sft_1\task_system.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h
 f1_sft_1\task_system.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
-f1_sft_1\task_system.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h
 f1_sft_1\task_system.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
 f1_sft_1\task_system.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h
 f1_sft_1\task_system.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
@@ -52,4 +51,6 @@ f1_sft_1\task_system.o: ./userLib/stdlib_i2c.h
 f1_sft_1\task_system.o: ./userLib/stdlib_dwt.h
 f1_sft_1\task_system.o: ./userDriver/driver_board.h
 f1_sft_1\task_system.o: ./userDriver/driver_ble.h
+f1_sft_1\task_system.o: ./userLib/stdlib_flash.h
 f1_sft_1\task_system.o: ./userFunc/func_appcom.h
+f1_sft_1\task_system.o: ./userLib/stdlib_adc.h

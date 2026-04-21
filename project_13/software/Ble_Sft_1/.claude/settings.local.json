@@ -10,7 +10,8 @@
       "Bash(xargs sed:*)",
       "Bash(sed -i 's/com\\\\.example\\\\.app/com.example.demo_1/g' app/build.gradle.kts settings.gradle.kts)",
       "Bash(sed -i 's/>app<\\\\/string>/>demo_1<\\\\/string>/g' app/src/main/res/values/strings.xml)",
-      "Bash(sed -i 's/Theme\\\\.App/Theme.Demo_1/g' app/src/main/res/values/themes.xml app/src/main/AndroidManifest.xml)"
+      "Bash(sed -i 's/Theme\\\\.App/Theme.Demo_1/g' app/src/main/res/values/themes.xml app/src/main/AndroidManifest.xml)",
+      "Bash(find /c/11_pro_develop/ezProject_2026/std_software/android_sft_1/Ble_Sft_1/app/src/main/java -type f \\\\\\(-name *.kt -o -name *.java \\\\\\))"
     ]
   }
 }

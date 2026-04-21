@@ -43,4 +43,7 @@ void STDLIB_I2C_WriteByte(uint8_t busId, uint8_t devAddr, uint8_t ctrlByte, uint
 /* 发送连续数据帧：START + 地址 + 控制字节 + N 字节数据 + STOP。 */
 void STDLIB_I2C_WriteData(uint8_t busId, uint8_t devAddr, uint8_t ctrlByte, const uint8_t *data, uint16_t len);
 
+/* 读取连续数据帧：START + 写地址 + 寄存器地址 + RESTART + 读地址 + N 字节数据 + STOP。devAddrWrite 为含写位的 8 位地址。 */
+void STDLIB_I2C_ReadData(uint8_t busId, uint8_t devAddrWrite, uint8_t regAddr, uint8_t *data, uint16_t len);
+
 #endif
