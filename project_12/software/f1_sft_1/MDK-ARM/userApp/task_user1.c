@@ -18,8 +18,8 @@ typedef struct {
 } obj1LabelMap_t;
 
 static const obj1LabelMap_t obj1LabelMap[] = {
-  { 0x03U, "AIM_1" },   /* 目的地A */
-  { 0x02U, "AIM_2" },   /* 目的地B */
+  { 0x31U, "AIM_1" },   /* 目的地A */
+  { 0x32U, "AIM_2" },   /* 目的地B */
   /* 在此继续添加映射，格式：{ 编码值, "标签 " } */
 };
 
@@ -30,8 +30,8 @@ static const obj1LabelMap_t obj1LabelMap[] = {
  *============================================================================*/
 
 /* 传送带延迟参数（单位：user1任务循环次数，每次2ms） */
-uint32_t timeA = 1400U;
-uint32_t timeB = 8000U;
+uint32_t timeA = 1200U;
+uint32_t timeB = 200U;
 
 /* 包裹列表 */
 packInfo_t packList[PACK_MAX_NUM];
@@ -86,11 +86,11 @@ static void packRecognize(void){
   }
 
   switch(verisonInfo.obj1){
-  case 0x01U:  /* 目的地A：延迟timeA个循环后触发舵机1 */
+  case 0x31U:  /* 目的地A：延迟timeA个循环后触发舵机1 */
     packList[sysCtrl.packNum].outportTime = sysCtrl.taskCnt + CONVEYOR_DELAY_A;
     packList[sysCtrl.packNum].servoId     = STEER_SERVO_1;
     break;
-  case 0x02U:  /* 目的地B：延迟timeB个循环后触发舵机2 */
+  case 0x32U:  /* 目的地B：延迟timeB个循环后触发舵机2 */
     packList[sysCtrl.packNum].outportTime = sysCtrl.taskCnt + CONVEYOR_DELAY_B;
     packList[sysCtrl.packNum].servoId     = STEER_SERVO_2;
     break;
@@ -138,7 +138,7 @@ static void motorControl(void){
   } else {
     motorSpeed = (int16_t)TB6612_SPEED_MAX;
   }
-  DRIVER_TB6612_MotorSetSpeed(TB6612_MOTOR_A, motorSpeed);
+  DRIVER_TB6612_MotorSetSpeed(TB6612_MOTOR_A, -motorSpeed);
 }
 
 /* 舵机控制：仅在KEY1按下时触发，顺时针拨开后逆时针回位
@@ -146,19 +146,20 @@ static void motorControl(void){
 static void servoControl(void){
   uint8_t i;
 
-  if(!boardInfo.key[BOARD_KEY1].isPressed){
-    return;
-  }
+//  if(!boardInfo.key[BOARD_KEY1].isPressed){
+//    return;
+//  }
 	
 	
   for(i = 0U; i < STEER_SERVO_COUNT; i++){
     if(sysCtrl.servoEnable[i] == 1U){
       if(i == STEER_SERVO_1){
-        DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CCW,  400U);
-        DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CW, 390U);
+				DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CCW,  1500U);
+				DRIVER_STEER_Rotate360(STEER_SERVO_1, STEER_DIR_CW, 1500U);
+
       } else {
-        DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CW, 400U);
-        DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CCW,  380U);
+        DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CCW, 1500U);
+        DRIVER_STEER_Rotate360(STEER_SERVO_2, STEER_DIR_CW,  1500U);
       }
       sysCtrl.servoEnable[i] = 0U;
     }
@@ -228,6 +229,8 @@ void user1TaskUpdata(void *argument){
   for(;;){
     user1TaskInfo.user1TaskCnt++;
     sysCtrl.taskCnt++;
+
+    DRIVER_STEER_Updata();
 
 		if(systemTaskInfo.systemEnable_board ){
 			sysControl();

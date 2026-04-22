@@ -1,0 +1,8 @@
+id: userversionapp
+name: userVersionApp
+version: 1.0.0
+author: '1'
+icon: ''
+desc: userVersionApp
+files:
+  - modelScan.py

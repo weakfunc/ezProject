@@ -5,8 +5,10 @@ device  = "/dev/ttyS0"
 serial0 = uart.UART(device, 115200)
 
 ENABLE_CRC     = False
+USE_YOLO       = False   # True=YOLOv5识别  False=用户自定义识别
 SEND_PERIOD_MS = 10
 COOLDOWN_MS    = 2000
+UDET_SKIP      = 0   # 每 UDET_SKIP+1 帧执行一次扫描，其余帧返回缓存
 
 # ───────────────────────────────────────────
 # 用户配置
@@ -16,6 +18,8 @@ LABEL_MAP = {
     "圆形": ("Circle", 0x03),
     "矩形": ("Rect",   0x02),
 }
+
+
 
 model_path = "model_260857.mud"
 if not os.path.exists(model_path):
@@ -67,12 +71,39 @@ def send_packet(obj1, obj2, fps):
     return pkt, cnt
 
 # ───────────────────────────────────────────
-# 模型加载
+# 模型加载 & 摄像头初始化
 # ───────────────────────────────────────────
-detector = nn.YOLOv5(model=model_path)
-
-cam = camera.Camera(detector.input_width(), detector.input_height(), detector.input_format())
+if USE_YOLO:
+    detector = nn.YOLOv5(model=model_path)
+    cam = camera.Camera(detector.input_width(), detector.input_height(), detector.input_format())
+else:
+    cam = camera.Camera(320, 240)
 dis = display.Display()
+
+# ───────────────────────────────────────────
+# 用户自定义识别函数（USE_YOLO=False 时生效）
+# 返回 (has_target: bool, obj1: int, obj2: int)
+# ───────────────────────────────────────────
+_udet_frame   = 0
+_udet_cache   = (False, 0xFF, 0xFF)
+_udet_corners = []   # 最近一次检测到的QR角点，供主循环画框
+
+def user_detect(img):
+    global _udet_frame, _udet_cache, _udet_corners
+    _udet_frame += 1
+    if _udet_frame % (UDET_SKIP + 1) != 0:
+        return _udet_cache
+    qrcodes = img.find_qrcodes()
+    for q in qrcodes:
+        b             = q.payload().encode('utf-8')
+        obj1          = b[0] if len(b) > 0 else 0xFF
+        obj2          = b[1] if len(b) > 1 else 0xFF
+        _udet_corners = q.corners()
+        _udet_cache   = (True, obj1, obj2)
+        return _udet_cache
+    _udet_corners = []
+    _udet_cache   = (False, 0xFF, 0xFF)
+    return _udet_cache
 
 # ───────────────────────────────────────────
 # 状态机
@@ -98,8 +129,7 @@ null_pkt_count   = 0
 # 主循环
 # ───────────────────────────────────────────
 while not app.need_exit():
-    img  = cam.read()
-    objs = detector.detect(img, conf_th=0.5, iou_th=0.45)
+    img = cam.read()
 
     # ── 帧率统计 ──
     fps_count += 1
@@ -110,17 +140,21 @@ while not app.need_exit():
         fps_window_start = now
         print("[NULL]  count={:d}  FPS={:d}".format(null_pkt_count, fps_value))
 
-    # ── 检测结果：按置信度取前两个有效目标 ──
-    valid_objs = []
-    for obj in objs:
-        label_en, code = get_label_info(detector.labels[obj.class_id])
-        if code != 0xFF:
-            valid_objs.append((obj, label_en, code))
-    valid_objs.sort(key=lambda x: x[0].score, reverse=True)
-
-    detected_obj1 = valid_objs[0][2] if len(valid_objs) > 0 else 0xFF
-    detected_obj2 = valid_objs[1][2] if len(valid_objs) > 1 else 0xFF
-    has_target    = detected_obj1 != 0xFF
+    # ── 目标识别 ──
+    if USE_YOLO:
+        objs = detector.detect(img, conf_th=0.5, iou_th=0.45)
+        valid_objs = []
+        for obj in objs:
+            label_en, code = get_label_info(detector.labels[obj.class_id])
+            if code != 0xFF:
+                valid_objs.append((obj, label_en, code))
+        valid_objs.sort(key=lambda x: x[0].score, reverse=True)
+        detected_obj1 = valid_objs[0][2] if len(valid_objs) > 0 else 0xFF
+        detected_obj2 = valid_objs[1][2] if len(valid_objs) > 1 else 0xFF
+        has_target    = detected_obj1 != 0xFF
+    else:
+        valid_objs = []
+        has_target, detected_obj1, detected_obj2 = user_detect(img)
 
     # ── 状态机 ──
     if state == STATE_IDLE:
@@ -149,11 +183,19 @@ while not app.need_exit():
         null_pkt_count += 1
 
     # ── 画框 ──
-    for obj, label_en, code in valid_objs:
-        img.draw_rect(obj.x, obj.y, obj.w, obj.h, color=image.COLOR_RED)
-        img.draw_string(obj.x, obj.y,
-                        '{} {:.2f}'.format(label_en, obj.score),
-                        color=image.COLOR_RED)
+    if USE_YOLO:
+        for obj, label_en, code in valid_objs:
+            img.draw_rect(obj.x, obj.y, obj.w, obj.h, color=image.COLOR_RED)
+            img.draw_string(obj.x, obj.y,
+                            '{} {:.2f}'.format(label_en, obj.score),
+                            color=image.COLOR_RED)
+    else:
+        if _udet_corners:
+            for i in range(4):
+                img.draw_line(
+                    _udet_corners[i][0],       _udet_corners[i][1],
+                    _udet_corners[(i+1)%4][0], _udet_corners[(i+1)%4][1],
+                    image.COLOR_RED)
 
     # ── 屏幕显示 ──
     obj1_str  = "0x{:02X}".format(detected_obj1) if detected_obj1 != 0xFF else "None"
