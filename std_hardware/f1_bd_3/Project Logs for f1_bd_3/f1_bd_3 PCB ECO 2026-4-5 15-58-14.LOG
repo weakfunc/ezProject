@@ -1,5 +1,0 @@
-Added Pin To Net: NetName=PB13 Pin=JP1-6
-Added Pin To Net: NetName=PB2 Pin=JP1-10
-Added Pin To Net: NetName=PA6 Pin=JP1-14
-Added Pin To Net: NetName=PA2 Pin=JP1-18
-Added Member To Class: ClassName=f1_bd_3 Member=Component JP1 HDR-1X4
