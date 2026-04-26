@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv:*)",
+      "Bash(python -c \":*)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import sys; data=sys.stdin.buffer.read\\(\\); print\\(data.decode\\(''''utf-8'''', errors=''''replace''''\\)\\)\")",
+      "Bash(del:*)",
+      "Bash(python -c ' *)",
+      "Bash(python *)",
+      "Bash(\"C:\\\\Keil_v5\\\\UV4\\\\UV4.exe\" -b f1_sft_1.uvprojx -o build_log.txt)",
+      "Bash(cat build_log.txt)",
+      "Read(//c/Keil_v5/**)",
+      "Bash(find /c -name \"UV4.exe\")",
+      "Bash(\"/c/21_app_develop/Keil5/UV4/UV4.exe\" -b \"C:/11_pro_develop/ezProject_2026/project_6/software/f1_sft_1/MDK-ARM/f1_sft_1.uvprojx\" -o \"C:/11_pro_develop/ezProject_2026/project_6/software/f1_sft_1/MDK-ARM/build_log.txt\" -j0)"
+    ]
+  }
+}

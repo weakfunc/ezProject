@@ -4,22 +4,18 @@
 #include "driver_board.h"
 #include "driver_oled.h"
 #include "driver_ble.h"
-#include "driver_mpu6050.h"
-#include "driver_steer.h"
-user1TaskInfo_t user1TaskInfo;
 
-float yawRef;
-float pitchRef;
+user1TaskInfo_t user1TaskInfo;
 
 void user1TaskInit(){
 	DRIVER_BLE_Init();
 	/* 等待OLED VCC上电稳定（SSD1306要求VCC稳定后≥100ms才可接受I2C命令） */
 	osDelay(100);
 	DRIVER_OLED_Init();
-//	DRIVER_STEER_Rotate180(STEER_SERVO_1, 500); 
-//	DRIVER_STEER_Rotate180(STEER_SERVO_2, 500); 
-	Gimbal_Init();
-	Gimbal_SetTarget(yawRef, pitchRef);
+	/* 初始化云台，使能两轴电机 */
+	FUNC_GIMBAL_Init();
+	/* 等待电机上电稳定及使能应答 */
+	osDelay(200);
 }
 
 void user1TaskUpdata(void *argument){
@@ -29,13 +25,13 @@ void user1TaskUpdata(void *argument){
 
 		if(user1TaskInfo.user1TaskCnt % 5 == 0){
 			/* 10ms TASK */
-			Gimbal_SetTarget(yawRef, pitchRef);
-			Gimbal_Task();
+
 		}
 
 		if(user1TaskInfo.user1TaskCnt % 25 == 0){
 			/* 50ms TASK */
-
+			/* 轮询云台电机反馈（位置、状态），每50ms执行一次 */
+			FUNC_GIMBAL_Update();
 		}
 
 		if(user1TaskInfo.user1TaskCnt % 50 == 0){
@@ -44,17 +40,8 @@ void user1TaskUpdata(void *argument){
 		}
 
 		if(user1TaskInfo.user1TaskCnt % 100 == 0){
-			/* 200ms TASK：刷新OLED，显示期望/反馈的yaw和pitch角度 */
-			DRIVER_OLED_Clear();
-			DRIVER_OLED_ShowString(0,  0, "Y tgt:");
-			DRIVER_OLED_ShowFloat( 36, 0, funcInfo.yawTarget, 1);
-			DRIVER_OLED_ShowString(0,  8, "Y fdb:");
-			DRIVER_OLED_ShowFloat( 36, 8, mpu6050Info.angle.yawDeg, 1);
-			DRIVER_OLED_ShowString(0, 16, "P tgt:");
-			DRIVER_OLED_ShowFloat( 36, 16, funcInfo.pitchTarget, 1);
-			DRIVER_OLED_ShowString(0, 24, "P fdb:");
-			DRIVER_OLED_ShowFloat( 36, 24, mpu6050Info.angle.pitchDeg, 1);
-			DRIVER_OLED_Refresh();
+			/* 200ms TASK */
+
 		}
 
 		if(user1TaskInfo.user1TaskCnt % 500 == 0){
