@@ -49,3 +49,4 @@ f1_sft_1\driver_a7670c.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/lis
 f1_sft_1\driver_a7670c.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 f1_sft_1\driver_a7670c.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h
 f1_sft_1\driver_a7670c.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdio.h
+f1_sft_1\driver_a7670c.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdlib.h

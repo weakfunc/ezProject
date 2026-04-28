@@ -746,6 +746,11 @@
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_a7670c.c</FilePath>
             </File>
+            <File>
+              <FileName>driver_XRVoice.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userDriver\driver_XRVoice.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

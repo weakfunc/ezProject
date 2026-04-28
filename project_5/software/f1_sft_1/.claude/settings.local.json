@@ -6,7 +6,10 @@
       "Bash(pip install:*)",
       "Bash(python -c \"import sys; data=sys.stdin.buffer.read\\(\\); print\\(data.decode\\(''''utf-8'''', errors=''''replace''''\\)\\)\")",
       "Bash(del:*)",
-      "Bash(grep -v \".o$\")"
+      "Bash(grep -v \".o$\")",
+      "Bash(python3 *)",
+      "Bash(python -c \"import openpyxl; print\\('ok'\\)\")",
+      "Bash(python -c ' *)"
     ]
   }
 }
