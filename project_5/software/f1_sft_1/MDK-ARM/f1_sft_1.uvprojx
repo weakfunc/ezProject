@@ -751,6 +751,11 @@
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_XRVoice.c</FilePath>
             </File>
+            <File>
+              <FileName>driver_DS3231RTC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\userDriver\driver_DS3231RTC.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

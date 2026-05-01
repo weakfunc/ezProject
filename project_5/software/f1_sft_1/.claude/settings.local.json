@@ -9,7 +9,11 @@
       "Bash(grep -v \".o$\")",
       "Bash(python3 *)",
       "Bash(python -c \"import openpyxl; print\\('ok'\\)\")",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(grep -v \"\\\\.o$\")",
+      "Bash(grep -v \"\\\\.crf$\")",
+      "Bash(grep -v \"\\\\.d$\")",
+      "Bash(python *)"
     ]
   }
 }

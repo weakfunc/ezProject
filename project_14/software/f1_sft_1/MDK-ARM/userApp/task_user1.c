@@ -24,7 +24,8 @@ void user1TaskUpdata(void *argument){
 		user1TaskInfo.user1TaskCnt++;
 
 		if(user1TaskInfo.user1TaskCnt % 5 == 0){
-			/* 10ms TASK */
+
+
 
 		}
 

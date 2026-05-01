@@ -1,9 +1,12 @@
 /*============================================================================
  * README
- * 步进电机驱动模块（ZDT X42S 第二代闭环步进电机，Emm固件）
+ * 步进电机驱动模块（ZDT X42S 第二代闭环步进电机）
  * 通讯接口：USART2，波特率 115200，TTL 电平
  * 帧格式：[Addr][FuncCode][Data...][0x6B]，校验码固定为 0x6B
  * 本模块管理两轴（俯仰/偏航），地址分别为 0x01 / 0x02
+ * 固件版本通过 driver_stepperMotor.h 中的 STEPPER_FIRMWARE_X 宏切换：
+ *   定义   STEPPER_FIRMWARE_X → X 固件 API
+ *   未定义 STEPPER_FIRMWARE_X → Emm 固件 API
  *============================================================================*/
 
 #include "driver_stepperMotor.h"
@@ -16,8 +19,12 @@
 /* 接收缓冲区大小（功能码后最多 6 字节数据 + 1 字节校验）。 */
 #define STEPPER_RX_BUF_SIZE   8U
 
-/* 发送帧最大长度（位置模式最长 13 字节）。 */
+/* 发送帧最大长度。X固件梯形位置模式最长 16 字节，Emm固件位置模式最长 13 字节。 */
+#if defined(STEPPER_FIRMWARE_X)
+#define STEPPER_TX_BUF_SIZE   20U
+#else
 #define STEPPER_TX_BUF_SIZE   16U
+#endif
 
 /*============================================================================
  * 私有类型定义
@@ -33,7 +40,7 @@ typedef enum {
 /* 接收状态机上下文（两轴共用同一串口，统一解析）。 */
 typedef struct {
   stepperParseState_e state;
-  uint8_t  axisIdx;                      /* 当前正在解析的轴索引 */
+  uint8_t  axisIdx;                      /* 当前正在解析的轴在数组中的下标 */
   uint8_t  funcCode;                     /* 当前功能码 */
   uint8_t  rxBuf[STEPPER_RX_BUF_SIZE];  /* 功能码后的数据缓冲 */
   uint8_t  rxCnt;                        /* 已收到的字节数 */
@@ -44,7 +51,7 @@ typedef struct {
  * 私有变量
  *============================================================================*/
 
-/* 步进电机模块信息（公有，供上层直接访问）。 */
+/* 步进电机反馈数据数组（公有，供上层通过 STEPPER_INFO 宏访问）。 */
 stepperMotorInfo_t stepperMotorInfo[STEPPER_MOTOR_CNT];
 
 /* 接收解析上下文。 */
@@ -117,16 +124,17 @@ static void __STEPPER_ParseResponse(uint8_t axisIdx, uint8_t funcCode,
  * 驱动接收状态机：等待地址→等待功能码→收集数据→解析。
  */
 static void __STEPPER_RxByteCallback(uint8_t port, uint8_t byte) {
+  uint8_t i;
   (void)port;
 
   switch(sParseCtx.state) {
     case STEPPER_PARSE_WAIT_ADDR:
-      if(byte == stepperMotorInfo[STEPPER_AXIS_PITCH].addr) {
-        sParseCtx.axisIdx = STEPPER_AXIS_PITCH;
-        sParseCtx.state   = STEPPER_PARSE_WAIT_FUNC;
-      } else if(byte == stepperMotorInfo[STEPPER_AXIS_YAW].addr) {
-        sParseCtx.axisIdx = STEPPER_AXIS_YAW;
-        sParseCtx.state   = STEPPER_PARSE_WAIT_FUNC;
+      for(i = 0U; i < STEPPER_MOTOR_CNT; i++) {
+        if(byte == stepperMotorInfo[i].addr) {
+          sParseCtx.axisIdx = i;
+          sParseCtx.state   = STEPPER_PARSE_WAIT_FUNC;
+          break;
+        }
       }
       break;
 
@@ -157,7 +165,7 @@ static void __STEPPER_RxByteCallback(uint8_t port, uint8_t byte) {
 }
 
 /*============================================================================
- * API接口
+ * API接口 — 两套固件通用
  *============================================================================*/
 
 /* 初始化步进电机驱动，配置两轴地址并注册 USART2 接收回调。 */
@@ -165,87 +173,51 @@ void DRIVER_STEPPER_Init(void) {
   memset(stepperMotorInfo, 0, sizeof(stepperMotorInfo));
   memset(&sParseCtx, 0, sizeof(sParseCtx));
 
-  stepperMotorInfo[STEPPER_AXIS_PITCH].addr = STEPPER_ADDR_PITCH;
-  stepperMotorInfo[STEPPER_AXIS_YAW].addr   = STEPPER_ADDR_YAW;
+  stepperMotorInfo[0].addr = STEPPER_ADDR_PITCH;
+  stepperMotorInfo[1].addr = STEPPER_ADDR_YAW;
   sParseCtx.state = STEPPER_PARSE_WAIT_ADDR;
 
   STEPPER_DEP_UART_SET_CB(__STEPPER_RxByteCallback);
 }
 
 /* 使能/失能电机（功能码 F3）。 */
-void DRIVER_STEPPER_Enable(uint8_t axis, uint8_t enable, uint8_t sync) {
+void DRIVER_STEPPER_Enable(uint8_t motorId, uint8_t enable) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0xF3U;
   sTxBuf[len++] = 0xABU;
   sTxBuf[len++] = (enable != 0U) ? 0x01U : 0x00U;
-  sTxBuf[len++] = sync;
-  sTxBuf[len++] = STEPPER_CHECKSUM;
-  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
-}
-
-/* 速度模式控制（功能码 F6，Emm固件）。 */
-void DRIVER_STEPPER_SetSpeed(uint8_t axis, uint8_t dir, uint16_t vel,
-                             uint8_t acc, uint8_t sync) {
-  uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
-  sTxBuf[len++] = 0xF6U;
-  sTxBuf[len++] = (dir != 0U) ? 0x01U : 0x00U;
-  sTxBuf[len++] = (uint8_t)(vel >> 8);
-  sTxBuf[len++] = (uint8_t)(vel & 0xFFU);
-  sTxBuf[len++] = acc;
-  sTxBuf[len++] = sync;
-  sTxBuf[len++] = STEPPER_CHECKSUM;
-  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
-}
-
-/* 位置模式控制（功能码 FD，Emm固件）。 */
-void DRIVER_STEPPER_SetPos(uint8_t axis, uint8_t dir, uint16_t vel,
-                           uint8_t acc, uint32_t clk, uint8_t raF,
-                           uint8_t sync) {
-  uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
-  sTxBuf[len++] = 0xFDU;
-  sTxBuf[len++] = (dir != 0U) ? 0x01U : 0x00U;
-  sTxBuf[len++] = (uint8_t)(vel >> 8);
-  sTxBuf[len++] = (uint8_t)(vel & 0xFFU);
-  sTxBuf[len++] = acc;
-  sTxBuf[len++] = (uint8_t)(clk >> 24);
-  sTxBuf[len++] = (uint8_t)(clk >> 16);
-  sTxBuf[len++] = (uint8_t)(clk >>  8);
-  sTxBuf[len++] = (uint8_t)(clk & 0xFFU);
-  sTxBuf[len++] = raF;
-  sTxBuf[len++] = sync;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
 /* 立即停止电机（功能码 FE）。 */
-void DRIVER_STEPPER_Stop(uint8_t axis, uint8_t sync) {
+void DRIVER_STEPPER_Stop(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0xFEU;
   sTxBuf[len++] = 0x98U;
-  sTxBuf[len++] = sync;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
 /* 触发回零（功能码 9A）。 */
-void DRIVER_STEPPER_GoHome(uint8_t axis, uint8_t homeMode, uint8_t sync) {
+void DRIVER_STEPPER_GoHome(uint8_t motorId, uint8_t homeMode) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x9AU;
   sTxBuf[len++] = homeMode;
-  sTxBuf[len++] = sync;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
 /* 将当前位置清零（功能码 0A）。 */
-void DRIVER_STEPPER_ZeroPos(uint8_t axis) {
+void DRIVER_STEPPER_ZeroPos(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x0AU;
   sTxBuf[len++] = 0x6DU;
   sTxBuf[len++] = STEPPER_CHECKSUM;
@@ -253,9 +225,9 @@ void DRIVER_STEPPER_ZeroPos(uint8_t axis) {
 }
 
 /* 解除堵转/过热/过流保护（功能码 0E）。 */
-void DRIVER_STEPPER_ClearError(uint8_t axis) {
+void DRIVER_STEPPER_ClearError(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x0EU;
   sTxBuf[len++] = 0x52U;
   sTxBuf[len++] = STEPPER_CHECKSUM;
@@ -263,55 +235,226 @@ void DRIVER_STEPPER_ClearError(uint8_t axis) {
 }
 
 /* 发送读取实时位置请求（功能码 36）。 */
-void DRIVER_STEPPER_ReadPos(uint8_t axis) {
+void DRIVER_STEPPER_ReadPos(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x36U;
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
 /* 发送读取实时转速请求（功能码 35）。 */
-void DRIVER_STEPPER_ReadSpeed(uint8_t axis) {
+void DRIVER_STEPPER_ReadSpeed(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x35U;
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
 /* 发送读取线性化编码器值请求（功能码 31）。 */
-void DRIVER_STEPPER_ReadEncoder(uint8_t axis) {
+void DRIVER_STEPPER_ReadEncoder(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x31U;
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
 /* 发送读取电机状态标志请求（功能码 3A）。 */
-void DRIVER_STEPPER_ReadStatus(uint8_t axis) {
+void DRIVER_STEPPER_ReadStatus(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x3AU;
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
 /* 发送读取回零状态标志请求（功能码 3B）。 */
-void DRIVER_STEPPER_ReadHomeStatus(uint8_t axis) {
+void DRIVER_STEPPER_ReadHomeStatus(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x3BU;
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
 /* 发送读取位置误差请求（功能码 37）。 */
-void DRIVER_STEPPER_ReadPosError(uint8_t axis) {
+void DRIVER_STEPPER_ReadPosError(uint8_t motorId) {
   uint8_t len = 0U;
-  sTxBuf[len++] = stepperMotorInfo[axis].addr;
+  sTxBuf[len++] = motorId;
   sTxBuf[len++] = 0x37U;
   sTxBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
+
+/* 转动指定圈数（相对当前位置）。 */
+void DRIVER_STEPPER_RotateRevs(uint8_t motorId, uint32_t revs, int16_t speed) {
+  uint8_t  dir      = (speed < 0) ? 0x01U : 0x00U;
+  uint16_t absSpeed = (speed < 0) ? (uint16_t)(-speed) : (uint16_t)speed;
+  uint8_t  len      = 0U;
+
+#if defined(STEPPER_FIRMWARE_X)
+  /* X固件：使用直通限速位置模式（功能码 FB），位置单位 0.1°，speed 单位 0.1RPM。 */
+  uint32_t pos = revs * 3600U;
+  uint16_t spd = (uint16_t)(absSpeed * 10U);  /* RPM → 0.1RPM */
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0xFBU;
+  sTxBuf[len++] = dir;
+  sTxBuf[len++] = (uint8_t)(spd >> 8);
+  sTxBuf[len++] = (uint8_t)(spd & 0xFFU);
+  sTxBuf[len++] = (uint8_t)(pos >> 24);
+  sTxBuf[len++] = (uint8_t)(pos >> 16);
+  sTxBuf[len++] = (uint8_t)(pos >>  8);
+  sTxBuf[len++] = (uint8_t)(pos & 0xFFU);
+  sTxBuf[len++] = STEPPER_MODE_REL_CUR;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
+#else
+  /* Emm固件：使用位置模式（功能码 FD），脉冲数，vel 单位 RPM，acc=50（中等加速）。 */
+  uint32_t clk = revs * STEPPER_PULSE_PER_REV;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0xFDU;
+  sTxBuf[len++] = dir;
+  sTxBuf[len++] = (uint8_t)(absSpeed >> 8);
+  sTxBuf[len++] = (uint8_t)(absSpeed & 0xFFU);
+  sTxBuf[len++] = 50U;  /* acc: 中等加速度 */
+  sTxBuf[len++] = (uint8_t)(clk >> 24);
+  sTxBuf[len++] = (uint8_t)(clk >> 16);
+  sTxBuf[len++] = (uint8_t)(clk >>  8);
+  sTxBuf[len++] = (uint8_t)(clk & 0xFFU);
+  sTxBuf[len++] = STEPPER_MODE_REL_CUR;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
+#endif
+
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+/*============================================================================
+ * API接口 — 固件专有
+ *============================================================================*/
+
+#if defined(STEPPER_FIRMWARE_X)
+
+/* 力矩模式控制（功能码 F5，X固件）。 */
+void DRIVER_STEPPER_SetTorque(uint8_t motorId, uint16_t slope, int16_t current) {
+  uint8_t  dir     = (current < 0) ? 0x01U : 0x00U;
+  uint16_t absCur  = (current < 0) ? (uint16_t)(-current) : (uint16_t)current;
+  uint8_t  len     = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0xF5U;
+  sTxBuf[len++] = dir;
+  sTxBuf[len++] = (uint8_t)(slope >> 8);
+  sTxBuf[len++] = (uint8_t)(slope & 0xFFU);
+  sTxBuf[len++] = (uint8_t)(absCur >> 8);
+  sTxBuf[len++] = (uint8_t)(absCur & 0xFFU);
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+/* 速度模式控制（功能码 F6，X固件）。 */
+void DRIVER_STEPPER_SetSpeed(uint8_t motorId, uint16_t accel, int16_t speed) {
+  uint8_t  dir      = (speed < 0) ? 0x01U : 0x00U;
+  uint16_t absSpeed = (speed < 0) ? (uint16_t)(-speed) : (uint16_t)speed;
+  uint8_t  len      = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0xF6U;
+  sTxBuf[len++] = dir;
+  sTxBuf[len++] = (uint8_t)(accel >> 8);
+  sTxBuf[len++] = (uint8_t)(accel & 0xFFU);
+  sTxBuf[len++] = (uint8_t)(absSpeed >> 8);
+  sTxBuf[len++] = (uint8_t)(absSpeed & 0xFFU);
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+/* 直通限速位置模式控制（功能码 FB，X固件）。 */
+void DRIVER_STEPPER_SetPosDirect(uint8_t motorId, int16_t speed,
+                                 uint32_t pos, uint8_t mode) {
+  uint8_t  dir      = (speed < 0) ? 0x01U : 0x00U;
+  uint16_t absSpeed = (speed < 0) ? (uint16_t)(-speed) : (uint16_t)speed;
+  uint8_t  len      = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0xFBU;
+  sTxBuf[len++] = dir;
+  sTxBuf[len++] = (uint8_t)(absSpeed >> 8);
+  sTxBuf[len++] = (uint8_t)(absSpeed & 0xFFU);
+  sTxBuf[len++] = (uint8_t)(pos >> 24);
+  sTxBuf[len++] = (uint8_t)(pos >> 16);
+  sTxBuf[len++] = (uint8_t)(pos >>  8);
+  sTxBuf[len++] = (uint8_t)(pos & 0xFFU);
+  sTxBuf[len++] = mode;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+/* 梯形曲线加减速位置模式控制（功能码 FD，X固件）。 */
+void DRIVER_STEPPER_SetPosTrapezoid(uint8_t motorId, uint16_t accAccel,
+                                    uint16_t decAccel, int16_t maxSpeed,
+                                    uint32_t pos, uint8_t mode) {
+  uint8_t  dir      = (maxSpeed < 0) ? 0x01U : 0x00U;
+  uint16_t absSpeed = (maxSpeed < 0) ? (uint16_t)(-maxSpeed) : (uint16_t)maxSpeed;
+  uint8_t  len      = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0xFDU;
+  sTxBuf[len++] = dir;
+  sTxBuf[len++] = (uint8_t)(accAccel >> 8);
+  sTxBuf[len++] = (uint8_t)(accAccel & 0xFFU);
+  sTxBuf[len++] = (uint8_t)(decAccel >> 8);
+  sTxBuf[len++] = (uint8_t)(decAccel & 0xFFU);
+  sTxBuf[len++] = (uint8_t)(absSpeed >> 8);
+  sTxBuf[len++] = (uint8_t)(absSpeed & 0xFFU);
+  sTxBuf[len++] = (uint8_t)(pos >> 24);
+  sTxBuf[len++] = (uint8_t)(pos >> 16);
+  sTxBuf[len++] = (uint8_t)(pos >>  8);
+  sTxBuf[len++] = (uint8_t)(pos & 0xFFU);
+  sTxBuf[len++] = mode;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+#else  /* STEPPER_FIRMWARE_EMM */
+
+/* 速度模式控制（功能码 F6，Emm固件）。 */
+void DRIVER_STEPPER_SetSpeed(uint8_t motorId, int16_t vel, uint8_t acc) {
+  uint8_t  dir     = (vel < 0) ? 0x01U : 0x00U;
+  uint16_t absVel  = (vel < 0) ? (uint16_t)(-vel) : (uint16_t)vel;
+  uint8_t  len     = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0xF6U;
+  sTxBuf[len++] = dir;
+  sTxBuf[len++] = (uint8_t)(absVel >> 8);
+  sTxBuf[len++] = (uint8_t)(absVel & 0xFFU);
+  sTxBuf[len++] = acc;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+/* 位置模式控制（功能码 FD，Emm固件）。 */
+void DRIVER_STEPPER_SetPos(uint8_t motorId, int16_t vel, uint8_t acc,
+                           uint32_t clk, uint8_t raF) {
+  uint8_t  dir    = (vel < 0) ? 0x01U : 0x00U;
+  uint16_t absVel = (vel < 0) ? (uint16_t)(-vel) : (uint16_t)vel;
+  uint8_t  len    = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0xFDU;
+  sTxBuf[len++] = dir;
+  sTxBuf[len++] = (uint8_t)(absVel >> 8);
+  sTxBuf[len++] = (uint8_t)(absVel & 0xFFU);
+  sTxBuf[len++] = acc;
+  sTxBuf[len++] = (uint8_t)(clk >> 24);
+  sTxBuf[len++] = (uint8_t)(clk >> 16);
+  sTxBuf[len++] = (uint8_t)(clk >>  8);
+  sTxBuf[len++] = (uint8_t)(clk & 0xFFU);
+  sTxBuf[len++] = raF;
+  sTxBuf[len++] = 0x00U;  /* sync: 立即执行 */
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+#endif  /* STEPPER_FIRMWARE_X */

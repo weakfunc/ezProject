@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv:*)",
+      "Bash(python -c \":*)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import sys; data=sys.stdin.buffer.read\\(\\); print\\(data.decode\\(''''utf-8'''', errors=''''replace''''\\)\\)\")",
+      "Bash(del:*)",
+      "Bash(Get-ChildItem -Path \"C:\\\\11_pro_develop\\\\ezProject_2026\\\\project_6\\\\software\\\\f1_sft_1_QR\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "PowerShell(head *)"
+    ]
+  }
+}

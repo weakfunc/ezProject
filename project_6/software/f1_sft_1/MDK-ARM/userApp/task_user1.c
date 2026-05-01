@@ -16,13 +16,12 @@ void user1TaskInit(){
 	
     DRIVER_STEPPER_Init();
     osDelay(50);
-    DRIVER_STEPPER_Enable(0, 1U, STEPPER_SYNC_NOW);
+    DRIVER_STEPPER_Enable(STEPPER_ADDR_PITCH, 1U);
     osDelay(100);
     /* 将上电位置设为坐标零点，再运动到绝对位置 90°（800脉冲，3200脉冲=1圈）*/
-    DRIVER_STEPPER_ZeroPos(0);
+    DRIVER_STEPPER_ZeroPos(STEPPER_ADDR_PITCH);
     osDelay(50);
-    DRIVER_STEPPER_SetPos(0, STEPPER_DIR_CW, 200U, 50U, 800U,
-                          STEPPER_MODE_ABS, STEPPER_SYNC_NOW);
+    DRIVER_STEPPER_SetPos(STEPPER_ADDR_PITCH, 3000, 255, 800U, STEPPER_MODE_ABS);
 }
 
 void user1TaskUpdata(void *argument){
@@ -37,8 +36,8 @@ void user1TaskUpdata(void *argument){
 
 		if(user1TaskInfo.user1TaskCnt % 25 == 0){
 			/* 50ms TASK */
-			DRIVER_STEPPER_ReadPos(0);
-			DRIVER_STEPPER_ReadStatus(0);
+			DRIVER_STEPPER_ReadPos(STEPPER_ADDR_PITCH);
+			DRIVER_STEPPER_ReadStatus(STEPPER_ADDR_PITCH);
 		}
 
 		if(user1TaskInfo.user1TaskCnt % 50 == 0){
