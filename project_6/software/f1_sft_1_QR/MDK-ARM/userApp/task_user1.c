@@ -262,6 +262,27 @@ static const char* __getStateLabel(sortState_e state) {
   }
 }
 
+/* 将分拣状态编码为uint8便于上位机解析（0~4：状态机，5：超温，6：过流）。 */
+static uint8_t __getStateCode(void) {
+  if(sProtectState == SORT_PROTECT_OVERTEMP)    return 5U;
+  if(sProtectState == SORT_PROTECT_OVERCURRENT) return 6U;
+  return (uint8_t)sSortState;
+}
+
+/* 将OLED显示变量填入remoteInfo发送缓冲区，随systemTask的FUNC_APPCOM_UPDATA定时发出。 */
+static void __appcomTxFill(void) {
+  /* CMD 0x09 (TX[0~3])：丝杆位置、QR计数、状态编码、最近QR原始值 */
+  remoteInfo.remoteVar_TX[4].var_float  = leadScrewInfo.currentPos_cm;
+  remoteInfo.remoteVar_TX[5].var_uint32 = qrInfo.rxTotalCnt;
+  remoteInfo.remoteVar_TX[6].var_uint32 = __getStateCode();
+  remoteInfo.remoteVar_TX[7].var_uint32 = lastValidObj1;
+  /* CMD 0x0A (TX[4~7])：系统计时、保留、系统使能、保留 */
+  remoteInfo.remoteVar_TX[8].var_uint32 = systemTaskInfo.systemTaskCnt;
+  remoteInfo.remoteVar_TX[9].var_uint32 = 0U;
+  remoteInfo.remoteVar_TX[10].var_uint32 = systemTaskInfo.systemEnable_board;
+  remoteInfo.remoteVar_TX[11].var_uint32 = 0U;
+}
+
 /* OLED显示刷新：先将上一帧推送到屏幕，再更新显存。 */
 static void oledControl(void) {
   DRIVER_OLED_Refresh();
@@ -356,6 +377,7 @@ void user1TaskUpdata(void *argument) {
 
     if(user1TaskInfo.user1TaskCnt % 50U == 0U) {
       oledControl();
+      __appcomTxFill();
     }
 
     osDelay(2);

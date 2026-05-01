@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv \"app/src/main/java/com/example/demo_1\" \"app/src/main/java/com/example/app\")",
+      "Bash(mv \"app/src/test/java/com/example/demo_1\" \"app/src/test/java/com/example/app\")",
+      "Bash(mv \"app/src/androidTest/java/com/example/demo_1\" \"app/src/androidTest/java/com/example/app\")",
+      "Bash(mv \"app/src/main/java/com/example/app\" \"app/src/main/java/com/example/demo_1\")",
+      "Bash(mv \"app/src/test/java/com/example/app\" \"app/src/test/java/com/example/demo_1\")",
+      "Bash(mv \"app/src/androidTest/java/com/example/app\" \"app/src/androidTest/java/com/example/demo_1\")",
+      "Bash(xargs sed:*)",
+      "Bash(sed -i 's/com\\\\.example\\\\.app/com.example.demo_1/g' app/build.gradle.kts settings.gradle.kts)",
+      "Bash(sed -i 's/>app<\\\\/string>/>demo_1<\\\\/string>/g' app/src/main/res/values/strings.xml)",
+      "Bash(sed -i 's/Theme\\\\.App/Theme.Demo_1/g' app/src/main/res/values/themes.xml app/src/main/AndroidManifest.xml)",
+      "Bash(find /c/11_pro_develop/ezProject_2026/std_software/android_sft_1/Ble_Sft_1/app/src/main/java -type f \\\\\\(-name *.kt -o -name *.java \\\\\\))",
+      "Bash(Get-ChildItem -Path \"C:\\\\11_pro_develop\\\\ezProject_2026\\\\project_6\\\\software\\\\Ble_Sft_1\" -Recurse -Depth 2)",
+      "Bash(Select-Object -Property FullName, PSIsContainer)",
+      "Bash(Format-List)"
+    ]
+  }
+}

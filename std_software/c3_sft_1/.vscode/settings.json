@@ -5,7 +5,7 @@
   "idf.openOcdConfigs": [
     "board/esp32c3-builtin.cfg"
   ],
-  "idf.portWin": "COM14",
+  "idf.portWin": "COM16",
   "idf.toolsPathWin": "C:\\21_app_develop\\esp-idf-tools",
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32c3"
@@ -14,7 +14,7 @@
   "clangd.arguments": [
     "--background-index",
     "--query-driver=**",
-    "--compile-commands-dir=c:\\11_pro_develop\\ezProject_2026\\std_software\\C3_Sft_1\\build"
+    "--compile-commands-dir=c:\\11_pro_develop\\ezProject_2026\\std_software\\c3_sft_1\\build"
   ],
   "idf.flashType": "UART"
 }
