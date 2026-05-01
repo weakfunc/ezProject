@@ -4,6 +4,16 @@
  * 通讯接口：USART2，波特率 115200，TTL 电平
  * 必须调用：
  * DRIVER_STEPPER_Update(); 电机状态更新，2msTask（前4步查询，后2步执行弱钩子）
+ * 该函数实际控制周期为10ms
+ *
+ * 对步进电机的闭环控制必须通过以下弱函数实现，要不会有时序错误。
+ * __weak void DRIVER_STEPPER_Axis0CtrlHook(void) {
+      //0x01 电机控制函数
+  }
+  __weak void DRIVER_STEPPER_Axis1CtrlHook(void) {
+     //0x02 电机控制函数
+  }
+
  * DRIVER_STEPPER_Init(); 电机初始化
  *============================================================================*/
 
@@ -23,6 +33,10 @@
 #else
 #define STEPPER_TX_BUF_SIZE   16U
 #endif
+
+/* DRIVER_STEPPER_Update() 每 2ms 调用一次，50 次分频为 100ms。 */
+#define STEPPER_STATUS_UPDATE_DIV    50U
+#define STEPPER_STATUS_UPDATE_STEPS  3U
 
 /*============================================================================
  * 私有类型定义
@@ -59,6 +73,9 @@ static stepperParseCtx_t sParseCtx;
 static uint8_t sTxBuf[STEPPER_TX_BUF_SIZE];
 
 static uint8_t sUpdateStep;
+static uint8_t sStatusUpdateCnt;
+static uint8_t sStatusUpdateStep;
+static uint8_t sStatusAxisIdx;
 
 /*============================================================================
  * 私有函数
@@ -71,8 +88,8 @@ static uint8_t __STEPPER_GetExpectedDataLen(uint8_t funcCode) {
     case 0x36U: case 0x37U: return 6U;
     /* 实时转速：符号(1)+2字节值+0x6B = 4 */
     case 0x35U:             return 4U;
-    /* 线性化编码器 / 回零+电机标志：2字节值+0x6B = 3 */
-    case 0x31U: case 0x3CU: return 3U;
+    /* 线性化编码器 / 总线电流 / 相电流 / 驱动温度 / 回零+电机标志：2字节值+0x6B = 3 */
+    case 0x31U: case 0x26U: case 0x27U: case 0x39U: case 0x3CU: return 3U;
     /* 其余命令（ACK类 / 单字节标志）：1字节+0x6B = 2 */
     default:                return 2U;
   }
@@ -85,12 +102,30 @@ static void __STEPPER_ParseResponse(uint8_t axisIdx, uint8_t funcCode,
                                     const uint8_t *data) {
   stepperMotorInfo_t *info = &stepperMotorInfo[axisIdx];
   uint32_t rawVal;
+  float realPosRevs;
+  float realPosAngle_deg;
 
   switch(funcCode) {
-    case 0x36U:  /* 读取实时位置：data[0]=符号, data[1..4]=角度(0.1°) */
+    case 0x36U:  /* 读取实时位置：data[0]=符号, data[1..4]=原始实时位置 */
       rawVal = ((uint32_t)data[1] << 24) | ((uint32_t)data[2] << 16) |
                ((uint32_t)data[3] <<  8) |  (uint32_t)data[4];
-      info->realPos_01deg = (data[0] == 0x00U) ? (int32_t)rawVal : -(int32_t)rawVal;
+#if defined(STEPPER_FIRMWARE_X)
+      /* X固件：原始值 / 10 = 累计角度，3600 个原始计数表示一圈。 */
+      realPosRevs      = (float)rawVal / 3600.0f;
+      realPosAngle_deg = (float)(rawVal % 3600U) / 10.0f;
+#else
+      /* Emm固件：65536 个原始计数表示一圈。 */
+      realPosRevs      = (float)rawVal / 65536.0f;
+      realPosAngle_deg = ((float)(rawVal % 65536U) * 360.0f) / 65536.0f;
+#endif
+      if(data[0] == 0x00U) {
+        info->realPosRevs = realPosRevs;
+        info->realPosAngle_deg = realPosAngle_deg;
+      } else {
+        info->realPosRevs = -realPosRevs;
+        info->realPosAngle_deg = (realPosAngle_deg == 0.0f) ?
+                                  0.0f : (360.0f - realPosAngle_deg);
+      }
       break;
     case 0x35U:  /* 读取实时转速：data[0]=符号, data[1..2]=转速(0.1RPM) */
       rawVal = ((uint32_t)data[1] << 8) | (uint32_t)data[2];
@@ -103,6 +138,16 @@ static void __STEPPER_ParseResponse(uint8_t axisIdx, uint8_t funcCode,
       rawVal = ((uint32_t)data[1] << 24) | ((uint32_t)data[2] << 16) |
                ((uint32_t)data[3] <<  8) |  (uint32_t)data[4];
       info->posErr_001deg = (data[0] == 0x00U) ? (int32_t)rawVal : -(int32_t)rawVal;
+      break;
+    case 0x26U:  /* 读取总线电流：data[0..1]=CBus */
+      info->busCurrent = (uint16_t)(((uint16_t)data[0] << 8) | (uint16_t)data[1]);
+      break;
+    case 0x27U:  /* 读取相电流：data[0..1]=相电流(mA) */
+      rawVal = ((uint32_t)data[0] << 8) | (uint32_t)data[1];
+      info->phaseCurrent_A = (float)rawVal / 1000.0f;
+      break;
+    case 0x39U:  /* 读取驱动温度：data[0]=符号, data[1]=温度 */
+      info->driverTemp = (data[0] == 0x00U) ? (int16_t)data[1] : -(int16_t)data[1];
       break;
     case 0x3AU:  /* 读取电机状态标志：data[0]=标志字节 */
       info->motorStatus = data[0];
@@ -185,6 +230,9 @@ void DRIVER_STEPPER_Init(void) {
   memset(stepperMotorInfo, 0, sizeof(stepperMotorInfo));
   memset(&sParseCtx, 0, sizeof(sParseCtx));
   sUpdateStep = 0U;
+  sStatusUpdateCnt  = 0U;
+  sStatusUpdateStep = 0U;
+  sStatusAxisIdx    = 0U;
 
   stepperMotorInfo[0].addr = STEPPER_ADDR_PITCH;
   stepperMotorInfo[1].addr = STEPPER_ADDR_YAW;
@@ -309,11 +357,69 @@ void DRIVER_STEPPER_ReadPosError(uint8_t motorId) {
   STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
 }
 
+/* 发送读取总线电流请求（功能码 26）。 */
+void DRIVER_STEPPER_ReadBusCurrent(uint8_t motorId) {
+  uint8_t len = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0x26U;
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+/* 发送读取相电流请求（功能码 27）。 */
+void DRIVER_STEPPER_ReadPhaseCurrent(uint8_t motorId) {
+  uint8_t len = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0x27U;
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
+/* 发送读取驱动温度请求（功能码 39）。 */
+void DRIVER_STEPPER_ReadDriverTemp(uint8_t motorId) {
+  uint8_t len = 0U;
+  sTxBuf[len++] = motorId;
+  sTxBuf[len++] = 0x39U;
+  sTxBuf[len++] = STEPPER_CHECKSUM;
+  STEPPER_DEP_UART_SEND_RAW(sTxBuf, len);
+}
+
 /* 参数查询/控制发送状态机（2ms 任务周期调用）。
  * 0: 轴0转速  1: 轴0位置  2: 轴1转速  3: 轴1位置
  * 4: 轴0控制弱钩子  5: 轴1控制弱钩子
  */
 void DRIVER_STEPPER_Update(void) {
+  sStatusUpdateCnt++;
+  if(sStatusUpdateCnt >= STEPPER_STATUS_UPDATE_DIV) {
+    sStatusUpdateCnt = 0U;
+
+    switch(sStatusUpdateStep) {
+      case 0U:
+        DRIVER_STEPPER_ReadBusCurrent(stepperMotorInfo[sStatusAxisIdx].addr);
+        break;
+      case 1U:
+        DRIVER_STEPPER_ReadPhaseCurrent(stepperMotorInfo[sStatusAxisIdx].addr);
+        break;
+      case 2U:
+        DRIVER_STEPPER_ReadDriverTemp(stepperMotorInfo[sStatusAxisIdx].addr);
+        sStatusAxisIdx++;
+        if(sStatusAxisIdx >= STEPPER_MOTOR_CNT) {
+          sStatusAxisIdx = 0U;
+        }
+        break;
+      default:
+        sStatusUpdateStep = 0U;
+        DRIVER_STEPPER_ReadBusCurrent(stepperMotorInfo[sStatusAxisIdx].addr);
+        break;
+    }
+
+    sStatusUpdateStep++;
+    if(sStatusUpdateStep >= STEPPER_STATUS_UPDATE_STEPS) {
+      sStatusUpdateStep = 0U;
+    }
+    return;
+  }
+
   switch(sUpdateStep) {
     case 0U:
       DRIVER_STEPPER_ReadSpeed(stepperMotorInfo[0].addr);
@@ -328,9 +434,11 @@ void DRIVER_STEPPER_Update(void) {
       DRIVER_STEPPER_ReadPos(stepperMotorInfo[1].addr);
       break;
     case 4U:
+      //0x01 电机控制函数
       __STEPPER_RunCtrlHook(DRIVER_STEPPER_Axis0CtrlHook);
       break;
     case 5U:
+      //0x02 电机控制函数
       __STEPPER_RunCtrlHook(DRIVER_STEPPER_Axis1CtrlHook);
       break;
     default:

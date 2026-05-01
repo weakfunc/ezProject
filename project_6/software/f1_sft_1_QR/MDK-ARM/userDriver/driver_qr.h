@@ -9,7 +9,7 @@
  * 依赖：stdlib_usart
  *============================================================================*/
 /* 二维码模块使用的串口端口 */
-#define QR_DEP_UART_PORT               UART_PORT2
+#define QR_DEP_UART_PORT               UART_PORT3
 /* 注册USART2字节回调 */
 #define QR_DEP_UART_SET_CUSTOM_CB(cb)  STDLIB_USART_SetCustomCb(QR_DEP_UART_PORT, (cb))
 

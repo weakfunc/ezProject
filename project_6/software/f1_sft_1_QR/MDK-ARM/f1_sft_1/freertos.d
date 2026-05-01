@@ -51,4 +51,3 @@ f1_sft_1\freertos.o: ./userLib/stdlib_tim.h
 f1_sft_1\freertos.o: ./userLib/stdlib_i2c.h
 f1_sft_1\freertos.o: ./userLib/stdlib_dwt.h
 f1_sft_1\freertos.o: ./userApp/task_user1.h
-f1_sft_1\freertos.o: ./userDriver/driver_steer.h

@@ -635,11 +635,6 @@
               <FilePath>.\userDriver\driver_steer.c</FilePath>
             </File>
             <File>
-              <FileName>driver_tb6612.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_tb6612.c</FilePath>
-            </File>
-            <File>
               <FileName>driver_stepperMotor.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_stepperMotor.c</FilePath>

@@ -76,10 +76,14 @@
 /* 单轴步进电机反馈数据结构体。 */
 typedef struct {
   uint8_t  addr;           /* 电机串口地址 */
-  int32_t  realPos_01deg;  /* 实时位置，单位 0.1°，已含符号 */
+  float    realPosRevs;    /* 实时位置已转圈数，单位 圈，已含符号 */
+  float    realPosAngle_deg; /* 实时位置单圈角度，单位 °，范围 0-360 */
   int16_t  realSpd_01rpm;  /* 实时转速，单位 0.1RPM，已含符号 */
   uint16_t encoder;        /* 线性化编码器值，0-65535 对应 0-360° */
   int32_t  posErr_001deg;  /* 位置误差，单位 0.01°，已含符号 */
+  uint16_t busCurrent;      /* 总线电流返回值 CBus */
+  float    phaseCurrent_A;  /* 相电流，单位 A */
+  int16_t  driverTemp;      /* 驱动温度，已含符号 */
   uint8_t  motorStatus;    /* 电机状态标志（参考 STEPPER_STATUS_* 宏）*/
   uint8_t  homeStatus;     /* 回零状态标志（参考 STEPPER_HOME_* 宏）*/
   uint8_t  lastAck;        /* 最近一次收到的应答码 */
@@ -126,7 +130,7 @@ void DRIVER_STEPPER_ZeroPos(uint8_t motorId);
  */
 void DRIVER_STEPPER_ClearError(uint8_t motorId);
 
-/* 发送读取实时位置请求（功能码 36），响应存入 STEPPER_INFO(motorId).realPos_01deg。
+/* 发送读取实时位置请求（功能码 36），响应存入 STEPPER_INFO(motorId).realPosRevs / realPosAngle_deg。
  * motorId: 电机地址
  */
 void DRIVER_STEPPER_ReadPos(uint8_t motorId);
@@ -156,6 +160,21 @@ void DRIVER_STEPPER_ReadHomeStatus(uint8_t motorId);
  */
 void DRIVER_STEPPER_ReadPosError(uint8_t motorId);
 
+/* 发送读取总线电流请求（功能码 26），响应存入 STEPPER_INFO(motorId).busCurrent。
+ * motorId: 电机地址
+ */
+void DRIVER_STEPPER_ReadBusCurrent(uint8_t motorId);
+
+/* 发送读取相电流请求（功能码 27），响应 mA 转换为 A 后存入 STEPPER_INFO(motorId).phaseCurrent_A。
+ * motorId: 电机地址
+ */
+void DRIVER_STEPPER_ReadPhaseCurrent(uint8_t motorId);
+
+/* 发送读取驱动温度请求（功能码 39），响应存入 STEPPER_INFO(motorId).driverTemp。
+ * motorId: 电机地址
+ */
+void DRIVER_STEPPER_ReadDriverTemp(uint8_t motorId);
+
 /* 参数查询/控制发送状态机（2ms 任务周期调用）：
  * 0=轴0转速，1=轴0位置，2=轴1转速，3=轴1位置，4=轴0控制钩子，5=轴1控制钩子。
  */
@@ -170,14 +189,14 @@ void DRIVER_STEPPER_Axis1CtrlHook(void);
  *============================================================================*/
 
 /* 转动指定圈数（两套固件通用）。
- * motorId: 电机地址
- * revs   : 转动圈数（正整数，圈数方向由 speed 符号决定）
- * vel  : 转动速度（RPM），正值=顺时针，负值=逆时针
+ * motorId: 电机地址）
+ * vel    : 转动速度（RPM），正值=顺时针，负值=逆时针
  *          Emm固件：有效范围 -3000~+3000 RPM
  *          X  固件：有效范围 -3000~+3000 RPM（内部换算为 0.1RPM 单位）
  * acc    : 加速度档位
  *          Emm固件：0-255；0=直接以目标速度启动，档位越大加速越快
  *          X  固件：加减速度（RPM/S），范围 0-255（内部换算为 uint16_t）
+ * revs   : 转动圈数（正整数，圈数方向由 speed 符号决定
  */
 void DRIVER_STEPPER_RotateRevs(uint8_t motorId, int16_t vel, uint8_t acc, uint32_t revs) ;
 

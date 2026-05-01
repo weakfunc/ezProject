@@ -50,8 +50,7 @@ f1_sft_1\func_appcom.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_w
 f1_sft_1\func_appcom.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h
 f1_sft_1\func_appcom.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 f1_sft_1\func_appcom.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
-f1_sft_1\func_appcom.o: ./userDriver/driver_steer.h
-f1_sft_1\func_appcom.o: ./userLib/stdlib_tim.h
 f1_sft_1\func_appcom.o: ./userApp/task_system.h
+f1_sft_1\func_appcom.o: ./userLib/stdlib_tim.h
 f1_sft_1\func_appcom.o: ./userLib/stdlib_i2c.h
 f1_sft_1\func_appcom.o: ./userLib/stdlib_dwt.h

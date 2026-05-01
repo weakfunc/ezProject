@@ -58,13 +58,13 @@ void systemTaskUpdata(void *argument){
 		if(boardInfo.key[1].pressCount != boardInfo.key[1].lastPressCount){
 			boardInfo.key[1].lastPressCount = boardInfo.key[1].pressCount;
 
-			DRIVER_STEPPER_RotateRevs(STEPPER_ADDR_PITCH, 5, -3000, 250);
+//			DRIVER_STEPPER_RotateRevs(0x01, 3000, 255, 5);
 		}
 
 		if(boardInfo.key[2].pressCount != boardInfo.key[2].lastPressCount){
 			boardInfo.key[2].lastPressCount = boardInfo.key[2].pressCount;
-			
-			DRIVER_STEPPER_RotateRevs(STEPPER_ADDR_PITCH, 5, 3000, 250);
+
+//			DRIVER_STEPPER_RotateRevs(0x01, 3000, 255, 5);
 		}
 		
 		if(boardInfo.key[1].pressCount % 2 == 1){
