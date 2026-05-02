@@ -29,6 +29,7 @@
 #define BOARD_RGB_R                          (1U)
 #define BOARD_KEY_COUNT                      (3U)
 #define BOARD_RGB_COLOR_COUNT                (2U)
+#define BOARD_KEY_SHORT_PRESS_DEBOUNCE_MS    (50U)
 #define BOARD_KEY_LONG_PRESS_DEFAULT_MS      (1000U)
 
 /* 按键信息管理结构体 */
@@ -36,6 +37,7 @@ typedef struct {
     uint8_t  isPressed;      /* 当前是否按下 */
     uint8_t  isLongPressed;  /* 当前是否处于长按状态 */
     uint32_t pressCount;     /* 累计按下次数 */
+    uint32_t lastPressCount;     /* 累计按下次数 */
     uint32_t longPressCount; /* 累计长按次数 */
 } boardKeyInfo_t;
 

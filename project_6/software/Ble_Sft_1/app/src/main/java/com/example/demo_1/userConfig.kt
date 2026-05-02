@@ -11,9 +11,9 @@ data class KnownBleServiceUuidConfig(
 
 object UserConfig {
     // Developer mode macro: can only be changed in code.
-    const val DEVELOPER_MODE = true
+    const val DEVELOPER_MODE = false
 
-    var project_name by mutableStateOf("QR码自动分拣系统")
+    var project_name by mutableStateOf("智能物流分拣系统")
     var author_name by mutableStateOf("刘泽霖")
     var ble_scan_page_title by mutableStateOf("BLE 搜索")
     var settings_page_title by mutableStateOf("设置")

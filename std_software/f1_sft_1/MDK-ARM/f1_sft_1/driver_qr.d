@@ -1,5 +1,5 @@
 f1_sft_1\driver_qr.o: userDriver\driver_QR.c
-f1_sft_1\driver_qr.o: userDriver\driver_QR.h
+f1_sft_1\driver_qr.o: userDriver\driver_qr.h
 f1_sft_1\driver_qr.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdint.h
 f1_sft_1\driver_qr.o: ./userLib/stdlib_usart.h
 f1_sft_1\driver_qr.o: ../Core/Inc/main.h

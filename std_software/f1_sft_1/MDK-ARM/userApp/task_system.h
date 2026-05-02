@@ -20,6 +20,8 @@ typedef struct systemTaskInfo{
 	
 }systemTaskInfo_t;
 
+extern systemTaskInfo_t systemTaskInfo;
+
 extern void systemTaskInit(void);
 extern void systemTaskUpdata(void *argument);
 

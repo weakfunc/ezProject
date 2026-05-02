@@ -11,9 +11,10 @@
 
 /* 按键私有追踪状态 */
 typedef struct {
-    uint8_t  lastPressed;      /* 上次是否处于按下状态 */
-    uint32_t pressStartTickMs; /* 按下起始时刻 */
-    uint8_t  longPressCounted; /* 本次按下是否已触发长按计数（KeyInfoUpdate专用） */
+    uint8_t  lastPressed;       /* 上次是否处于按下状态 */
+    uint32_t pressStartTickMs;  /* 按下起始时刻 */
+    uint8_t  debounceConfirmed; /* 短按消抖是否已确认（持续按下≥BOARD_KEY_SHORT_PRESS_DEBOUNCE_MS） */
+    uint8_t  longPressCounted;  /* 本次按下是否已触发长按计数（KeyInfoUpdate专用） */
 } boardKeyState_t;
 
 /* 按键私有状态缓存 */
@@ -123,6 +124,8 @@ void DRIVER_BOARD_KeyInit(void){
         boardKeyState[i].pressStartTickMs = nowTickMs;
         boardKeyState[i].longPressCounted = 0U;
 
+        boardKeyState[i].debounceConfirmed = 0U;
+
         boardInfo.key[i].isPressed      = 0U;
         boardInfo.key[i].isLongPressed  = 0U;
         boardInfo.key[i].pressCount     = 0U;
@@ -141,16 +144,24 @@ void DRIVER_BOARD_KeyInfoUpdate(void){
         if(isPressed != 0U){
             boardInfo.key[i].isPressed = 1U;
 
-            /* 检测按下上升沿，累计按下次数 */
+            /* 检测按下上升沿，开始消抖计时 */
             if(boardKeyState[i].lastPressed == 0U){
-                boardKeyState[i].lastPressed      = 1U;
-                boardKeyState[i].pressStartTickMs = nowTickMs;
-                boardKeyState[i].longPressCounted = 0U;
+                boardKeyState[i].lastPressed       = 1U;
+                boardKeyState[i].pressStartTickMs  = nowTickMs;
+                boardKeyState[i].debounceConfirmed = 0U;
+                boardKeyState[i].longPressCounted  = 0U;
+            }
+
+            /* 短按消抖：持续按下≥BOARD_KEY_SHORT_PRESS_DEBOUNCE_MS后确认一次短按 */
+            if((boardKeyState[i].debounceConfirmed == 0U) &&
+               (__DRIVER_BOARD_ElapsedMs(nowTickMs, boardKeyState[i].pressStartTickMs) >= BOARD_KEY_SHORT_PRESS_DEBOUNCE_MS)){
+                boardKeyState[i].debounceConfirmed = 1U;
                 boardInfo.key[i].pressCount++;
             }
 
-            /* 达到长按阈值且本次尚未计过，累计长按次数 */
-            if((boardKeyState[i].longPressCounted == 0U) &&
+            /* 长按检测：消抖确认后继续计时，达到长按阈值计一次长按 */
+            if((boardKeyState[i].debounceConfirmed != 0U) &&
+               (boardKeyState[i].longPressCounted  == 0U) &&
                (__DRIVER_BOARD_ElapsedMs(nowTickMs, boardKeyState[i].pressStartTickMs) >= BOARD_KEY_LONG_PRESS_DEFAULT_MS)){
                 boardKeyState[i].longPressCounted  = 1U;
                 boardInfo.key[i].isLongPressed = 1U;
@@ -158,9 +169,10 @@ void DRIVER_BOARD_KeyInfoUpdate(void){
             }
         } else {
             /* 按键释放，清除当次状态 */
-            boardInfo.key[i].isPressed     = 0U;
-            boardInfo.key[i].isLongPressed = 0U;
+            boardInfo.key[i].isPressed         = 0U;
+            boardInfo.key[i].isLongPressed     = 0U;
             boardKeyState[i].lastPressed       = 0U;
+            boardKeyState[i].debounceConfirmed = 0U;
             boardKeyState[i].longPressCounted  = 0U;
         }
     }

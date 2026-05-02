@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem \"C:\\\\11_pro_develop\\\\ezProject_2026\\\\project_11\" -Depth 3)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "PowerShell(Get-ChildItem \"C:\\\\11_pro_develop\\\\ezProject_2026\\\\project_11\" -Recurse -Depth 4 | ForEach-Object { $_.FullName })"
+    ]
+  }
+}

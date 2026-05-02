@@ -61,3 +61,5 @@ f1_sft_1\task_user1.o: ./userDriver/driver_GY615.h
 f1_sft_1\task_user1.o: ./userDriver/driver_ws2812.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_dwt.h
 f1_sft_1\task_user1.o: ./userDriver/driver_mp3.h
+f1_sft_1\task_user1.o: ./userDriver/driver_stepperMotor.h
+f1_sft_1\task_user1.o: ./userDriver/driver_mpu6050.h

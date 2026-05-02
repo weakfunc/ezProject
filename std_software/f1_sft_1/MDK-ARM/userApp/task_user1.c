@@ -11,6 +11,8 @@
 #include "driver_GY615.h"
 #include "driver_ws2812.h"
 #include "driver_mp3.h"
+#include "driver_stepperMotor.h"
+#include "driver_mpu6050.h"
 
 user1TaskInfo_t user1TaskInfo;
 

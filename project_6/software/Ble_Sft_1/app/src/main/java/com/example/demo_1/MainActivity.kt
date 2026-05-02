@@ -566,7 +566,7 @@ fun HomeScreen(
         ) {
             // ===== [修改开始] QR码分拣系统 UI =====
             Text(
-                text = "QR码自动分拣系统",
+                text = "智能物流分拣系统",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
