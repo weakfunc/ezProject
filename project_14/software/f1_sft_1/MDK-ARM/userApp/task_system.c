@@ -1,9 +1,10 @@
 #include "task_system.h"
+#include "stdlib_flash.h"
+#include "stdlib_adc.h"
 #include "driver_board.h"
 #include "driver_ble.h"
-#include "stdlib_flash.h"
 #include "func_appcom.h"
-#include "stdlib_adc.h"
+
 
 systemTaskInfo_t systemTaskInfo;
 
@@ -17,11 +18,14 @@ void systemTaskInit(){
 	STDLIB_FLASH_Init();
 	DRIVER_BOARD_Init();
 	FUNC_APPCOM_Init();
+
 }
 
 void systemTaskUpdata(void *argument){
 	systemTaskInit();
+
 	
+
   for(;;){
 		systemTaskInfo.systemTaskCnt++;
 		STDLIB_USART_Updata();
@@ -41,7 +45,7 @@ void systemTaskUpdata(void *argument){
 			STDLIB_ADC_Sample();
 		}
 		
-	    if(systemTaskInfo.systemTaskCnt % 100 == 0){
+	   if(systemTaskInfo.systemTaskCnt % 100 == 0){
 
 		}
 			
@@ -49,12 +53,34 @@ void systemTaskUpdata(void *argument){
 			STDLIB_FLASH_Save();
 		}
 
-		if(boardInfo.key[0].pressCount % 2 == 0){
+		if(boardInfo.key[1].pressCount != boardInfo.key[1].lastPressCount){
+			boardInfo.key[1].lastPressCount = boardInfo.key[1].pressCount;
+
+		}
+
+		if(boardInfo.key[2].pressCount != boardInfo.key[2].lastPressCount){
+			boardInfo.key[2].lastPressCount = boardInfo.key[2].pressCount;
+
+		}
+		
+		if(boardInfo.key[1].pressCount % 2 == 1){
+
+		}else{
+
+		}
+		
+		if(boardInfo.key[2].pressCount % 2 == 1){
+			
+		}else{
+
+		}
+		
+		if(boardInfo.key[0].pressCount % 2 == 1){
 			systemTaskInfo.systemEnable_board = 1;
 		}else{
 			systemTaskInfo.systemEnable_board = 0;
 		}
-
+		
 		if(remoteInfo.systemEnable){
 			systemTaskInfo.systemEnable_app = 1;
 		}else{

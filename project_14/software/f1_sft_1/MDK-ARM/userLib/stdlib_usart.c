@@ -1,5 +1,9 @@
 #include "stdlib_usart.h"
 #include "usart.h"
+#include <string.h>
+
+/* 原始字节发送也走中断/DMA，发送缓冲区必须在发送完成前保持有效。 */
+#define UART_TX_BUF_SIZE 32U
 
 /*============================================================================
  * 私有类型定义
@@ -36,7 +40,7 @@ typedef struct {
   uint16_t rxTail;                      /* 环形缓冲读指针 */
   uint8_t  rxByteTmp;                   /* 中断模式单字节临时缓冲 */
 
-  uint8_t txBuf[FRAME_LEN];             /* 发送帧缓冲（static-alike，防 DMA 传输期间栈帧失效） */
+  uint8_t txBuf[UART_TX_BUF_SIZE];      /* 发送帧缓冲（static-alike，防 DMA/IT 传输期间栈帧失效） */
 
   parseState_e parseState;              /* 解析状态机当前状态 */
   uint8_t      parseCmd;                /* 当前帧控制字段 */
@@ -168,10 +172,7 @@ static int8_t __STDLIB_USART_RxPop(uartRawInfo_t *c, uint8_t *byte){
 }
 
 /* 按端口配置选择 DMA 或中断方式发送数据。 */
-static void __STDLIB_USART_TxSend(uartRawInfo_t *c, uint8_t *data, uint16_t len){
-  if(!__STDLIB_USART_WaitTxReady(c->huart)){
-    return;
-  }
+static void __STDLIB_USART_TxStart(uartRawInfo_t *c, uint8_t *data, uint16_t len){
   if(__STDLIB_USART_IsTxDma(c->huart->Instance)){
     HAL_UART_Transmit_DMA(c->huart, data, len);
   } else {
@@ -359,6 +360,7 @@ void STDLIB_USART_SendFrame(uint8_t port, uint8_t cmd){
   uartRawInfo_t *c    = &uartRawInfo[port];
   usartInfo_t   *info = &usartInfo[port];
   if(c->cfg.customProtocol) return;
+  if(!__STDLIB_USART_WaitTxReady(c->huart)) return;
 
   c->txBuf[0] = 0x55U;
   c->txBuf[1] = 0xAAU;
@@ -380,13 +382,18 @@ void STDLIB_USART_SendFrame(uint8_t port, uint8_t cmd){
   c->txBuf[14] = info->tx_cnt++;
   c->txBuf[15] = 0xFFU;
 
-  __STDLIB_USART_TxSend(c, c->txBuf, FRAME_LEN);
+  __STDLIB_USART_TxStart(c, c->txBuf, FRAME_LEN);
 }
 
 /* 发送原始字节流，不做任何协议封装。 */
 void STDLIB_USART_SendRaw(uint8_t port, uint8_t *data, uint16_t len){
   if(port >= PORT_MAX || len == 0U) return;
-  __STDLIB_USART_TxSend(&uartRawInfo[port], data, len);
+  uartRawInfo_t *c = &uartRawInfo[port];
+  if(len > (uint16_t)sizeof(c->txBuf)) return;
+  if(!__STDLIB_USART_WaitTxReady(c->huart)) return;
+
+  memcpy(c->txBuf, data, len);
+  __STDLIB_USART_TxStart(c, c->txBuf, len);
 }
 
 /* 串口单字节中断接收完成后，将数据转入软件缓冲。 */

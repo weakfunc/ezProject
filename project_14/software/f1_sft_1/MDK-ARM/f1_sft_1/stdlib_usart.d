@@ -36,3 +36,4 @@ f1_sft_1\stdlib_usart.o: ./userLib/stdlib_common.h
 f1_sft_1\stdlib_usart.o: ../Core/Inc/main.h
 f1_sft_1\stdlib_usart.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
 f1_sft_1\stdlib_usart.o: ../Core/Inc/usart.h
+f1_sft_1\stdlib_usart.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h

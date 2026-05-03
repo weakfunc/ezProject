@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir C:\\\\11_pro_develop\\\\ezProject_2026\\\\std_software\\\\python\\\\project_14 *)",
+      "PowerShell(Get-ChildItem \"C:\\\\11_pro_develop\\\\ezProject_2026\\\\project_14\\\\software\\\\python\\\\\" -Name | Where-Object { $_ -match \"\\\\.py$\" })",
+      "PowerShell(Get-ChildItem \"C:\\\\11_pro_develop\\\\ezProject_2026\\\\project_14\\\\software\\\\python\\\\.venv\\\\Scripts\\\\\" | Where-Object { $_.Name -match \"pyinstaller\" })",
+      "PowerShell(Get-ChildItem \"C:\\\\11_pro_develop\\\\ezProject_2026\\\\project_14\\\\software\\\\python\\\\dist\\\\\" | Select-Object Name, @{N='Size\\(MB\\)';E={[math]::Round\\($_.Length/1MB,1\\)}})"
+    ]
+  }
+}

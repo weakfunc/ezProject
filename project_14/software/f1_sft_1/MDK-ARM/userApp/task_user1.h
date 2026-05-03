@@ -5,8 +5,10 @@
 #include "cmsis_os.h"
 
 typedef struct user1TaskInfo{
-		uint32_t user1TaskCnt;
-	
+	uint32_t user1TaskCnt;
+
+	float yawRef;
+	float picthRef;
 }user1TaskInfo_t;
 
 extern void user1TaskInit(void);
