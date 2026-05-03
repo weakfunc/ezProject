@@ -12,8 +12,11 @@ verisonInfo_t verisonInfo;
 #define VERISON_CRC8_DISABLED             0x00U
 #define VERISON_FRAME_LEN                 FRAME_LEN
 
-/* Camera normally sends frames every 10ms; 100ms without a frame means offline. */
+/* 摄像头正常 10ms 发一帧，连续 100ms 无帧认为离线。 */
 #define VERISON_CONNECT_TIMEOUT_10MS      10U
+#define VERISON_INVALID_VALUE             0xFFU
+#define VERISON_YAW_VALID_FLAG_IDX        8U
+#define VERISON_PITCH_VALID_FLAG_IDX      9U
 
 typedef enum {
   VERISON_STATE_WAIT_SOF1 = 0U,
@@ -58,6 +61,27 @@ static float __DRIVER_VERISON_ReadFloatLE(const uint8_t *data) {
 
   memcpy(&value, data, sizeof(value));
   return value;
+}
+
+static uint8_t __DRIVER_VERISON_IsAllInvalidByte(const uint8_t *data,
+                                                 uint8_t len) {
+  uint8_t i;
+
+  for(i = 0U; i < len; i++) {
+    if(data[i] != VERISON_INVALID_VALUE) {
+      return 0U;
+    }
+  }
+  return 1U;
+}
+
+static uint8_t __DRIVER_VERISON_IsAngleInvalid(const uint8_t *angleData,
+                                               uint8_t validFlag) {
+  if(validFlag == VERISON_INVALID_VALUE) {
+    return 1U;
+  }
+
+  return __DRIVER_VERISON_IsAllInvalidByte(angleData, sizeof(float));
 }
 
 static void __DRIVER_VERISON_SyncTotalCnt(void) {
@@ -204,6 +228,11 @@ uint8_t* DRIVER_VERISON_HasNewData(void) {
 }
 
 uint8_t DRIVER_VERISON_Updata(void) {
+  float lastYaw_deg;
+  float lastPitch_deg;
+  uint8_t yawInvalid;
+  uint8_t pitchInvalid;
+
   if(verisonInfo.hasNewData == 0U) {
     if(verisonConnectTimeoutCnt < VERISON_CONNECT_TIMEOUT_10MS) {
       verisonConnectTimeoutCnt++;
@@ -215,14 +244,36 @@ uint8_t DRIVER_VERISON_Updata(void) {
     return 0U;
   }
 
+  lastYaw_deg = verisonInfo.yaw_deg;
+  lastPitch_deg = verisonInfo.pitch_deg;
+
   verisonInfo = verisonInfoCache;
   memcpy(verisonInfo.realData.raw, verisonInfo.data, VERISON_DATA_LEN);
-  verisonInfo.yaw_deg = __DRIVER_VERISON_ReadFloatLE(&verisonInfo.data[0]);
-  verisonInfo.pitch_deg = __DRIVER_VERISON_ReadFloatLE(&verisonInfo.data[4]);
+
+  /* 摄像头丢失目标时会发 0xFF，无效轴保持上一次有效期望值。 */
+  yawInvalid = __DRIVER_VERISON_IsAngleInvalid(&verisonInfo.data[0],
+                                               verisonInfo.data[VERISON_YAW_VALID_FLAG_IDX]);
+  pitchInvalid = __DRIVER_VERISON_IsAngleInvalid(&verisonInfo.data[4],
+                                                 verisonInfo.data[VERISON_PITCH_VALID_FLAG_IDX]);
+
+  if(yawInvalid == 0U) {
+    verisonInfo.yaw_deg = __DRIVER_VERISON_ReadFloatLE(&verisonInfo.data[0]);
+  } else {
+    verisonInfo.yaw_deg = lastYaw_deg;
+  }
+
+  if(pitchInvalid == 0U) {
+    verisonInfo.pitch_deg = __DRIVER_VERISON_ReadFloatLE(&verisonInfo.data[4]);
+  } else {
+    verisonInfo.pitch_deg = lastPitch_deg;
+  }
+
   verisonInfo.hasNewData = 0U;
   verisonInfo.isConnect = 1U;
   verisonInfoCache.hasNewData = 0U;
   verisonInfoCache.isConnect = 1U;
+  verisonInfoCache.yaw_deg = verisonInfo.yaw_deg;
+  verisonInfoCache.pitch_deg = verisonInfo.pitch_deg;
   verisonConnectTimeoutCnt = 0U;
   return 1U;
 }

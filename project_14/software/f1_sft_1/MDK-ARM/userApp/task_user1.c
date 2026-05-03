@@ -8,6 +8,34 @@
 
 user1TaskInfo_t user1TaskInfo;
 
+static void __USER1_OledShowAngle(uint8_t y, const char *name, float value) {
+	DRIVER_OLED_ShowString(0, y, name);
+	(void)DRIVER_OLED_ShowFloat(42, y, value, 1U);
+}
+
+static void __USER1_OledUpdata(void) {
+	gambalAngleInfo_t angleInfo;
+
+	FUNC_GAMBAL_GetAngleInfo(&angleInfo);
+
+	DRIVER_OLED_Clear();
+
+	/* 现有 OLED 字库仅支持 ASCII，这里使用英文缩写显示连接和角度。 */
+	DRIVER_OLED_ShowString(0, 0, "CAM:");
+	if(verisonInfo.isConnect != 0U) {
+		DRIVER_OLED_ShowString(30, 0, "OK");
+	} else {
+		DRIVER_OLED_ShowString(30, 0, "NO");
+	}
+
+	__USER1_OledShowAngle(12, "REF_P:", angleInfo.refPitch_deg);
+	__USER1_OledShowAngle(24, "REF_Y:", angleInfo.refYaw_deg);
+	__USER1_OledShowAngle(36, "FBD_P:", angleInfo.fbdPitch_deg);
+	__USER1_OledShowAngle(48, "FBD_Y:", angleInfo.fbdYaw_deg);
+
+	DRIVER_OLED_Refresh();
+}
+
 void user1TaskInit(){
 	DRIVER_BLE_Init();
 	/* 等待OLED VCC上电稳定（SSD1306要求VCC稳定后≥100ms才可接受I2C命令） */
@@ -39,7 +67,7 @@ void user1TaskUpdata(void *argument){
 
 		if(user1TaskInfo.user1TaskCnt % 50 == 0){
 			/* 100ms TASK*/
-
+			__USER1_OledUpdata();
 		}
 
 		if(user1TaskInfo.user1TaskCnt % 100 == 0){
