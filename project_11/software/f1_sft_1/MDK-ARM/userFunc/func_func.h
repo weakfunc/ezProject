@@ -9,8 +9,8 @@
 
 /* 目标速度占空比宏定义 */
 #define SPEED_5MS    (100U)   /* 5 m/s 对应PWM占空比（%） */
-#define SPEED_3MS    (60)    /* 3 m/s 对应PWM占空比（%） */
-#define SPEED_1MS    (30)    /* 1 m/s 对应PWM占空比（%） */
+#define SPEED_3MS    (95U)    /* 3 m/s 对应PWM占空比（%） */
+#define SPEED_1MS    (90)     /* 1 m/s 对应PWM占空比（%） */
 
 /* 发射器功能模块信息结构体 */
 typedef struct {

@@ -650,7 +650,6 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         val packageCount = frame18?.var4b1 ?: 0
-                        val isOut        = frame18?.var4b2 ?: 0
                         val servoId      = frame18?.var1b1 ?: 0
                         val packageColor = frame18?.var1b2 ?: 0
                         val packageShape  = frame19?.var4b1 ?: 0
@@ -669,23 +668,6 @@ fun HomeScreen(
                                 text = "$packageCount",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "是否出站",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = if (isOut == 1) "已出站" else "未出站",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = if (isOut == 1) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurface
                             )
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

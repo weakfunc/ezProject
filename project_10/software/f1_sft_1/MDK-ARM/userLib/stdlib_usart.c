@@ -58,7 +58,7 @@ typedef struct {
 static UART_HandleTypeDef *portMap[PORT_MAX] = {
   [UART_PORT1] = &huart1,
   [UART_PORT2] = &huart2,
-  [UART_PORT3] = &huart3,
+//  [UART_PORT3] = &huart3,
 };
 
 /* 串口运行时上下文（私有）。 */

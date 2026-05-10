@@ -1,6 +1,7 @@
 f1_sft_1\driver_senser.o: userDriver\driver_senser.c
 f1_sft_1\driver_senser.o: userDriver\driver_senser.h
 f1_sft_1\driver_senser.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdint.h
+f1_sft_1\driver_senser.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stddef.h
 f1_sft_1\driver_senser.o: ./userLib/stdlib_common.h
 f1_sft_1\driver_senser.o: ../Core/Inc/main.h
 f1_sft_1\driver_senser.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
@@ -16,7 +17,6 @@ f1_sft_1\driver_senser.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 f1_sft_1\driver_senser.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
 f1_sft_1\driver_senser.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 f1_sft_1\driver_senser.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-f1_sft_1\driver_senser.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stddef.h
 f1_sft_1\driver_senser.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h
 f1_sft_1\driver_senser.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h
 f1_sft_1\driver_senser.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h

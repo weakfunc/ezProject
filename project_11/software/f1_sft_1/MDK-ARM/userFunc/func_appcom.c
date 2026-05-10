@@ -1,5 +1,4 @@
 #include "func_appcom.h"
-#include "driver_ble.h"
 #include "stdlib_usart.h"
 #include <string.h>
 #include "task_user1.h"

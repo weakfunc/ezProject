@@ -52,12 +52,9 @@ f1_sft_1\task_user1.o: ./userDriver/driver_board.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_tim.h
 f1_sft_1\task_user1.o: ./userDriver/driver_oled.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_i2c.h
-f1_sft_1\task_user1.o: ./userDriver/driver_ble.h
 f1_sft_1\task_user1.o: ./userDriver/driver_steer.h
-f1_sft_1\task_user1.o: ./userDriver/driver_tb6612.h
-f1_sft_1\task_user1.o: ./userDriver/driver_QR.h
-f1_sft_1\task_user1.o: ./userDriver/driver_verison.h
-f1_sft_1\task_user1.o: ./userDriver/driver_GY615.h
-f1_sft_1\task_user1.o: ./userDriver/driver_ws2812.h
+f1_sft_1\task_user1.o: ./userDriver/driver_senser.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_dwt.h
-f1_sft_1\task_user1.o: ./userDriver/driver_mp3.h
+f1_sft_1\task_user1.o: ./userLib/stdlib_flash.h
+f1_sft_1\task_user1.o: userApp\task_system.h
+f1_sft_1\task_user1.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h

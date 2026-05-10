@@ -173,6 +173,13 @@ def _walk_find_dll(root):
     return None
 
 def find_tobii_dll():
+    # 0. PyInstaller 内嵌（_MEIPASS）
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        p = os.path.join(sys._MEIPASS, _DLL_NAME)
+        if os.path.isfile(p):
+            print(f"[Tobii] 内嵌 {p}")
+            return p
+
     # 1. exe / 脚本同目录
     exe_dir = (os.path.dirname(sys.executable)
                if getattr(sys, 'frozen', False)

@@ -44,6 +44,8 @@ void FUNC_APPCOM_Init(void){
 void FUNC_APPCOM_TxUpdate(void){
   uint8_t i;
 
+  user1TaskUpdateAppTxVars();
+
   /* ================================================================
    * STM32→ESP32 数据装填（手动逐字段赋值，等号右侧为手动配置变量）
    * 格式：appcomInfo.appCmdFrameArr[CMD - 0x09].payload.varXXX = <来源>;

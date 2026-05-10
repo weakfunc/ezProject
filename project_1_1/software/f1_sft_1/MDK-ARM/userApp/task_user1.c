@@ -12,7 +12,7 @@
 
 
 uint32_t timeA = 1400;
-uint32_t timeB = 8000;
+uint32_t timeB = 6200;
 
 
 

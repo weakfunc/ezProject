@@ -57,8 +57,8 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, USER_IO_7_Pin|USER_IO_8_Pin|USER_IO_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, USER_IO_5_Pin|USER_IO_4_Pin|USER_IO_3_Pin|I2C_SDA_Pin
-                          |I2C_SDL_Pin|USER_IO_6_Pin|USER_IO_1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, USER_IO_5_Pin|GPIO_PIN_10|USER_IO_4_Pin|USER_IO_3_Pin
+                          |I2C_SDA_Pin|I2C_SDL_Pin|USER_IO_6_Pin|USER_IO_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : KEY_3_Pin */
   GPIO_InitStruct.Pin = KEY_3_Pin;
@@ -87,6 +87,19 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : KEY_2_Pin KEY_1_Pin */

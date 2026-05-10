@@ -30,10 +30,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -41,7 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -509,17 +508,22 @@ fun HomeScreen(
     val frame18 = BleProtocol.rxFrames[0x18]
     val frame19 = BleProtocol.rxFrames[0x19]
 
-    val currentTrack    = frame17?.var1b1 ?: 1
-    val playState       = frame17?.var1b2 ?: 0    // 0=停止 1=播放 2=暂停
+    val trackFromFrame = frame17?.var1b1 ?: 0
+    val playStateFromFrame = frame17?.var1b2 ?: -1
+    val packedTrackState = frame17?.var4b2 ?: 0
+    val packedPlayState = (packedTrackState ushr 8) and 0xFF
+    val playState = when {
+        trackFromFrame in 1..15 && playStateFromFrame in 0..2 -> playStateFromFrame
+        packedPlayState in 0..2 -> packedPlayState
+        else -> 0
+    }    // 0=停止 1=播放 2=暂停
     val volume          = frame18?.var1b1 ?: 50   // 0~100
     val sceneMode       = frame18?.var1b2 ?: 0    // 0=手动 1~4=场景
     val lightBrightness = frame19?.var1b1 ?: 0    // 0~100
 
-    // 滑块本地状态（避免拖动时被 rxFrames 覆盖）
-    var volumeSlider by remember { mutableStateOf(volume.toFloat()) }
-    var brightnessSlider by remember { mutableStateOf(lightBrightness.toFloat()) }
-    LaunchedEffect(volume) { volumeSlider = volume.toFloat() }
-    LaunchedEffect(lightBrightness) { brightnessSlider = lightBrightness.toFloat() }
+    // 音量、氛围灯、场景模式仅展示接收数据，不提供写入交互。
+    val volumeDisplay = volume.coerceIn(0, 100)
+    val brightnessDisplay = lightBrightness.coerceIn(0, 100)
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -540,12 +544,6 @@ fun HomeScreen(
         )
     }
 
-    // [新增] 曲目名称映射
-    val trackNames = mapOf(
-        1 to "雨声", 2 to "森林", 3 to "海浪", 4 to "溪流", 5 to "白噪",
-        6 to "咖啡馆", 7 to "鸟鸣", 8 to "风声", 9 to "篝火", 10 to "雷雨",
-        11 to "虫鸣", 12 to "钟声", 13 to "水滴", 14 to "城市", 15 to "列车"
-    )
     val modeNames = mapOf(
         0 to "手动", 1 to "助眠", 2 to "专注", 3 to "冥想", 4 to "哄睡"
     )
@@ -653,31 +651,6 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "曲目：${trackNames[currentTrack] ?: "—"}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = if (isConnected) MaterialTheme.colorScheme.onSurface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = when (playState) {
-                                1 -> "▶ 播放中"
-                                2 -> "⏸ 已暂停"
-                                else -> "⏹ 停止"
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = when {
-                                !isConnected -> MaterialTheme.colorScheme.onSurfaceVariant
-                                playState == 1 -> MaterialTheme.colorScheme.primary
-                                else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
                             text = "音量：${volume}%",
                             style = MaterialTheme.typography.bodyMedium,
                             color = if (isConnected) MaterialTheme.colorScheme.onSurface
@@ -761,7 +734,7 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "${volumeSlider.toInt()}%",
+                            text = "${volumeDisplay}%",
                             style = MaterialTheme.typography.bodyMedium,
                             color = if (isConnected) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -773,14 +746,18 @@ fun HomeScreen(
                         )
                     }
                     Slider(
-                        value = volumeSlider,
-                        onValueChange = { volumeSlider = it },
-                        onValueChangeFinished = {
-                            sendFrame(cmd = 0x21, var4_1 = volumeSlider.toInt())
-                        },
+                        value = volumeDisplay.toFloat(),
+                        onValueChange = {},
                         valueRange = 0f..100f,
                         steps = 19,
-                        enabled = isConnected,
+                        enabled = false,
+                        colors = SliderDefaults.colors(
+                            disabledThumbColor = MaterialTheme.colorScheme.primary,
+                            disabledActiveTrackColor = MaterialTheme.colorScheme.primary,
+                            disabledInactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            disabledActiveTickColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledInactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -804,7 +781,7 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = if (brightnessSlider.toInt() == 0) "关" else "${brightnessSlider.toInt()}%",
+                            text = if (brightnessDisplay == 0) "关" else "${brightnessDisplay}%",
                             style = MaterialTheme.typography.bodyMedium,
                             color = if (isConnected) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -816,14 +793,18 @@ fun HomeScreen(
                         )
                     }
                     Slider(
-                        value = brightnessSlider,
-                        onValueChange = { brightnessSlider = it },
-                        onValueChangeFinished = {
-                            sendFrame(cmd = 0x21, var4_2 = brightnessSlider.toInt())
-                        },
+                        value = brightnessDisplay.toFloat(),
+                        onValueChange = {},
                         valueRange = 0f..100f,
                         steps = 19,
-                        enabled = isConnected,
+                        enabled = false,
+                        colors = SliderDefaults.colors(
+                            disabledThumbColor = MaterialTheme.colorScheme.primary,
+                            disabledActiveTrackColor = MaterialTheme.colorScheme.primary,
+                            disabledInactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            disabledActiveTickColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledInactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -838,21 +819,16 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     listOf(1 to "助眠", 2 to "专注", 3 to "冥想", 4 to "哄睡").forEach { (modeId, modeName) ->
+                        val isSelected = sceneMode == modeId
                         Button(
-                            onClick = {
-                                coroutineScope.launch {
-                                    sendFrame(cmd = 0x22, var1_1 = 1)
-                                    delay(100)
-                                    sendFrame(cmd = 0x22, var1_1 = 0)
-                                }
-                            },
-                            enabled = isConnected,
+                            onClick = {},
+                            enabled = false,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (sceneMode == modeId)
+                                disabledContainerColor = if (isSelected)
                                     MaterialTheme.colorScheme.primary
                                 else
                                     MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = if (sceneMode == modeId)
+                                disabledContentColor = if (isSelected)
                                     MaterialTheme.colorScheme.onPrimary
                                 else
                                     MaterialTheme.colorScheme.onSurfaceVariant

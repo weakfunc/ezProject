@@ -76,6 +76,7 @@ object BleConnectionManager {
     private var currentAddress: String? = null
     private var rssiPollingRunnable: Runnable? = null
     private var nextTerminalEntryId = 0L
+    private var bleWriteQueue: BleWriteQueue? = null
 
     private val characteristicSubscriptionStates = mutableMapOf<String, Boolean>()
     private val characteristicLastReadValues = mutableMapOf<String, String>()
@@ -154,6 +155,14 @@ object BleConnectionManager {
                 mainHandler.post {
                     if (status == BluetoothGatt.GATT_SUCCESS) {
                         refreshDiscoveredServices(gatt)
+                        bleWriteQueue = BleWriteQueue { frame ->
+                            val g = currentGatt ?: return@BleWriteQueue false
+                            val chr = g.services.orEmpty()
+                                .firstOrNull { it.uuid.toString().equals(frame.serviceUuid, ignoreCase = true) }
+                                ?.characteristics?.firstOrNull { it.uuid.toString().equals(frame.characteristicUuid, ignoreCase = true) }
+                                ?: return@BleWriteQueue false
+                            writeCharacteristicCompat(g, chr, frame.data)
+                        }
                         triggerAutoSubscribe()
                     } else {
                         discoveredServices = emptyList()
@@ -240,7 +249,10 @@ object BleConnectionManager {
                 characteristic: BluetoothGattCharacteristic,
                 status: Int
             ) {
-                Log.d("BLE", "onCharacteristicWrite status=$status")
+                mainHandler.post {
+                    bleWriteQueue?.onWriteCompleted(status)
+                    Log.d("BLE", "onCharacteristicWrite status=$status")
+                }
             }
         }
 
@@ -278,17 +290,17 @@ object BleConnectionManager {
         return characteristicCanWrite(characteristic.properties)
     }
 
-    @SuppressLint("MissingPermission")
     fun writeCharacteristic(
         serviceUuid: String,
         characteristicUuid: String,
         value: ByteArray
     ): Boolean {
-        val gatt = currentGatt ?: return false
         val characteristic = findCharacteristic(serviceUuid, characteristicUuid) ?: return false
         if (!characteristicCanWrite(characteristic.properties)) return false
+        val queue = bleWriteQueue ?: return false
         stopRssiPolling()
-        return writeCharacteristicCompat(gatt, characteristic, value)
+        queue.enqueue(serviceUuid, characteristicUuid, value)
+        return true
     }
 
     @SuppressLint("MissingPermission")
@@ -369,6 +381,8 @@ object BleConnectionManager {
         characteristicSubscriptionStates.clear()
         characteristicLastReadValues.clear()
         clearTerminalEntries()
+        bleWriteQueue?.clear()
+        bleWriteQueue = null
 
         currentGatt?.let { gatt ->
             try {
@@ -493,6 +507,8 @@ object BleConnectionManager {
         characteristicSubscriptionStates.clear()
         characteristicLastReadValues.clear()
         clearTerminalEntries()
+        bleWriteQueue?.clear()
+        bleWriteQueue = null
         if (currentGatt == callbackGatt) {
             currentGatt = null
         }

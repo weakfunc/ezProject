@@ -18,6 +18,9 @@ static uint8_t flashDataValid = 0U;
 /* 公有存储区，所有模块直接读写。 */
 flashStore_t flashStore;
 
+/* 编译期检查：持久化结构必须能放进保留 Flash 页。 */
+typedef char flashStoreSizeCheck[(sizeof(flashStore_t) <= USER_FLASH_STORE_DATA_MAX) ? 1 : -1];
+
 /* 从 Flash 地址读取一个 uint32_t。 */
 static uint32_t __FLASH_ReadU32(uint32_t addr){
   uint32_t val;
@@ -86,6 +89,9 @@ void STDLIB_FLASH_Init(void){
 void STDLIB_FLASH_Save(void){
   FLASH_EraseInitTypeDef eraseInit;  /* 擦除配置 */
   uint32_t               pageError;  /* 擦除错误页地址 */
+
+  /* 每次实际发起保存前版本号自增，OLED 上显示的 FlashV 即保存次数/存档版本。 */
+  flashStore.version++;
 
   eraseInit.TypeErase   = FLASH_TYPEERASE_PAGES;
   eraseInit.PageAddress = USER_FLASH_STORE_PAGE_ADDR;

@@ -4,6 +4,7 @@
 #include "stdlib_flash.h"
 #include "func_appcom.h"
 #include "stdlib_adc.h"
+#include "task_user1.h"
 
 systemTaskInfo_t systemTaskInfo;
 
@@ -46,6 +47,7 @@ void systemTaskUpdata(void *argument){
 		}
 			
 		if(systemTaskInfo.systemTaskCnt % 1000 == 0){
+			USER1_FlashStorePrepare();
 			STDLIB_FLASH_Save();
 		}
 

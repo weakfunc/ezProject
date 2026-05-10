@@ -610,11 +610,6 @@
           <GroupName>userDriver</GroupName>
           <Files>
             <File>
-              <FileName>driver_ble.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_ble.c</FilePath>
-            </File>
-            <File>
               <FileName>driver_board.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_board.c</FilePath>
@@ -679,11 +674,6 @@
         <Group>
           <GroupName>userFunc</GroupName>
           <Files>
-            <File>
-              <FileName>func_appcom.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userFunc\func_appcom.c</FilePath>
-            </File>
             <File>
               <FileName>func_func.c</FileName>
               <FileType>1</FileType>

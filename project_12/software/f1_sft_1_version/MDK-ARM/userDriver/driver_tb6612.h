@@ -60,7 +60,7 @@
 #endif
 
 #define TB6612_SPEED_MIN                      (-1000)
-#define TB6612_SPEED_MAX                      (300)
+#define TB6612_SPEED_MAX                      (950)
 
 /* 编码器通道索引 */
 #define TB6612_ENCODER_CH_1                   (0U)

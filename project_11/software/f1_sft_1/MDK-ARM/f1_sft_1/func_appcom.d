@@ -36,7 +36,6 @@ f1_sft_1\func_appcom.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 f1_sft_1\func_appcom.o: ./userLib/stdlib_common.h
 f1_sft_1\func_appcom.o: ../Core/Inc/main.h
 f1_sft_1\func_appcom.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
-f1_sft_1\func_appcom.o: ./userDriver/driver_ble.h
 f1_sft_1\func_appcom.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h
 f1_sft_1\func_appcom.o: ./userApp/task_user1.h
 f1_sft_1\func_appcom.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h

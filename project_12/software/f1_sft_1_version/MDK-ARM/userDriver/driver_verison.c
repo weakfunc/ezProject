@@ -62,6 +62,8 @@ static verisonFrameCache_t verisonFrameCache;
 static uint32_t verisonRxTotalCnt = 0U;
 /* STM32本地有效包计数（仅obj1 != 0xFF时累加） */
 static uint32_t verisonLocalPktCnt = 0U;
+/* A/B/C valid obj1 counters */
+static uint32_t verisonObjTypeCnt[VERISON_OBJ_TYPE_COUNT];
 /* 当前解析状态 */
 static verisonParseState_e verisonParseState = VERISON_STATE_WAIT_SOF1;
 /* 数据段接收计数 */
@@ -102,7 +104,19 @@ static void __DRIVER_VERISON_ResetParseState(void){
   verisonCrc8PassFlag = 0U;
 }
 
-/* 将解析完成的帧数据写入内部缓存 */
+/* Map obj1 code to A/B/C counter index. */
+static uint8_t __DRIVER_VERISON_GetObjTypeIndex(uint8_t obj1){
+  switch(obj1){
+  case 0x31U:
+    return VERISON_OBJ_TYPE_A;
+  case 0x32U:
+    return VERISON_OBJ_TYPE_B;
+  default:
+    return VERISON_OBJ_TYPE_C;
+  }
+}
+
+/* Save a parsed camera frame into cache and counters. */
 static void __DRIVER_VERISON_SaveFrame(void){
   uint8_t isValid;
 
@@ -120,6 +134,7 @@ static void __DRIVER_VERISON_SaveFrame(void){
   verisonRxTotalCnt++;
   if(isValid != 0U){
     verisonLocalPktCnt++;
+    verisonObjTypeCnt[__DRIVER_VERISON_GetObjTypeIndex(verisonDataTmp[0])]++;
   }
 }
 
@@ -214,6 +229,7 @@ void DRIVER_VERISON_Init(void){
   memset(&verisonFrameCache, 0, sizeof(verisonFrameCache));
   memset(&verisonInfo, 0, sizeof(verisonInfo));
   memset(verisonDataTmp, 0, sizeof(verisonDataTmp));
+  memset(verisonObjTypeCnt, 0, sizeof(verisonObjTypeCnt));
   verisonRxTotalCnt  = 0U;
   verisonLocalPktCnt = 0U;
   __DRIVER_VERISON_ResetParseState();
@@ -222,6 +238,8 @@ void DRIVER_VERISON_Init(void){
 
 /* 更新verisonInfo，读取内部缓存中最新帧数据，在userTask中10ms周期调用 */
 void DRIVER_VERISON_Updata(void){
+  uint8_t i;
+
   if(verisonFrameCache.hasNewData != 0U){
     verisonInfo.obj1         = verisonFrameCache.obj1;
     verisonInfo.obj2         = verisonFrameCache.obj2;
@@ -235,4 +253,7 @@ void DRIVER_VERISON_Updata(void){
   }
   verisonInfo.rxTotalCnt  = verisonRxTotalCnt;
   verisonInfo.localPktCnt = verisonLocalPktCnt;
+  for(i = 0U; i < VERISON_OBJ_TYPE_COUNT; i++){
+    verisonInfo.objTypeCnt[i] = verisonObjTypeCnt[i];
+  }
 }

@@ -1,8 +1,6 @@
 #include "task_system.h"
 #include "driver_board.h"
-#include "driver_ble.h"
 #include "stdlib_flash.h"
-#include "func_appcom.h"
 #include "stdlib_adc.h"
 
 systemTaskInfo_t systemTaskInfo;
@@ -16,7 +14,7 @@ void systemTaskInit(){
 	STDLIB_ADC_Init();
 	STDLIB_FLASH_Init();
 	DRIVER_BOARD_Init();
-	FUNC_APPCOM_Init();
+
 }
 
 void systemTaskUpdata(void *argument){
@@ -34,7 +32,7 @@ void systemTaskUpdata(void *argument){
 		}
 
 		if(systemTaskInfo.systemTaskCnt % 10 == 0){
-			FUNC_APPCOM_UPDATA();
+
 		}
 		
 		if(systemTaskInfo.systemTaskCnt % 50 == 0){
@@ -55,11 +53,6 @@ void systemTaskUpdata(void *argument){
 			systemTaskInfo.systemEnable_board = 0;
 		}
 
-		if(remoteInfo.systemEnable){
-			systemTaskInfo.systemEnable_app = 1;
-		}else{
-			systemTaskInfo.systemEnable_app = 0;
-		}
 
     osDelay(10);
   }

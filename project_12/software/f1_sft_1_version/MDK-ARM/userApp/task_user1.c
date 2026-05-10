@@ -21,6 +21,7 @@ static const obj1LabelMap_t obj1LabelMap[] = {
   { 0x31U, "AIM_1" },   /* 目的地A */
   { 0x32U, "AIM_2" },   /* 目的地B */
   /* 在此继续添加映射，格式：{ 编码值, "标签 " } */
+  { 0x33U, "AIM_3" },
 };
 
 #define OBJ1_LABEL_MAP_COUNT  (sizeof(obj1LabelMap) / sizeof(obj1LabelMap[0]))
@@ -201,9 +202,13 @@ static void oledControl(void){
   DRIVER_OLED_ShowString(5,  44, "OBJ1:");
   DRIVER_OLED_ShowString(35, 44, __getObj1Label(lastValidObj1));
 
-  /* 有效帧数（累计） */
-  DRIVER_OLED_ShowString(5,  55, "CNT: ");
-  DRIVER_OLED_ShowNum(35, 55, verisonInfo.localPktCnt, 5);
+  /* A/B/C package counters */
+  DRIVER_OLED_ShowString(5,   55, "A:");
+  DRIVER_OLED_ShowNum(17, 55, verisonInfo.objTypeCnt[VERISON_OBJ_TYPE_A], 4);
+  DRIVER_OLED_ShowString(41,  55, " B:");
+  DRIVER_OLED_ShowNum(59, 55, verisonInfo.objTypeCnt[VERISON_OBJ_TYPE_B], 4);
+  DRIVER_OLED_ShowString(83,  55, " C:");
+  DRIVER_OLED_ShowNum(101, 55, verisonInfo.objTypeCnt[VERISON_OBJ_TYPE_C], 4);
 }
 
 /*============================================================================

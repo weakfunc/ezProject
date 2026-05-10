@@ -28,6 +28,7 @@
 
 /* MP3 硬件音量范围 */
 #define MP3_VOLUME_MAX              30U
+#define MP3_PLAY_LOOP_TICKS         15000U
 
 /* 定时/灯光档位表长度 */
 #define TIMER_CYCLE_COUNT           7U
@@ -148,16 +149,27 @@ static const lightModePreset_t lightModeTable[LIGHT_MODE_COUNT] = {
 static uint8_t currentLightMode = (uint8_t)LIGHT_MODE_BLUE;
 
 user1TaskInfo_t user1TaskInfo;
+static uint32_t appLastVolume = APP_REMOTE_INVALID_U32;
+static uint32_t appLastLight  = APP_REMOTE_INVALID_U32;
+static uint32_t appLastTimer  = APP_REMOTE_INVALID_U32;
+static uint8_t appHoldVolume = 0U;
+static uint8_t appHoldLight  = 0U;
+static uint8_t appHoldTimer  = 0U;
+static uint16_t mp3PlayLoopTicks = 0U;
 
 static uint8_t getMp3Volume(uint8_t volumePercent);
 static uint8_t isValidTimerSetting(uint8_t minutes);
 static uint8_t isValidAppTimerSetting(uint32_t minutes);
+static uint8_t shouldApplyAppSetpoint(uint32_t appValue, uint32_t localValue,
+                                      uint32_t *lastValue, uint8_t *holdFlag,
+                                      uint8_t isValid);
 static uint8_t getNextLightBrightness(uint8_t currentBrightness);
 static uint8_t getScaledLightColor(uint8_t colorValue, uint8_t brightnessPercent);
 static uint8_t getCurrentLightEffect(void);
 static void clearWs2812Light(void);
 static void refreshWs2812Light(void);
 static void updateWs2812BreathEffect(void);
+static void keepMp3TrackPlaying(void);
 static void setAllDirty(void);
 static void doPlayPause(void);
 static void doPrev(void);
@@ -170,10 +182,11 @@ static void doSetMode(uint8_t mode);
 static void cycleTimer(void);
 static void cycleLight(void);
 static void cycleMode(void);
-static void handleScreenInput(void);
+static uint8_t handleScreenInput(void);
 static void handleAppInput(void);
 static void updateScreenDisplay(void);
-static void updateAppTxVars(void);
+static void discardPendingAppInput(void);
+static void markScreenPriority(void);
 static void handleTimerCountdown(void);
 
 static uint8_t getMp3Volume(uint8_t volumePercent){
@@ -197,6 +210,33 @@ static uint8_t isValidAppTimerSetting(uint32_t minutes){
     return 1U;
   }
   return 0U;
+}
+
+static uint8_t shouldApplyAppSetpoint(uint32_t appValue, uint32_t localValue,
+                                      uint32_t *lastValue, uint8_t *holdFlag,
+                                      uint8_t isValid){
+  if(appValue == APP_REMOTE_INVALID_U32) return 0U;
+
+  if(*holdFlag != 0U){
+    *lastValue = appValue;
+    if(appValue == localValue){
+      *holdFlag = 0U;
+    }
+    return 0U;
+  }
+
+  if(*lastValue == APP_REMOTE_INVALID_U32){
+    *lastValue = appValue;
+    return 0U;
+  }
+
+  if(appValue == *lastValue) return 0U;
+
+  *lastValue = appValue;
+  if(isValid == 0U) return 0U;
+  if(appValue == localValue) return 0U;
+
+  return 1U;
 }
 
 static uint8_t getNextLightBrightness(uint8_t currentBrightness){
@@ -276,6 +316,26 @@ static void updateWs2812BreathEffect(void){
   DRIVER_WS2812_BreathUpdate(LIGHT_WS2812_CH1);
 }
 
+static void keepMp3TrackPlaying(void){
+  if(user1TaskInfo.playState != PLAY_STATE_PLAYING){
+    mp3PlayLoopTicks = 0U;
+    return;
+  }
+
+  if((user1TaskInfo.currentTrack < 1U) || (user1TaskInfo.currentTrack > TRACK_COUNT)){
+    mp3PlayLoopTicks = 0U;
+    return;
+  }
+
+  if(mp3PlayLoopTicks < MP3_PLAY_LOOP_TICKS){
+    mp3PlayLoopTicks++;
+    return;
+  }
+
+  DRIVER_MP3_PlayTrack(user1TaskInfo.currentTrack);
+  mp3PlayLoopTicks = 0U;
+}
+
 static void setAllDirty(void){
   user1TaskInfo.dirtyTrack  = 1U;
   user1TaskInfo.dirtyVolume = 1U;
@@ -288,6 +348,7 @@ static void doPlayPause(void){
   if(user1TaskInfo.playState == PLAY_STATE_PLAYING){
     DRIVER_MP3_Pause();
     user1TaskInfo.playState = PLAY_STATE_PAUSED;
+    mp3PlayLoopTicks = 0U;
   }else{
     if(user1TaskInfo.playState == PLAY_STATE_STOPPED){
       DRIVER_MP3_PlayTrack(user1TaskInfo.currentTrack);
@@ -296,6 +357,7 @@ static void doPlayPause(void){
       DRIVER_MP3_Play();
     }
     user1TaskInfo.playState = PLAY_STATE_PLAYING;
+    mp3PlayLoopTicks = 0U;
   }
 }
 
@@ -308,6 +370,7 @@ static void doPrev(void){
 
   DRIVER_MP3_PlayTrack(user1TaskInfo.currentTrack);
   user1TaskInfo.playState = PLAY_STATE_PLAYING;
+  mp3PlayLoopTicks = 0U;
   user1TaskInfo.dirtyTrack = 1U;
 }
 
@@ -320,6 +383,7 @@ static void doNext(void){
 
   DRIVER_MP3_PlayTrack(user1TaskInfo.currentTrack);
   user1TaskInfo.playState = PLAY_STATE_PLAYING;
+  mp3PlayLoopTicks = 0U;
   user1TaskInfo.dirtyTrack = 1U;
 }
 
@@ -329,6 +393,7 @@ static void doPlayTrack(uint8_t track){
   user1TaskInfo.currentTrack = track;
   DRIVER_MP3_PlayTrack(track);
   user1TaskInfo.playState = PLAY_STATE_PLAYING;
+  mp3PlayLoopTicks = 0U;
   user1TaskInfo.dirtyTrack = 1U;
 }
 
@@ -404,25 +469,30 @@ static void cycleMode(void){
   doSetMode(((uint8_t)user1TaskInfo.currentMode + 1U) % MODE_COUNT);
 }
 
-static void handleScreenInput(void){
+static uint8_t handleScreenInput(void){
   tjcLcdFrame_t frame;
   uint8_t nextVolume;
+  uint8_t handled = 0U;
 
-  if(DRIVER_TJCLCD_GetRxFrame(&frame) == 0U) return;
+  if(DRIVER_TJCLCD_GetRxFrame(&frame) == 0U) return 0U;
 
   if(frame.ctrl == 0x05U){
     if(memcmp(frame.data, "PREV", 4U) == 0){
       doPrev();
+      handled = 1U;
     }else if(memcmp(frame.data, "PLAY", 4U) == 0){
       doPlayPause();
+      handled = 1U;
     }else if(memcmp(frame.data, "NEXT", 4U) == 0){
       doNext();
+      handled = 1U;
     }else if(memcmp(frame.data, "VOL+", 4U) == 0){
       nextVolume = user1TaskInfo.volume + VOLUME_STEP;
       if(nextVolume > VOLUME_MAX){
         nextVolume = VOLUME_MAX;
       }
       doSetVolume(nextVolume);
+      handled = 1U;
     }else if(memcmp(frame.data, "VOL-", 4U) == 0){
       if(user1TaskInfo.volume >= VOLUME_STEP){
         nextVolume = user1TaskInfo.volume - VOLUME_STEP;
@@ -430,20 +500,30 @@ static void handleScreenInput(void){
         nextVolume = VOLUME_MIN;
       }
       doSetVolume(nextVolume);
+      handled = 1U;
     }
   }else if(frame.ctrl == 0x06U){
     if(memcmp(frame.data, "TIME", 4U) == 0){
       cycleTimer();
+      handled = 1U;
     }
   }else if(frame.ctrl == 0x07U){
     if(memcmp(frame.data, "LIGHT", 5U) == 0){
       cycleLight();
+      handled = 1U;
     }
   }else if(frame.ctrl == 0x08U){
     if(memcmp(frame.data, "MODE", 4U) == 0){
       cycleMode();
+      handled = 1U;
     }
   }
+
+  if(handled != 0U){
+    markScreenPriority();
+  }
+
+  return handled;
 }
 
 static void handleAppInput(void){
@@ -451,18 +531,22 @@ static void handleAppInput(void){
   uint8_t appKey;
 
   appValue = remoteInfo.remoteVar_RX[0].var_uint32;
+  if(shouldApplyAppSetpoint(appValue, (uint32_t)user1TaskInfo.volume,
+                            &appLastVolume, &appHoldVolume,
+                            (uint8_t)(appValue <= VOLUME_MAX)) != 0U){
+    doSetVolume((uint8_t)appValue);
+  }
   if(appValue != APP_REMOTE_INVALID_U32){
-    if(appValue <= VOLUME_MAX){
-      doSetVolume((uint8_t)appValue);
-    }
     remoteInfo.remoteVar_RX[0].var_uint32 = APP_REMOTE_INVALID_U32;
   }
 
   appValue = remoteInfo.remoteVar_RX[1].var_uint32;
+  if(shouldApplyAppSetpoint(appValue, (uint32_t)user1TaskInfo.lightBrightness,
+                            &appLastLight, &appHoldLight,
+                            (uint8_t)(appValue <= LIGHT_MAX)) != 0U){
+    doSetLight((uint8_t)appValue);
+  }
   if(appValue != APP_REMOTE_INVALID_U32){
-    if(appValue <= LIGHT_MAX){
-      doSetLight((uint8_t)appValue);
-    }
     remoteInfo.remoteVar_RX[1].var_uint32 = APP_REMOTE_INVALID_U32;
   }
 
@@ -479,10 +563,12 @@ static void handleAppInput(void){
   user1TaskInfo.appKeyPrev[1] = appKey;
 
   appValue = remoteInfo.remoteVar_RX[4].var_uint32;
+  if(shouldApplyAppSetpoint(appValue, (uint32_t)user1TaskInfo.timerSetting,
+                            &appLastTimer, &appHoldTimer,
+                            isValidAppTimerSetting(appValue)) != 0U){
+    doSetTimer((uint8_t)appValue);
+  }
   if(appValue != APP_REMOTE_INVALID_U32){
-    if(isValidAppTimerSetting(appValue) != 0U){
-      doSetTimer((uint8_t)appValue);
-    }
     remoteInfo.remoteVar_RX[4].var_uint32 = APP_REMOTE_INVALID_U32;
   }
 
@@ -497,6 +583,35 @@ static void handleAppInput(void){
     doPrev();
   }
   user1TaskInfo.appKeyPrev[3] = appKey;
+}
+
+static void discardPendingAppInput(void){
+  if(remoteInfo.remoteVar_RX[0].var_uint32 != APP_REMOTE_INVALID_U32){
+    appLastVolume = remoteInfo.remoteVar_RX[0].var_uint32;
+  }
+  if(remoteInfo.remoteVar_RX[1].var_uint32 != APP_REMOTE_INVALID_U32){
+    appLastLight = remoteInfo.remoteVar_RX[1].var_uint32;
+  }
+  if(remoteInfo.remoteVar_RX[4].var_uint32 != APP_REMOTE_INVALID_U32){
+    appLastTimer = remoteInfo.remoteVar_RX[4].var_uint32;
+  }
+
+  remoteInfo.remoteVar_RX[0].var_uint32 = APP_REMOTE_INVALID_U32;
+  remoteInfo.remoteVar_RX[1].var_uint32 = APP_REMOTE_INVALID_U32;
+  remoteInfo.remoteVar_RX[4].var_uint32 = APP_REMOTE_INVALID_U32;
+
+  user1TaskInfo.appKeyPrev[0] = (uint8_t)(remoteInfo.remoteVar_RX[2].var_uint32 & 0xFFU);
+  user1TaskInfo.appKeyPrev[1] = (uint8_t)(remoteInfo.remoteVar_RX[3].var_uint32 & 0xFFU);
+  user1TaskInfo.appKeyPrev[2] = (uint8_t)(remoteInfo.remoteVar_RX[6].var_uint32 & 0xFFU);
+  user1TaskInfo.appKeyPrev[3] = (uint8_t)(remoteInfo.remoteVar_RX[7].var_uint32 & 0xFFU);
+}
+
+static void markScreenPriority(void){
+  appHoldVolume = 1U;
+  appHoldLight  = 1U;
+  appHoldTimer  = 1U;
+  discardPendingAppInput();
+  user1TaskUpdateAppTxVars();
 }
 
 static void updateScreenDisplay(void){
@@ -554,9 +669,10 @@ static void updateScreenDisplay(void){
   }
 }
 
-static void updateAppTxVars(void){
-  memset(remoteInfo.remoteVar_TX, 0, sizeof(remoteInfo.remoteVar_TX));
-
+void user1TaskUpdateAppTxVars(void){
+  remoteInfo.remoteVar_TX[1].var_uint32  =
+      ((uint32_t)user1TaskInfo.playState << 8U) |
+      (uint32_t)user1TaskInfo.currentTrack;
   remoteInfo.remoteVar_TX[0].var_uint32  = user1TaskInfo.timerRemainSec;
   remoteInfo.remoteVar_TX[2].var_uint32  = (uint32_t)user1TaskInfo.currentTrack;
   remoteInfo.remoteVar_TX[3].var_uint32  = (uint32_t)user1TaskInfo.playState;
@@ -579,6 +695,7 @@ static void handleTimerCountdown(void){
 
     DRIVER_MP3_Pause();
     user1TaskInfo.playState = PLAY_STATE_PAUSED;
+    mp3PlayLoopTicks = 0U;
 
     doSetLight(LIGHT_MIN);
 
@@ -607,11 +724,19 @@ void user1TaskInit(void){
   user1TaskInfo.timerRemainSec = 0U;
   user1TaskInfo.lightBrightness = LIGHT_DEFAULT;
   user1TaskInfo.currentMode = MODE_SLEEP;
+  appLastVolume = APP_REMOTE_INVALID_U32;
+  appLastLight = APP_REMOTE_INVALID_U32;
+  appLastTimer = APP_REMOTE_INVALID_U32;
+  appHoldVolume = 0U;
+  appHoldLight = 0U;
+  appHoldTimer = 0U;
+  mp3PlayLoopTicks = 0U;
   remoteInfo.remoteVar_RX[0].var_uint32 = APP_REMOTE_INVALID_U32;
   remoteInfo.remoteVar_RX[1].var_uint32 = APP_REMOTE_INVALID_U32;
   remoteInfo.remoteVar_RX[4].var_uint32 = APP_REMOTE_INVALID_U32;
   currentLightMode = scenePresetTable[MODE_SLEEP].lightMode;
   setAllDirty();
+  user1TaskUpdateAppTxVars();
 
   DRIVER_MP3_SetVolume(getMp3Volume(VOLUME_DEFAULT));
   refreshWs2812Light();
@@ -637,12 +762,14 @@ void user1TaskUpdata(void *argument){
 
     if((user1TaskInfo.taskCnt % 50U) == 0U){
       updateScreenDisplay();
-      updateAppTxVars();
+      user1TaskUpdateAppTxVars();
     }
 
     if((user1TaskInfo.taskCnt % 500U) == 0U){
       handleTimerCountdown();
     }
+
+    keepMp3TrackPlaying();
 
     osDelay(2);
   }

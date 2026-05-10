@@ -4,7 +4,9 @@
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
+    binaries=[
+        (r'C:\Program Files\Tobii\Tobii EyeX\tobii_stream_engine.dll', '.'),
+    ],
     datas=[],
     hiddenimports=['serial.tools.list_ports'],
     hookspath=[],

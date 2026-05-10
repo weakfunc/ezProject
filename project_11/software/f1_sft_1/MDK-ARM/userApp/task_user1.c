@@ -1,15 +1,12 @@
 #include "task_user1.h"
-#include "func_appcom.h"
 #include "func_func.h"
 #include "driver_board.h"
 #include "driver_oled.h"
-#include "driver_ble.h"
 #include "driver_senser.h"
 
 user1TaskInfo_t user1TaskInfo;
 
 void user1TaskInit(){
-	DRIVER_BLE_Init();
 	DRIVER_SENSER_Init();
 	/* 等待OLED VCC上电稳定（SSD1306要求VCC稳定后≥100ms才可接受I2C命令） */
 	osDelay(100);

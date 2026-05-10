@@ -32,6 +32,12 @@
 /* obj1/obj2无效值（无目标/冷却中） */
 #define VERISON_INVALID_OBJ                         (0xFFU)
 
+/* obj1 type counter indexes */
+#define VERISON_OBJ_TYPE_A                          (0U)
+#define VERISON_OBJ_TYPE_B                          (1U)
+#define VERISON_OBJ_TYPE_C                          (2U)
+#define VERISON_OBJ_TYPE_COUNT                      (3U)
+
 /* MAIXCAM模块信息结构体 */
 typedef struct {
   uint8_t  obj1;         /* 当前帧分类1编码（0xFF=无目标/冷却中） */
@@ -42,6 +48,7 @@ typedef struct {
   uint32_t rxTotalCnt;   /* 摄像头数据帧总接收计数（CRC通过即计，不区分obj1是否有效） */
   uint32_t localPktCnt;  /* STM32本地有效包计数（仅obj1 != 0xFF时累加） */
   uint8_t  camCnt;       /* 当前帧摄像头发送CNT值 */
+  uint32_t objTypeCnt[VERISON_OBJ_TYPE_COUNT]; /* A/B/C valid obj1 counters */
 } verisonInfo_t;
 
 extern verisonInfo_t verisonInfo;

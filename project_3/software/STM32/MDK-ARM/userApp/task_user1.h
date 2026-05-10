@@ -82,5 +82,6 @@ extern user1TaskInfo_t user1TaskInfo;
 
 void user1TaskInit(void);
 void user1TaskUpdata(void *argument);
+void user1TaskUpdateAppTxVars(void);
 
 #endif
