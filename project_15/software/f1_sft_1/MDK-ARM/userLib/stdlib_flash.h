@@ -21,14 +21,25 @@
 /* flashStore_t 数据体最大允许字节数（页大小 - 魔术字 4B）。 */
 #define USER_FLASH_STORE_DATA_MAX   (USER_FLASH_PAGE_SIZE - 4U)
 
+/* 步进电机零点存储配置。 */
+#define USER_FLASH_STEPPER_MOTOR_CNT          2U
+#define USER_FLASH_STEPPER_HOME_ZERO_VALID    0xA5U
+
 /*============================================================================
  * API 接口
  *============================================================================*/
 
+typedef struct {
+  float    angle_deg;  /* 保存零点时的电机单圈角度 */
+  uint16_t encoder;    /* 保存零点时的编码器值 */
+  uint8_t  valid;      /* USER_FLASH_STEPPER_HOME_ZERO_VALID 表示有效 */
+  uint8_t  reserved;   /* 对齐/预留 */
+} flashStepperHomeZero_t;
+
 /* 持久化数据布局 — 按项目需求在此添加字段，总大小不超过 1020 字节。 */
 typedef struct {
   uint32_t version;           /* 存档版本号，每次写入前由调用方自增 */
-
+  flashStepperHomeZero_t stepperHomeZero[USER_FLASH_STEPPER_MOTOR_CNT];
 
 } flashStore_t;
 

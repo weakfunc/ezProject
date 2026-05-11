@@ -21,6 +21,7 @@
  *============================================================================*/
 
 #include "driver_stepperMotor.h"
+#include "stdlib_flash.h"
 #include <string.h>
 
 /*============================================================================
@@ -93,6 +94,7 @@ static uint8_t sSaveHomeZeroSeq;
 static uint8_t sBoardEnabledTarget;
 static uint8_t sMotorControlEnabled;
 static uint8_t sHomeActiveMask;
+static uint8_t sFlashSavePending;
 
 /*============================================================================
  * 私有函数
@@ -140,16 +142,79 @@ static void __STEPPER_UpdateControlEnableState(void) {
   }
 }
 
+static float __STEPPER_NormalizeSignedAngle(float angle_deg) {
+  while(angle_deg > 180.0f) {
+    angle_deg -= 360.0f;
+  }
+
+  while(angle_deg < -180.0f) {
+    angle_deg += 360.0f;
+  }
+
+  return angle_deg;
+}
+
+static void __STEPPER_UpdateRelHomeZeroAngle(stepperMotorInfo_t *info) {
+  info->relHomeZeroAngle_deg =
+      __STEPPER_NormalizeSignedAngle(info->homeZeroAngle_deg -
+                                     info->fbdPosAngle_deg);
+}
+
+static uint8_t __STEPPER_IsFlashHomeZeroValid(const flashStepperHomeZero_t *homeZero) {
+  if(homeZero->valid != USER_FLASH_STEPPER_HOME_ZERO_VALID) {
+    return 0U;
+  }
+
+  if((homeZero->angle_deg < 0.0f) || (homeZero->angle_deg >= 360.0f)) {
+    return 0U;
+  }
+
+  return 1U;
+}
+
+static void __STEPPER_LoadHomeZeroFromFlash(void) {
+  uint8_t i;
+
+  for(i = 0U; (i < STEPPER_MOTOR_CNT) && (i < USER_FLASH_STEPPER_MOTOR_CNT); i++) {
+    stepperMotorInfo_t *info = &stepperMotorInfo[i];
+    flashStepperHomeZero_t *homeZero = &flashStore.stepperHomeZero[i];
+
+    if(__STEPPER_IsFlashHomeZeroValid(homeZero) != 0U) {
+      info->homeZeroAngle_deg = homeZero->angle_deg;
+      info->homeZeroEncoder = homeZero->encoder;
+      info->homeZeroValid = 1U;
+    } else {
+      info->homeZeroAngle_deg = 0.0f;
+      info->homeZeroEncoder = 0U;
+      info->homeZeroValid = 0U;
+    }
+    __STEPPER_UpdateRelHomeZeroAngle(info);
+  }
+}
+
 static void __STEPPER_SaveHomeZeroSnapshot(uint8_t motorId) {
   stepperMotorInfo_t *info;
+  flashStepperHomeZero_t *homeZero;
+  uint8_t axisIdx;
 
   if((motorId == 0U) || (motorId > STEPPER_MOTOR_CNT)) {
     return;
   }
 
-  info = &STEPPER_INFO(motorId);
+  axisIdx = (uint8_t)(motorId - 1U);
+  info = &stepperMotorInfo[axisIdx];
   info->homeZeroAngle_deg = info->fbdPosAngle_deg;
   info->homeZeroEncoder = info->encoder;
+  info->homeZeroValid = 1U;
+  info->relHomeZeroAngle_deg = 0.0f;
+
+  if(axisIdx < USER_FLASH_STEPPER_MOTOR_CNT) {
+    homeZero = &flashStore.stepperHomeZero[axisIdx];
+    homeZero->angle_deg = info->homeZeroAngle_deg;
+    homeZero->encoder = info->homeZeroEncoder;
+    homeZero->valid = USER_FLASH_STEPPER_HOME_ZERO_VALID;
+    homeZero->reserved = 0U;
+  }
 }
 
 /* 根据功能码返回其后需接收的字节总数（含末尾校验字节 0x6B）。 */
@@ -192,6 +257,7 @@ static void __STEPPER_ParseResponse(uint8_t axisIdx, uint8_t funcCode,
       info->fbdPosRaw = rawVal;
       info->fbdPosRevs = fbdPosRevs;
       info->fbdPosAngle_deg = fbdPosAngle_deg;
+      __STEPPER_UpdateRelHomeZeroAngle(info);
       break;
     case 0x35U:  /* 读取实时转速：data[0]=符号, data[1..2]=转速(RPM) */
       rawVal = __STEPPER_ReadU16BE(&data[1]);
@@ -239,6 +305,7 @@ static void __STEPPER_ParseResponse(uint8_t axisIdx, uint8_t funcCode,
       __STEPPER_EmmSetSignedPos(info->fbdPosSign, fbdRaw,
                                 &info->fbdPosRevs,
                                 &info->fbdPosAngle_deg);
+      __STEPPER_UpdateRelHomeZeroAngle(info);
 
       errRaw = __STEPPER_ReadU32BE(&data[22]);
       info->posErrSign = data[21];
@@ -329,12 +396,12 @@ static uint8_t __STEPPER_RunBoardCtrlCommand(void) {
       break;
     case STEPPER_BOARD_SEQ_HOME_PITCH:
       DRIVER_STEPPER_GoHome(STEPPER_ADDR_PITCH, STEPPER_HOME_MODE_SINGLE_NEAREST);
-      sHomeActiveMask |= STEPPER_AXIS_MASK(0U);
+      /* 单圈就近回零极快，但 0x43 ReadAllParams 长帧会吃掉 0x9F 回零完成ACK，
+       * 依赖 ACK 解锁控制权将永远挂起，故发出指令后直接解锁。 */
       sBoardCtrlSeq = STEPPER_BOARD_SEQ_HOME_YAW;
       break;
     case STEPPER_BOARD_SEQ_HOME_YAW:
       DRIVER_STEPPER_GoHome(STEPPER_ADDR_YAW, STEPPER_HOME_MODE_SINGLE_NEAREST);
-      sHomeActiveMask |= STEPPER_AXIS_MASK(1U);
       sBoardCtrlSeq = STEPPER_BOARD_SEQ_NONE;
       __STEPPER_UpdateControlEnableState();
       break;
@@ -366,6 +433,7 @@ static uint8_t __STEPPER_RunSaveHomeZeroCommand(void) {
       __STEPPER_SaveHomeZeroSnapshot(STEPPER_ADDR_YAW);
       DRIVER_STEPPER_SetHomeZero(STEPPER_ADDR_YAW, 1U);
       sSaveHomeZeroSeq = STEPPER_SAVE_ZERO_SEQ_NONE;
+      sFlashSavePending = 1U;
       break;
     default:
       sSaveHomeZeroSeq = STEPPER_SAVE_ZERO_SEQ_NONE;
@@ -400,10 +468,12 @@ void DRIVER_STEPPER_Init(void) {
   sBoardEnabledTarget = 0U;
   sMotorControlEnabled = 0U;
   sHomeActiveMask = 0U;
+  sFlashSavePending = 0U;
 
   stepperMotorInfo[0].addr = STEPPER_ADDR_PITCH;
   stepperMotorInfo[1].addr = STEPPER_ADDR_YAW;
   sParseCtx.state = STEPPER_PARSE_WAIT_ADDR;
+  __STEPPER_LoadHomeZeroFromFlash();
 
   STEPPER_DEP_UART_SET_CB(__STEPPER_RxByteCallback);
 
@@ -484,6 +554,15 @@ void DRIVER_STEPPER_RequestBoardEnable(uint8_t enable) {
     sMotorControlEnabled = 0U;
     sBoardCtrlSeq = STEPPER_BOARD_SEQ_DIS_PITCH;
   }
+}
+
+uint8_t DRIVER_STEPPER_TakeFlashSaveRequest(void) {
+  if(sFlashSavePending != 0U) {
+    sFlashSavePending = 0U;
+    return 1U;
+  }
+
+  return 0U;
 }
 
 /* 将当前位置清零（功能码 0A）。 */

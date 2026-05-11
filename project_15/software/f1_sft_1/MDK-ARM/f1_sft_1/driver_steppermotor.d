@@ -36,4 +36,5 @@ f1_sft_1\driver_steppermotor.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ha
 f1_sft_1\driver_steppermotor.o: ./userLib/stdlib_common.h
 f1_sft_1\driver_steppermotor.o: ../Core/Inc/main.h
 f1_sft_1\driver_steppermotor.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
+f1_sft_1\driver_steppermotor.o: ./userLib/stdlib_flash.h
 f1_sft_1\driver_steppermotor.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h

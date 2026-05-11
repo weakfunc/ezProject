@@ -625,11 +625,6 @@
               <FilePath>.\userDriver\driver_oled.c</FilePath>
             </File>
             <File>
-              <FileName>driver_verison.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\userDriver\driver_verison.c</FilePath>
-            </File>
-            <File>
               <FileName>driver_stepperMotor.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\userDriver\driver_stepperMotor.c</FilePath>

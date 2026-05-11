@@ -56,6 +56,11 @@ void systemTaskUpdata(void *argument){
 			STDLIB_FLASH_Save();
 		}
 
+		if(DRIVER_STEPPER_TakeFlashSaveRequest() != 0U){
+			flashStore.version++;
+			STDLIB_FLASH_Save();
+		}
+
 		if(boardInfo.key[1].pressCount != boardInfo.key[1].lastPressCount){
 			boardInfo.key[1].lastPressCount = boardInfo.key[1].pressCount;
 			DRIVER_STEPPER_RequestSaveAllHomeZero();

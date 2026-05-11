@@ -53,5 +53,4 @@ f1_sft_1\task_user1.o: ./userLib/stdlib_tim.h
 f1_sft_1\task_user1.o: ./userDriver/driver_oled.h
 f1_sft_1\task_user1.o: ./userLib/stdlib_i2c.h
 f1_sft_1\task_user1.o: ./userDriver/driver_ble.h
-f1_sft_1\task_user1.o: ./userDriver/driver_verison.h
 f1_sft_1\task_user1.o: ./userFunc/func_gambal.h

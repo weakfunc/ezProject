@@ -1,5 +1,6 @@
 f1_sft_1\func_gambal.o: userFunc\func_gambal.c
 f1_sft_1\func_gambal.o: userFunc\func_gambal.h
+f1_sft_1\func_gambal.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdint.h
 f1_sft_1\func_gambal.o: ./userDriver/driver_stepperMotor.h
 f1_sft_1\func_gambal.o: ./userLib/stdlib_usart.h
 f1_sft_1\func_gambal.o: ../Core/Inc/main.h
@@ -10,7 +11,6 @@ f1_sft_1\func_gambal.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h
 f1_sft_1\func_gambal.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
 f1_sft_1\func_gambal.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h
 f1_sft_1\func_gambal.o: ../Drivers/CMSIS/Include/core_cm3.h
-f1_sft_1\func_gambal.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdint.h
 f1_sft_1\func_gambal.o: ../Drivers/CMSIS/Include/cmsis_version.h
 f1_sft_1\func_gambal.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 f1_sft_1\func_gambal.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -37,5 +37,3 @@ f1_sft_1\func_gambal.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 f1_sft_1\func_gambal.o: ./userLib/stdlib_common.h
 f1_sft_1\func_gambal.o: ../Core/Inc/main.h
 f1_sft_1\func_gambal.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\stdbool.h
-f1_sft_1\func_gambal.o: ./userDriver/driver_verison.h
-f1_sft_1\func_gambal.o: C:\21_app_develop\Keil5\ARM\V506\Bin\..\include\string.h

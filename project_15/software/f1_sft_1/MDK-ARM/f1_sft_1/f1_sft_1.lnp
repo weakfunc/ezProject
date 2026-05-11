@@ -42,7 +42,6 @@
 "f1_sft_1\driver_ble.o"
 "f1_sft_1\driver_board.o"
 "f1_sft_1\driver_oled.o"
-"f1_sft_1\driver_verison.o"
 "f1_sft_1\driver_steppermotor.o"
 "f1_sft_1\stdlib_common.o"
 "f1_sft_1\stdlib_i2c.o"

@@ -3,7 +3,6 @@
 #include "driver_board.h"
 #include "driver_oled.h"
 #include "driver_ble.h"
-#include "driver_verison.h"
 #include "func_gambal.h"
 
 user1TaskInfo_t user1TaskInfo;
@@ -21,12 +20,7 @@ static void __USER1_OledUpdata(void) {
 	DRIVER_OLED_Clear();
 
 	/* 现有 OLED 字库仅支持 ASCII，这里使用英文缩写显示连接和角度。 */
-	DRIVER_OLED_ShowString(0, 0, "CAM:");
-	if(verisonInfo.isConnect != 0U) {
-		DRIVER_OLED_ShowString(30, 0, "OK");
-	} else {
-		DRIVER_OLED_ShowString(30, 0, "NO");
-	}
+
 
 	__USER1_OledShowAngle(12, "REF_P:", angleInfo.refPitch_deg);
 	__USER1_OledShowAngle(24, "REF_Y:", angleInfo.refYaw_deg);
@@ -40,7 +34,7 @@ void user1TaskInit(){
 	DRIVER_BLE_Init();
 	/* 等待OLED VCC上电稳定（SSD1306要求VCC稳定后≥100ms才可接受I2C命令） */
 	osDelay(100);
-	DRIVER_VERISON_Init();
+	
 	DRIVER_OLED_Init();
 	FUNC_GAMBAL_Init();
 }
@@ -50,14 +44,11 @@ void user1TaskUpdata(void *argument){
 	for(;;){
 		user1TaskInfo.user1TaskCnt++;
 
-		FUNC_GAMBAL_Updata(user1TaskInfo.yawRef, user1TaskInfo.picthRef);
+		FUNC_GAMBAL_GotoXY(user1TaskInfo.xRef, user1TaskInfo.yRef);
 
 		if(user1TaskInfo.user1TaskCnt % 5 == 0){
 			/* 10ms TASK*/
-			if(DRIVER_VERISON_Updata() != 0U){
-				user1TaskInfo.yawRef = verisonInfo.yaw_deg;
-				user1TaskInfo.picthRef = verisonInfo.pitch_deg;
-			}
+
 		}
 
 		if(user1TaskInfo.user1TaskCnt % 25 == 0){

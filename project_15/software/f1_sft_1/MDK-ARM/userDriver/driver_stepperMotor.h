@@ -85,6 +85,8 @@ typedef struct {
   uint16_t encoder;        /* 线性化编码器值，0-65535 对应 0-360° */
   float    homeZeroAngle_deg; /* 最近一次保存单圈回零零点时的电机角度，单位 ° */
   uint16_t homeZeroEncoder;   /* 最近一次保存单圈回零零点时的编码器值 */
+  uint8_t  homeZeroValid;      /* STM32 侧零点是否有效 */
+  float    relHomeZeroAngle_deg; /* 相对保存零点的角度，顺时针为正，逆时针为负，单位 ° */
   uint8_t  posErrSign;     /* 位置误差符号，0=正，1=负 */
   uint32_t posErrRaw;      /* 位置误差原始值，65536 对应 360° */
   float    posErrAngle_deg; /* 位置误差角度，单位 °，已含符号 */
@@ -143,6 +145,9 @@ void DRIVER_STEPPER_RequestSaveAllHomeZero(void);
  * enable=1: 使能全部电机并触发单圈就近回零；enable=0: 失能全部电机。
  */
 void DRIVER_STEPPER_RequestBoardEnable(uint8_t enable);
+
+/* 取出并清除零点 Flash 保存请求；返回 1 表示上层需要调用 STDLIB_FLASH_Save()。 */
+uint8_t DRIVER_STEPPER_TakeFlashSaveRequest(void);
 
 /* 将当前位置角度清零（功能码 0A）。
  * motorId: 电机地址
