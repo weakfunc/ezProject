@@ -89,6 +89,7 @@ static stepperParseCtx_t sParseCtx;
 static uint8_t sTxBuf[STEPPER_TX_BUF_SIZE];
 
 static uint8_t sUpdateStep;
+static uint8_t sCtrlOnlyStep;
 static uint8_t sBoardCtrlSeq;
 static uint8_t sSaveHomeZeroSeq;
 static uint8_t sBoardEnabledTarget;
@@ -463,6 +464,7 @@ void DRIVER_STEPPER_Init(void) {
   memset(stepperMotorInfo, 0, sizeof(stepperMotorInfo));
   memset(&sParseCtx, 0, sizeof(sParseCtx));
   sUpdateStep = 0U;
+  sCtrlOnlyStep = 0U;
   sBoardCtrlSeq = STEPPER_BOARD_SEQ_NONE;
   sSaveHomeZeroSeq = STEPPER_SAVE_ZERO_SEQ_NONE;
   sBoardEnabledTarget = 0U;
@@ -779,4 +781,36 @@ void DRIVER_STEPPER_SetPos(uint8_t motorId, int16_t vel, uint8_t acc,
   txBuf[len++] = 0x00U;  /* sync: 立即执行 */
   txBuf[len++] = STEPPER_CHECKSUM;
   STEPPER_DEP_UART_SEND_RAW(txBuf, len);
+}
+
+/* 仅控制状态机（无反馈轮询），2 个状态：
+ * 0=Axis0（pitch）控制钩子，1=Axis1（yaw）控制钩子。
+ * 以 1ms 为调用周期，双轴命令间隔 1ms，完整控制周期 2ms。
+ * 适用于高频扫描，牺牲位置反馈换取最低命令延迟。
+ */
+void DRIVER_STEPPER_UpdateCtrlOnly(void) {
+  if(__STEPPER_RunInternalCommand() != 0U) {
+    return;
+  }
+
+  switch(sCtrlOnlyStep) {
+    case 0U:
+      if(sMotorControlEnabled != 0U) {
+        __STEPPER_RunCtrlHook(DRIVER_STEPPER_Axis0CtrlHook);
+      }
+      break;
+    case 1U:
+      if(sMotorControlEnabled != 0U) {
+        __STEPPER_RunCtrlHook(DRIVER_STEPPER_Axis1CtrlHook);
+      }
+      break;
+    default:
+      sCtrlOnlyStep = 0U;
+      break;
+  }
+
+  sCtrlOnlyStep++;
+  if(sCtrlOnlyStep >= 2U) {
+    sCtrlOnlyStep = 0U;
+  }
 }

@@ -171,8 +171,8 @@ void FUNC_GAMBAL_Updata(float refYaw, float refPitch) {
   sGambalCtrlInfo.yawPulse   = __GAMBAL_AngleToPulse(motorYaw_deg);
   sGambalCtrlInfo.pitchPulse = __GAMBAL_AngleToPulse(motorPitch_deg);
 
-  /* 步进电机更新状态机（读参数 + 触发控制钩子）。 */
-  DRIVER_STEPPER_Update();
+  /* 仅控制状态机，1ms 周期调用，双轴切换周期 2ms，无反馈读取。 */
+  DRIVER_STEPPER_UpdateCtrlOnly();
 }
 
 void FUNC_GAMBAL_GotoXY(float x, float y) {

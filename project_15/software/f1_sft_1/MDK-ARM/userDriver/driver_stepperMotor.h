@@ -200,6 +200,12 @@ void DRIVER_STEPPER_ReadDriverTemp(uint8_t motorId);
  */
 void DRIVER_STEPPER_Update(void);
 
+/* 仅控制状态机（无反馈轮询，1ms 任务周期调用）：
+ * 0=Axis0（pitch）控制钩子，1=Axis1（yaw）控制钩子，完整周期 2ms。
+ * 适用于高频扫描，牺牲位置反馈换取最低命令延迟。
+ */
+void DRIVER_STEPPER_UpdateCtrlOnly(void);
+
 /* 控制钩子。默认弱函数为空，上层可定义同名强函数覆盖，并在其中直接调用控制 API。 */
 void DRIVER_STEPPER_Axis0CtrlHook(void);
 void DRIVER_STEPPER_Axis1CtrlHook(void);
